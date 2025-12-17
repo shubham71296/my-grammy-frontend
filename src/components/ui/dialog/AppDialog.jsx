@@ -1,0 +1,46 @@
+import { useSelector, useDispatch } from "react-redux";
+import { Dialog } from "@mui/material";
+import { closeDialog } from "../../../features/ui/uiSlice";
+import InstrumentDialog from "./InstrumentDialog";
+import FilePreviewDialog from "./FilePreviewDialog";
+import LectureDialog from "./LectureDialog";
+import CourseDialog from "./CourseDialog";
+import VideoPreviewDialog from "./VideoPreviewDialog";
+import UserDialog from "./UserDialog";
+import OrderDialog from "./OrderDialog";
+
+
+export default function AppDialog() {
+  const dispatch = useDispatch();
+  const { openDialog, dialogInfo } = useSelector((state) => state.ui.dialog);
+
+  const handleClose = () => dispatch(closeDialog());
+//delete_lecture
+  return (
+    <Dialog
+      open={openDialog}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+    >
+      {dialogInfo.check === "view_instrument" && <InstrumentDialog />}
+      {dialogInfo.check === "delete_instrument" && <InstrumentDialog />}
+      {dialogInfo.check === "edit_instrument" && <InstrumentDialog />}
+
+      {dialogInfo.check === "view_img_video" && <FilePreviewDialog />}
+
+      {dialogInfo.check === "view_video" && <VideoPreviewDialog />}
+      
+      {dialogInfo.check === "edit_lecture" && <LectureDialog />}
+      {dialogInfo.check === "delete_lecture" && <LectureDialog />}
+
+      {dialogInfo.check === "edit_course" && <CourseDialog />}
+      {dialogInfo.check === "delete_course" && <CourseDialog />}
+
+      {dialogInfo.check === "view_user" && <UserDialog />}
+      {dialogInfo.check === "delete_user" && <UserDialog />}
+
+      {dialogInfo.check === "view_order" && <OrderDialog />}
+    </Dialog>
+  );
+}
