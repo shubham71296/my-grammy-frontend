@@ -9,6 +9,7 @@ import {
   Box,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { truncate } from "../../../utils/common-util";
 
 // const CommonCard = ({ title, description, image, price, navTo }) => {
 const CommonCard = ({it, idx, navTo, onAddToCart }) => {
@@ -139,7 +140,8 @@ const CommonCard = ({it, idx, navTo, onAddToCart }) => {
             color: "text.secondary",
           }}
         >
-          {it?.instrurment_description}
+          {truncate(it?.instrurment_description, 55)}
+          {/* {it?.instrurment_description} */}
         </Typography>
       </CardContent>
 

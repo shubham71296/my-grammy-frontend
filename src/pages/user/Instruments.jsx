@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { LibraryMusic } from "@mui/icons-material";
-import CommonCard from "../../components/ui/Card/CommonCard";
+import CommonCard from "../../components/ui/card/CommonCard";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";

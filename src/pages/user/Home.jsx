@@ -13,12 +13,12 @@ import {
   Divider,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import bannerImg from "../../assets/bannerImg.jpg";
+import bannerImg from "../../assets/bannerImg.JPG";
 
 // instrument images
 import guitarImg from "../../assets/guitar.jpg";
 
-import CommonCard from "../../components/ui/Card/CommonCard";
+import CommonCard from "../../components/ui/card/CommonCard";
 import axios from "axios";
 import CourseCard from "../../components/ui/card/CourseCard";
 import { useDispatch, useSelector } from "react-redux";

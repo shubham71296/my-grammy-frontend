@@ -14,6 +14,7 @@ import {
   Instagram,
   LinkedIn,
   Phone,
+  YouTube,
 } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -122,17 +123,20 @@ const Footer = () => {
               Follow Us
             </Typography>
             <Box>
-              <IconButton color="inherit" href="https://facebook.com">
+              <IconButton color="inherit" href="https://www.facebook.com/shubh.patidarr">
                 <Facebook />
               </IconButton>
-              <IconButton color="inherit" href="https://twitter.com">
+              {/* <IconButton color="inherit" href="https://twitter.com">
                 <Twitter />
-              </IconButton>
-              <IconButton color="inherit" href="https://instagram.com">
+              </IconButton> */}
+              <IconButton color="inherit" href="https://www.instagram.com/shubhampatidar_o1?igsh=ZXR6NDdnb3I5bnBv">
                 <Instagram />
               </IconButton>
-              <IconButton color="inherit" href="https://linkedin.com">
+              {/* <IconButton color="inherit" href="https://linkedin.com">
                 <LinkedIn />
+              </IconButton> */}
+               <IconButton color="inherit" href="https://youtube.com/@keymelodies?si=O_jdBIjP5R_BjkWg">
+                <YouTube />
               </IconButton>
             </Box>
           </Grid>

@@ -282,14 +282,14 @@ export default function AddInstruments() {
       const files = e.target.files;
       if (files && files.length > 0) {
         const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-        const maxSize = 2 * 1024 * 1024;
+        const maxSize = 100 * 1024 * 1024;
         const validFiles = Array.from(files).filter((file) => {
           if (!allowedTypes.includes(file.type)) {
             tempInputs[i1]._errorMsg = "Only JPG and PNG files are allowed";
             return false;
           }
           if (file.size > maxSize) {
-            tempInputs[i1]._errorMsg = "File size must be less than 2 MB";
+            tempInputs[i1]._errorMsg = "File size must be less than 100 MB";
             return false;
           }
           return true;
