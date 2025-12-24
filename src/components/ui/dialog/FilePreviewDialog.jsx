@@ -22,7 +22,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 
-
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 import { useNavigate } from "react-router-dom";
@@ -32,13 +31,11 @@ import { closeDialog } from "../../../features/ui/uiSlice";
 export default function FilePreviewDialog() {
   const dispatch = useDispatch();
   const { selectedData, dialogInfo } = useSelector((state) => state.ui.dialog);
-  // console.log("previewURL",selectedData.previewUrl, selectedData.previewUrl.includes("thumb"))
   const previewURL = selectedData.previewUrl;
   const previewTitle = selectedData.title;
 
   const handleClose = () => dispatch(closeDialog());
 
-  
   if (dialogInfo?.check === "view_img_video") {
     return (
       <>
@@ -53,8 +50,8 @@ export default function FilePreviewDialog() {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Box
               sx={{
-                width: 36,
-                height: 36,
+                width: { xs: 28, sm: 34, md: 36 },
+                height: { xs: 28, sm: 34, md: 36 },
                 borderRadius: "50%",
                 background: "linear-gradient(135deg, #9c9affff, #4d53ffff)",
                 display: "flex",
@@ -64,10 +61,24 @@ export default function FilePreviewDialog() {
                 boxShadow: "0 3px 8px rgba(107, 77, 255, 0.4)",
               }}
             >
-              <Visibility fontSize="small" />
+              <Visibility
+                sx={{
+                  fontSize: { xs: 16, sm: 18, md: 20 },
+                }}
+              />
             </Box>
 
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                fontSize: {
+                  xs: "0.95rem",
+                  sm: "1.1rem",
+                  md: "1.25rem",
+                },
+              }}
+            >
               {previewTitle}
             </Typography>
           </Box>
@@ -82,9 +93,9 @@ export default function FilePreviewDialog() {
         </DialogTitle>
 
         <Divider />
-      <DialogContent
+        <DialogContent
           sx={{
-            p: 0,
+            p: { xs: 2, md: 3 },
             bgcolor: "#fff",
             position: "relative",
             display: "flex",
@@ -92,7 +103,6 @@ export default function FilePreviewDialog() {
             alignItems: "center",
           }}
         >
-        
           <Box
             sx={{
               width: "100%",
@@ -105,24 +115,22 @@ export default function FilePreviewDialog() {
               p: 2,
             }}
           >
-                <img
-                  src={previewURL}
-                  alt="Preview"
-                  style={{
-                    width: "100%",
-                    maxHeight: "70vh",
-                    objectFit: "contain",
-                    borderRadius: "10px",
-                    boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
-                  }}
-                />
+            <img
+              src={previewURL}
+              alt="Preview"
+              style={{
+                width: "100%",
+                maxHeight: "70vh",
+                objectFit: "contain",
+                borderRadius: "10px",
+                boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
+              }}
+            />
           </Box>
         </DialogContent>
       </>
     );
   }
-
-  
 
   return null;
 }

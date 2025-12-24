@@ -15,10 +15,10 @@ import {
 import { Link } from "react-router-dom";
 import bannerImg from "../../assets/bannerImg.JPG";
 
-// instrument images
 import guitarImg from "../../assets/guitar.jpg";
 
 import CommonCard from "../../components/ui/card/CommonCard";
+import LocationMap from "../../components/ui/LocationMap";
 import axios from "axios";
 import CourseCard from "../../components/ui/card/CourseCard";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,42 +30,27 @@ export default function Home() {
   const { token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isSm = useMediaQuery(theme.breakpoints.down("sm")); // phones
-  const isMd = useMediaQuery(theme.breakpoints.down("md")); // tablets and below
+  const isSm = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMd = useMediaQuery(theme.breakpoints.down("md"));
 
   const [instrumentList, setInstrumentList] = useState([]);
   const [courseList, setCourseList] = useState([]);
   const [limit, setLimit] = useState(4);
   const [offset, setOffset] = useState(0);
-  const [query, setQuery] = useState({}); // empty means get all
+  const [query, setQuery] = useState({});
 
   const addToCart = async (item, type) => {
     try {
-      // const response = await axios.post(
-      //   "/api/user/addtocart",
-      //   {
-      //     productId: item._id,
-      //     productType: type,
-      //   },
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${token}`,
-      //     },
-      //   }
-      // );
-      const response = await api.post(
-        "/user/addtocart",
-        {
-          productId: item._id,
-          productType: type,
-        }
-      );
+      const response = await api.post("/user/addtocart", {
+        productId: item._id,
+        productType: type,
+      });
       toast.success(response.data.msg);
       dispatch(increaseCartCount());
     } catch (err) {
-        console.log("error", err);
-        const errorMsg = err?.response?.data?.msg || "Something went wrong!";
-        toast.error(errorMsg);
+      console.log("error", err);
+      const errorMsg = err?.response?.data?.msg || "Something went wrong!";
+      toast.error(errorMsg);
     }
   };
 
@@ -86,7 +71,6 @@ export default function Home() {
         },
       };
 
-      // const response = await axios.post("/api/admin/allinstumnts", body);
       const response = await api.post("/admin/allinstumnts", body);
       setInstrumentList(response.data.data || []);
     } catch (error) {
@@ -110,11 +94,6 @@ export default function Home() {
         },
       };
 
-      // const response = await axios.post("/api/admin/allcourses", body, {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // });
       const response = await api.post("/admin/allcourses", body);
       setCourseList(response.data.data || []);
     } catch (error) {
@@ -124,12 +103,11 @@ export default function Home() {
 
   return (
     <div>
-      {/* Banner */}
       <Box
         component="section"
         aria-label="Hero banner"
         sx={{
-          mt:4,
+          mt: 4,
           height: { xs: "50vh", sm: "50vh", md: "60vh", lg: "68vh" },
           display: "flex",
           alignItems: "center",
@@ -140,7 +118,6 @@ export default function Home() {
           overflow: "hidden",
         }}
       >
-        {/* blurred background image */}
         <Box
           sx={{
             position: "absolute",
@@ -154,7 +131,6 @@ export default function Home() {
           }}
         />
 
-        {/* dark overlay for contrast */}
         <Box
           sx={{
             position: "absolute",
@@ -164,7 +140,6 @@ export default function Home() {
           }}
         />
 
-        {/* foreground content */}
         <Box
           sx={{
             position: "relative",
@@ -180,7 +155,6 @@ export default function Home() {
             fontWeight={800}
             gutterBottom
             sx={{
-              // responsive font sizes and line-height
               fontSize: {
                 xs: "1.45rem",
                 sm: "1.9rem",
@@ -210,7 +184,6 @@ export default function Home() {
             master your musical passion.
           </Typography>
 
-          {/* CTAs: stacked on mobile, inline on larger screens */}
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={{ xs: 1.25, sm: 2 }}
@@ -262,7 +235,6 @@ export default function Home() {
         </Box>
       </Box>
 
-      {/* Quick Stats / Trust */}
       <Container sx={{ py: 4 }}>
         <Grid container spacing={2} justifyContent="center">
           <Grid item xs={6} sm={3}>
@@ -298,27 +270,114 @@ export default function Home() {
         </Grid>
       </Container>
 
-      {/* Featured Instruments */}
-      <Container sx={{ py: 4 }}>
+      <Container sx={{ py: { xs: 3, md: 5 } }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, sm: 3, md: 4 },
+            textAlign: "center",
+            borderRadius: 3,
+            background: "linear-gradient(135deg, #02025e, #5b5bff)",
+            color: "#fff",
+          }}
+        >
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{
+              fontSize: {
+                xs: "1.2rem",
+                sm: "1.6rem",
+                md: "1.6rem",
+              },
+              mb: 1,
+            }}
+          >
+            Buy Any Instrument & Get Course related to that instrument FREE 🎶
+          </Typography>
+
+          <Typography
+            variant="body1"
+            sx={{
+              maxWidth: 720,
+              mx: "auto",
+              opacity: 0.95,
+              fontSize: {
+                xs: "0.85rem",
+                sm: "0.95rem",
+                md: "1.05rem",
+              },
+            }}
+          >
+            When you purchase any instrument, the course related to that
+            instrument is absolutely <strong>FREE</strong>. Learn faster with
+            the perfect instrument–course combo.
+          </Typography>
+
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            justifyContent="center"
+            sx={{ mt: 3 }}
+          >
+            <Button
+              component={Link}
+              to="/user/instruments"
+              variant="contained"
+              sx={{
+                bgcolor: "#fff",
+                color: "#02025e",
+                fontWeight: 700,
+                borderRadius: "30px",
+                px: 4,
+                "&:hover": {
+                  bgcolor: "#f0f0ff",
+                },
+              }}
+            >
+              Buy Instrument
+            </Button>
+
+            <Button
+              component={Link}
+              to="/user/courses"
+              variant="outlined"
+              sx={{
+                borderColor: "#fff",
+                color: "#fff",
+                fontWeight: 700,
+                borderRadius: "30px",
+                px: 4,
+                "&:hover": {
+                  bgcolor: "rgba(255,255,255,0.1)",
+                },
+              }}
+            >
+              View Courses
+            </Button>
+          </Stack>
+        </Paper>
+      </Container>
+
+      {/* <Container sx={{ py: 4 }}>
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            //alignItems: "center",
             flexDirection: { xs: "column", sm: "row" },
             alignItems: { xs: "flex-start", sm: "center" },
             mb: 2,
             gap: 2,
           }}
         >
-          <Typography variant="h5" fontWeight={700} >
+          <Typography variant="h5" fontWeight={700}>
             Featured Instruments
           </Typography>
           <Button
             variant="outlined"
             sx={{
-              borderColor: "#02025e", // custom outline color
-              color: "#02025e", // text color
+              borderColor: "#02025e",
+              color: "#02025e",
               fontWeight: 600,
               textTransform: "none",
               borderRadius: "8px",
@@ -351,13 +410,11 @@ export default function Home() {
           <Typography
             variant="body1"
             sx={{
-              //fontSize: { xs: "14px", sm: "16px", md: "18px" },
               color: "#1b085cff",
               fontWeight: 200,
               margin: "0 auto",
               marginBottom: "0",
               fontSize: { xs: "13.5px", sm: "15px", md: "18px" },
-              //lineHeight: 1.8,
             }}
           >
             Our featured instruments are carefully selected to provide students
@@ -374,99 +431,253 @@ export default function Home() {
                 it={it}
                 idx={idx}
                 onAddToCart={() => addToCart(it, "instrument")}
-                // title={it.instrument_title}
-                // description={it.instrurment_description}
-                // //image={it.instrument_images}
-                // image={it.instrument_images?.[0]?.url}
-                // price={it.instrument_price}
                 navTo={`/user/instrument/${it._id}`}
               />
             </Grid>
           ))}
         </Grid>
-      </Container>
-
-      {/* Featured Courses */}
-      <Container sx={{ py: 4 }}>
+      </Container> */}
+      <Container sx={{ py: { xs: 4, md: 6 } }}>
+        {/* Header */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            //alignItems: "center",
             flexDirection: { xs: "column", sm: "row" },
             alignItems: { xs: "flex-start", sm: "center" },
-            mb: 2,
+            mb: 3,
             gap: 2,
           }}
         >
-          <Typography variant="h5" fontWeight={700}>
-            Popular Courses
-          </Typography>
+          <Box>
+            <Typography
+              variant="h4"
+              fontWeight={800}
+              sx={{
+                color: "#02025e",
+                fontSize: { xs: "1.6rem", sm: "2rem" },
+              }}
+            >
+              Featured Instruments
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 0.5,
+                color: "text.secondary",
+                maxWidth: 480,
+              }}
+            >
+              Hand-picked instruments designed to inspire creativity and
+              accelerate your musical journey.
+            </Typography>
+          </Box>
+
           <Button
-            variant="outlined"
-            sx={{
-              borderColor: "#02025e", // custom outline color
-              color: "#02025e", // text color
-              fontWeight: 600,
-              textTransform: "none",
-              borderRadius: "8px",
-              "&:hover": {
-                backgroundColor: "#02025e",
-                color: "#fff",
-                borderColor: "#02025e",
-              },
-            }}
             component={Link}
-            to="/user/courses"
-            size="small"
+            to="/user/instruments"
+            variant="contained"
+            size="medium"
+            sx={{
+              borderRadius: "30px",
+              px: 3.5,
+              fontWeight: 700,
+              textTransform: "none",
+              background: "linear-gradient(90deg, #02025e, #5b5bff)",
+              boxShadow: "0 8px 24px rgba(2,2,94,0.25)",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: "0 12px 30px rgba(2,2,94,0.35)",
+              },
+              transition: "all 0.3s ease",
+            }}
           >
-            View all courses
+            View All
           </Button>
         </Box>
 
-        <Typography
-          variant="body2"
+        {/* Description Card */}
+        <Paper
+          elevation={0}
           sx={{
-            //fontSize: { xs: "14px", sm: "16px", md: "18px" },
-            lineHeight: 1.8,
-            color: "#706c6cff",
-            fontWeight: 400,
-            //textAlign: "center",
-            //maxWidth: "800px",
-            margin: "0 auto",
-            marginBottom: "30px",
-            fontSize: { xs: "13.5px", sm: "15px", md: "18px" },
-            //padding: "0 16px",
-            letterSpacing: "0.3px",
+            p: { xs: 2, sm: 3 },
+            mb: 4,
+            borderRadius: 3,
+            background: "rgba(2, 2, 94, 0.04)",
+            //border: "1px solid rgba(2, 2, 94, 0.1)",
+            borderLeft: 3,
           }}
         >
-          Explore our most popular courses, crafted to help learners grow with
-          clarity, confidence, and creativity. Each course is designed to offer
-          a perfect blend of engaging lessons, practical guidance, and
-          real-world application — ensuring that every student receives a
-          meaningful and enjoyable learning experience. Whether you're starting
-          your journey or looking to level up your skills, our popular courses
-          provide the inspiration and structure you need to achieve your musical
-          goals.
-        </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: { xs: "14px", sm: "16px", md: "18px" },
+              lineHeight: 1.8,
+              color: "#1b085c",
+              //textAlign: "center",
+              maxWidth: 900,
+              //mx: "auto",
+            }}
+          >
+            Our featured instruments are carefully curated to offer the perfect
+            balance of sound quality, comfort, and durability. Whether you're a
+            beginner or an advanced learner, each instrument is chosen to help
+            you learn faster and play with confidence.
+          </Typography>
+        </Paper>
 
-        <Grid container spacing={3} mt={2}>
-          {courseList.map((course, idx) => (
-            <Grid item xs={12} sm={6} md={4} key={course._id}>
-              <CourseCard
-                type="user"
-                idx={idx}
-                course={course}
-                onAddToCart={() => addToCart(course, "course")}
-                onEdit={handleEditLecture}
-                onDelete={handleDeleteLecture}
-              />
+        {/* Instruments Grid */}
+        <Grid container spacing={3}>
+          {instrumentList.map((it, idx) => (
+            <Grid item xs={12} sm={6} md={4} key={it._id}>
+              <Box
+                sx={{
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-6px)",
+                  },
+                }}
+              >
+                <CommonCard
+                  it={it}
+                  idx={idx}
+                  onAddToCart={() => addToCart(it, "instrument")}
+                  navTo={`/user/instrument/${it._id}`}
+                />
+              </Box>
             </Grid>
           ))}
         </Grid>
       </Container>
 
-      {/* Testimonial / CTA */}
+      <Container sx={{ py: { xs: 4, md: 6 } }}>
+        {/* Header */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "flex-start", sm: "center" },
+            mb: { xs: 2.5, md: 3.5 },
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h4"
+              fontWeight={800}
+              sx={{
+                fontSize: { xs: "1.4rem", sm: "1.7rem", md: "2rem" },
+                color: "#02025e",
+              }}
+            >
+              Popular Courses
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 0.6,
+                color: "#6b7280",
+                maxWidth: "520px",
+                fontSize: { xs: "0.85rem", sm: "0.95rem" },
+              }}
+            >
+              Learn from expertly crafted courses designed to help you grow
+              musically.
+            </Typography>
+          </Box>
+
+          <Button
+            component={Link}
+            to="/user/courses"
+            size="medium"
+            sx={{
+              px: 3,
+              py: 1,
+              borderRadius: "999px",
+              fontWeight: 600,
+              textTransform: "none",
+              background: "linear-gradient(135deg, #02025e, #1e40af)",
+              color: "#fff",
+              boxShadow: "0 8px 20px rgba(2,2,94,0.25)",
+              "&:hover": {
+                background: "linear-gradient(135deg, #01013d, #1e3a8a)",
+                boxShadow: "0 12px 28px rgba(2,2,94,0.35)",
+              },
+            }}
+          >
+            View all
+          </Button>
+        </Box>
+
+        {/* Description */}
+        <Box
+          sx={{
+            //maxWidth: "900px",
+            mb: { xs: 3, md: 4 },
+            p: { xs: 2, sm: 2.5 },
+            borderRadius: "14px",
+            background:
+              "linear-gradient(90deg, rgba(2,2,94,0.06), rgba(30,64,175,0.02))",
+            borderLeft: "4px solid #02025e",
+          }}
+        >
+          <Typography
+            sx={{
+              lineHeight: 1.9,
+              color: "#374151",
+              fontWeight: 400,
+              fontSize: { xs: "0.95rem", sm: "1.05rem", md: "1.1rem" },
+              letterSpacing: "0.2px",
+            }}
+          >
+            Explore our most popular courses, crafted to help learners grow with{" "}
+            <Box component="span" sx={{ fontWeight: 600, color: "#02025e" }}>
+              clarity
+            </Box>
+            ,{" "}
+            <Box component="span" sx={{ fontWeight: 600, color: "#02025e" }}>
+              confidence
+            </Box>
+            , and{" "}
+            <Box component="span" sx={{ fontWeight: 600, color: "#02025e" }}>
+              creativity
+            </Box>
+            . Each course blends engaging lessons, practical guidance, and
+            real-world application — ensuring a meaningful and enjoyable
+            learning experience for every student.
+          </Typography>
+        </Box>
+
+        {/* Courses Grid */}
+        <Grid container spacing={{ xs: 2.5, md: 3 }}>
+          {courseList.map((course, idx) => (
+            <Grid item xs={12} sm={6} md={4} key={course._id}>
+              <Box
+                sx={{
+                  height: "100%",
+                  transition: "all .35s ease",
+                  "&:hover": {
+                    transform: "translateY(-6px)",
+                  },
+                }}
+              >
+                <CourseCard
+                  type="user"
+                  idx={idx}
+                  course={course}
+                  onAddToCart={() => addToCart(course, "course")}
+                  onEdit={handleEditLecture}
+                  onDelete={handleDeleteLecture}
+                />
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
       <Container sx={{ py: 6 }}>
         <Paper
           elevation={2}
@@ -498,6 +709,94 @@ export default function Home() {
             </Button>
           </Box>
         </Paper>
+      </Container>
+
+      <Container sx={{ py: { xs: 4, md: 6 } }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "flex-start", sm: "center" },
+            mb: { xs: 2.5, md: 3.5 },
+            gap: 2,
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h4"
+              fontWeight={800}
+              sx={{
+                fontSize: { xs: "1.4rem", sm: "1.7rem", md: "2rem" },
+                color: "#02025e",
+              }}
+            >
+              Visit our Location
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 0.6,
+                color: "#6b7280",
+                maxWidth: "520px",
+                fontSize: { xs: "0.85rem", sm: "0.95rem" },
+              }}
+            >
+              Discover a welcoming space where music comes alive and learning
+              feels inspiring.
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            mb: { xs: 3, md: 4 },
+            p: { xs: 2, sm: 2.5 },
+            borderRadius: "14px",
+            background:
+              "linear-gradient(90deg, rgba(2,2,94,0.06), rgba(30,64,175,0.02))",
+            borderLeft: "4px solid #02025e",
+          }}
+        >
+          <Typography
+            sx={{
+              lineHeight: 1.9,
+              color: "#374151",
+              fontWeight: 400,
+              fontSize: { xs: "0.95rem", sm: "1.05rem", md: "1.1rem" },
+              letterSpacing: "0.2px",
+            }}
+          >
+            Visit our academy and experience music learning in a{" "}
+            <Box component="span" sx={{ fontWeight: 600, color: "#02025e" }}>
+              welcoming
+            </Box>
+            ,{" "}
+            <Box component="span" sx={{ fontWeight: 600, color: "#02025e" }}>
+              creative
+            </Box>{" "}
+            and{" "}
+            <Box component="span" sx={{ fontWeight: 600, color: "#02025e" }}>
+              inspiring
+            </Box>{" "}
+            environment. Our location is thoughtfully designed to provide
+            students with a comfortable space where passion meets practice.
+            <br />
+            <br />
+            Conveniently located in{" "}
+            <Box component="span" sx={{ fontWeight: 600, color: "#02025e" }}>
+              Indore
+            </Box>
+            , our academy is easily accessible and equipped with modern
+            classrooms, professional instruments, and expert mentors to guide
+            you at every step. Whether you're a beginner or an advanced learner,
+            we invite you to visit us and begin your musical journey with
+            confidence.
+          </Typography>
+        </Box>
+
+        <LocationMap city="Maestro Music Classes - Flute, Guitar, Piano & Singing Academy, Indore" />
       </Container>
     </div>
   );

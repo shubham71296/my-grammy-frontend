@@ -16,15 +16,8 @@ function DynamicOption({
   const navigate = useNavigate();
 
   const handleClick = () => {
-
     handleClose();
     let dialogInfo = { ..._dialogInfo, check: _check };
-    // if (_check === "view") {
-    //   dispatch(openDialogAction({ openDialog: true, selectedData, dialogInfo }));
-    // } else if (_check === "edit") {
-    // } else if (_check === "delete") {
-    //   dispatch(openDialogAction({ openDialog: true, selectedData, dialogInfo }));
-    // }
     dispatch(
       openDialogAction({
         openDialog: true,

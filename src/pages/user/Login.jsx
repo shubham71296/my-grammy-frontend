@@ -7,6 +7,8 @@ import {
   InputAdornment,
   Grid,
   CircularProgress,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { Email, Lock, LoginOutlined } from "@mui/icons-material";
 import userLoginInputs from "../../utils/user-login-inputs";
@@ -20,9 +22,11 @@ import InputText from "../../components/ui/inputs/InputText";
 import { useEffect, useState } from "react";
 import { getUserProfile, signIn } from "../../features/auth/authSlice";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [inputs, setInputs] = useState(userLoginInputs);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
@@ -75,28 +79,40 @@ export default function Login() {
           alignItems: "center",
           justifyContent: "center",
           bgcolor: "#8f9afaff",
-          p: 1,
+          p: { xs: 1.5, sm: 2 },
         }}
       >
         <Paper
           elevation={4}
           sx={{
-            p: 3,
+            p: { xs: 2, sm: 3 },
             borderRadius: 2,
             width: "100%",
-            maxWidth: 420,
+            maxWidth: { xs: "100%", sm: 420 },
           }}
         >
           <Typography
             variant="h5"
             fontWeight={700}
             gutterBottom
-            sx={{ color: "#1976d2", textAlign: "center" }}
+            sx={{
+              color: "#1976d2",
+              textAlign: "center",
+              fontSize: { xs: "1.3rem", sm: "1.6rem" },
+            }}
           >
             Welcome to Grammy
           </Typography>
 
-          <Typography variant="body2" mb={3} color="text.secondary">
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              textAlign: "center",
+              fontSize: { xs: "0.8rem", sm: "0.9rem" },
+              mb: { xs: 2, sm: 3 },
+            }}
+          >
             Please login to continue
           </Typography>
 
@@ -114,19 +130,24 @@ export default function Login() {
               return null;
             })}
 
-            {/* Submit */}
-
             <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
               <Button
                 variant="contained"
                 size="large"
                 fullWidth
-                //startIcon={<AddCircleRounded />}
                 disabled={loading}
                 startIcon={
-                  loading ? <CircularProgress size={20} /> : <LoginOutlined />
+                  loading ? (
+                    <CircularProgress size={isMobile ? 16 : 20} />
+                  ) : (
+                    <LoginOutlined />
+                  )
                 }
                 sx={{
+                  fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
+                  "& .MuiButton-startIcon > *": {
+                    fontSize: { xs: 18, sm: 20, md: 22 },
+                  },
                   transition: "0.3s",
                   backgroundColor: "#1976d2",
                   "&:hover": {
@@ -146,20 +167,40 @@ export default function Login() {
             </Box>
           </>
 
-          <Typography mt={3} variant="body2" color="text.secondary">
-            Forgot password?
-          </Typography>
+          <Box sx={{ mt: 2, textAlign: "center" }}>
+            <Typography
+              mt={3}
+              variant="body2"
+              color="primary"
+              component={Link}
+              to="/forgotpassword"
+              sx={{
+                fontSize: { xs: "0.8rem", sm: "0.9rem" },
+                cursor: "pointer",
+                textDecoration: "none",
+                "&:hover": {
+                  textDecoration: "underline !important",
+                },
+              }}
+            >
+              Forgot password?
+            </Typography>
+          </Box>
 
           <Typography
             mt={1}
             variant="body2"
             color="text.secondary"
             align="center"
+            sx={{
+              fontSize: { xs: "0.8rem", sm: "0.9rem" },
+            }}
           >
             Don’t have an account?{" "}
             <Typography
               component="span"
               sx={{
+                fontSize: { xs: "0.8rem", sm: "0.9rem" },
                 color: "#1976d2",
                 fontWeight: 600,
                 cursor: "pointer",

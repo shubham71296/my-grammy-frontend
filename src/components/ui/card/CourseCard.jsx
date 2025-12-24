@@ -55,22 +55,30 @@ export default function CourseCard({
   return (
     <Card
       sx={{
-        marginTop: 1,
-        width: 220,
-        borderRadius: 2,
+        mt: 1,
+        width: {
+          xs: "100%",
+          sm: 260,
+          md: 220,
+        },
+        borderRadius: { xs: 2, sm: 3 },
         overflow: "hidden",
-        background: "rgba(255,255,255,0.9)",
+        background: "rgba(255,255,255,0.95)",
         backdropFilter: "blur(8px)",
-        boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
-        transition: "all 0.35s ease",
+        boxShadow: {
+          xs: "0 4px 12px rgba(0,0,0,0.12)",
+          sm: "0 6px 20px rgba(0,0,0,0.15)",
+        },
+        transition: "all 0.3s ease",
         cursor: "pointer",
         "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: "0 16px 32px rgba(0,0,0,0.25)",
+          transform: { sm: "translateY(-4px)" },
+          boxShadow: {
+            sm: "0 16px 32px rgba(0,0,0,0.25)",
+          },
         },
       }}
     >
-      {/* Image Wrapper */}
       <Box sx={{ position: "relative" }}>
         <CardMedia
           component="img"
@@ -84,21 +92,19 @@ export default function CourseCard({
           }}
         />
 
-        {/* Play Icon */}
         <PlayCircleFilledWhiteIcon
           sx={{
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            fontSize: 42,
+            fontSize: { xs: 48, sm: 42 },
             color: "white",
-            opacity: 0.85,
+            opacity: 0.9,
           }}
         />
 
-        {/* Video Count Badge */}
-        <Box
+        {/* <Box
           sx={{
             position: "absolute",
             top: 8,
@@ -113,9 +119,8 @@ export default function CourseCard({
           }}
         >
           🎬 {videoCount} Videos
-        </Box>
+        </Box> */}
 
-        {/* Gradient Overlay */}
         <Box
           sx={{
             position: "absolute",
@@ -128,16 +133,15 @@ export default function CourseCard({
           }}
         />
 
-        {/* Title */}
         <Typography
           variant="subtitle1"
           sx={{
             position: "absolute",
             bottom: 10,
-            left: 14,
+            left: 12,
             color: "white",
             fontWeight: 700,
-            fontSize: "1rem",
+            fontSize: { xs: "0.9rem", sm: "1rem" },
             textShadow: "0px 2px 6px rgba(0,0,0,0.5)",
           }}
         >
@@ -145,8 +149,12 @@ export default function CourseCard({
         </Typography>
       </Box>
 
-      {/* Content */}
-      <CardContent sx={{}}>
+      <CardContent
+        sx={{
+          p: { xs: 1.4, sm: 1.8 },
+          position: "relative",
+        }}
+      >
         {type === "admin" ? (
           <IconButton
             onClick={handleMenuOpen}
@@ -166,22 +174,18 @@ export default function CourseCard({
           </IconButton>
         ) : null}
 
-        {/* Description */}
         <Typography
           variant="body1"
           color="text.secondary"
           sx={{
-            minHeight: 30,
-            //mb: 1,
-            fontSize: "0.82rem",
-            //lineHeight: 1.35,
+            fontSize: { xs: "0.75rem", sm: "0.82rem" },
+            color: "text.secondary",
+            lineHeight: 1.4,
           }}
         >
-          {/* {course.course_description.substring(0, 59) + "..."} */}
           {truncate(course.course_description, 55)}
         </Typography>
 
-        {/* Price + Instrument */}
         <Box
           sx={{
             display: "flex",
@@ -192,52 +196,49 @@ export default function CourseCard({
           }}
         >
           <Chip
-            label={course.isPurchased && type === "user" ? "FREE" : `${course.course_price} ₹`}
-            //label={`${course.course_price}  ₹`}
+            label={
+              course.isPurchased && type === "user"
+                ? "FREE"
+                : `${course.course_price} ₹`
+            }
             size="small"
             sx={{
+              height: { xs: 24, sm: 28 },
+              fontSize: { xs: "0.65rem", sm: "0.75rem" },
               fontWeight: 800,
               borderRadius: 2,
-              // background: "#fde6e3ff",
-              // color: "#a51106ff",
               background: course.isPurchased ? "#e6f4ea" : "#fde6e3ff",
-              color: course.isPurchased && type === "user" ? "#1e7e34" : "#a51106ff",
+              color:
+                course.isPurchased && type === "user" ? "#1e7e34" : "#a51106ff",
             }}
           />
         </Box>
 
-        {/* Buttons */}
         <Box
           sx={{
             display: "flex",
             gap: 1,
-            //mt: 1,
+            width: "100%",
           }}
         >
-          {/* View Details Button */}
           <Button
             variant="outlined"
             size="small"
+            fullWidth
             sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              minHeight: 32,
               textTransform: "none",
               borderRadius: "6px",
-              borderColor: "#1e88e5",
               color: "#1e88e5",
+              fontSize: { xs: "0.65rem", sm: "0.72rem" },
+              px: { xs: 1.2, sm: 1.6 },
+              py: 0.4,
               fontWeight: 700,
-              px: 1.6,
-              py: 0.3,
-              fontSize: "0.58rem",
               backdropFilter: "blur(4px)",
-              transition: "0.25s ease",
-              "&:hover": {
-                background: "linear-gradient(135deg, #2196f3, #1e88e5)",
-                borderColor: "transparent",
-                color: "#fff",
-                boxShadow: "0 4px 12px rgba(30,136,229,0.4)",
-                transform: "translateY(-2px)",
-              },
             }}
-            //onClick={() => type==="admin" ? navigate(`/admin/mycoursedetail/${course._id}`) : navigate("")}
             onClick={() =>
               type === "admin"
                 ? navigate(`/admin/mycoursedetail/${course._id}`)
@@ -247,62 +248,9 @@ export default function CourseCard({
             View Details
           </Button>
 
-          {/* Buy Course Button */}
-
-          {/* {type === "admin" ? null : course.isPurchased ? (
-             <Button
-              variant="contained"
-              size="small"
-              disabled
-              sx={{
-                textTransform: "none",
-                borderRadius: "6px",
-                background: "linear-gradient(135deg, #1e88e5, #4d81bdff)",
-                fontWeight: 700,
-                px: 1.6,
-                py: 0.3,
-                fontSize: "0.58rem",
-                boxShadow: "0 4px 10px rgba(21,101,192,0.35)",
-                transition: "0.25s ease",
-                "&:hover": {
-                  background: "linear-gradient(135deg, #0d47a1, #1976d2)",
-                  boxShadow: "0 5px 16px rgba(13,71,161,0.5)",
-                  transform: "translateY(-2px)",
-                },
-              }}
-            >
-              ✔ Purchased
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              size="small"
-              sx={{
-                textTransform: "none",
-                borderRadius: "6px",
-                background: "linear-gradient(135deg, #1e88e5, #4d81bdff)",
-                fontWeight: 700,
-                px: 1.6,
-                py: 0.3,
-                fontSize: "0.58rem",
-                boxShadow: "0 4px 10px rgba(21,101,192,0.35)",
-                transition: "0.25s ease",
-                "&:hover": {
-                  background: "linear-gradient(135deg, #0d47a1, #1976d2)",
-                  boxShadow: "0 5px 16px rgba(13,71,161,0.5)",
-                  transform: "translateY(-2px)",
-                },
-              }}
-              onClick={() => onAddToCart?.()}
-              //onClick={() => navigate(`/buy/${course._id}`)}
-            >
-              Add to cart
-            </Button>
-          )} */}
           {type !== "admin" &&
             (course.isPurchased ? (
               <Chip
-                //icon={<CheckCircle sx={{ color: "#1b5e20" }} />}
                 label="Purchased"
                 size="small"
                 sx={{
@@ -324,24 +272,28 @@ export default function CourseCard({
               <Button
                 variant="contained"
                 size="small"
+                fullWidth
                 sx={{
-                  textTransform: "none",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  minHeight: 32,
+                  fontSize: { xs: "0.65rem", sm: "0.72rem" },
+                  px: { xs: 1.2, sm: 1.6 },
+                  py: 0.4,
                   borderRadius: "6px",
+                  textTransform: "none",
                   background: "linear-gradient(135deg, #1e88e5, #4d81bdff)",
                   fontWeight: 700,
-                  px: 1.6,
-                  py: 0.3,
-                  fontSize: "0.58rem",
+
                   boxShadow: "0 4px 10px rgba(21,101,192,0.35)",
                   transition: "0.25s ease",
                   "&:hover": {
                     background: "linear-gradient(135deg, #0d47a1, #1976d2)",
                     boxShadow: "0 5px 16px rgba(13,71,161,0.5)",
-                    transform: "translateY(-2px)",
                   },
                 }}
                 onClick={() => onAddToCart?.()}
-                //onClick={() => navigate(`/buy/${course._id}`)}
               >
                 Add to cart
               </Button>
@@ -366,7 +318,6 @@ export default function CourseCard({
               alignItems: "center",
               px: 1,
               py: 0.5,
-              //bgcolor: "rgba(0,0,0,0.04)",
               borderBottom: "1px solid rgba(0,0,0,0.08)",
               borderTopLeftRadius: "8px",
               borderTopRightRadius: "8px",

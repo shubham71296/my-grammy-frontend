@@ -3,11 +3,6 @@ import { Box, Dialog, IconButton, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
-/**
- * DynamicVideoPreview
- * Props:
- *  - val: object or array of objects with { url, originalName, mimeType, size, ... }
- */
 const DynamicVideoPreview = ({ val }) => {
   if (!val) return null;
 
@@ -27,7 +22,6 @@ const DynamicVideoPreview = ({ val }) => {
 
   return (
     <>
-      {/* Thumbnails row */}
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
         {files.map((file, idx) => (
           <Box
@@ -44,12 +38,11 @@ const DynamicVideoPreview = ({ val }) => {
               transition: "0.3s",
               boxShadow: "0 6px 18px rgba(21, 101, 192, 0.12)",
               "&:hover": {
-                  transform: "scale(1.05)",
-                  boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
-                },
+                transform: "scale(1.05)",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
+              },
             }}
           >
-            {/* muted auto-preview for visual thumbnail (no controls) */}
             <video
               src={file.url}
               muted
@@ -62,7 +55,6 @@ const DynamicVideoPreview = ({ val }) => {
               }}
             />
 
-            {/* dark overlay for icon */}
             <Box
               sx={{
                 position: "absolute",
@@ -76,7 +68,6 @@ const DynamicVideoPreview = ({ val }) => {
               }}
             />
 
-            {/* play icon button */}
             <Tooltip title="Open video">
               <IconButton
                 onClick={(e) => {
@@ -102,7 +93,6 @@ const DynamicVideoPreview = ({ val }) => {
               </IconButton>
             </Tooltip>
 
-            {/* small filename badge */}
             <Box
               sx={{
                 position: "absolute",
@@ -127,7 +117,6 @@ const DynamicVideoPreview = ({ val }) => {
         ))}
       </Box>
 
-      {/* Fullscreen dialog */}
       <Dialog
         open={open}
         onClose={closeFull}
@@ -152,7 +141,6 @@ const DynamicVideoPreview = ({ val }) => {
             justifyContent: "center",
           }}
         >
-          {/* Floating close button */}
           <IconButton
             onClick={closeFull}
             aria-label="close"
@@ -170,7 +158,6 @@ const DynamicVideoPreview = ({ val }) => {
             <CloseIcon />
           </IconButton>
 
-          {/* Video element */}
           {activeVideo && (
             <video
               src={activeVideo.url}

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   DialogTitle,
@@ -35,7 +35,6 @@ export default function UserDialog() {
 
   const handleClose = () => dispatch(closeDialog());
 
-  /* ✅ FIX: formattedDate */
   const formattedDate = useMemo(() => {
     if (!user.createdAt) return "—";
     return new Date(user.createdAt).toLocaleString("en-IN", {
@@ -53,11 +52,9 @@ export default function UserDialog() {
     if (loading) return;
     try {
       setLoading(true);
-      // const response = await axios.delete(`/api/admin/deleteuser/${user._id}`);
       const response = await api.delete(`/admin/deleteuser/${user._id}`);
       dispatch(closeDialog());
       toast.success(response.data.msg);
-    //   navigate("/admin/myinstrumentslist");
       return response;
     } catch (err) {
       console.log("error", err);
@@ -68,174 +65,142 @@ export default function UserDialog() {
     }
   };
 
-  /* ===================== VIEW USER ===================== */
-//   if (dialogInfo?.check === "view_user") {
-//     return (
-//       <>
-//         <DialogTitle sx={{ display: "flex", justifyContent: "space-between" }}>
-//           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-//             <Box
-//               sx={{
-//                 width: 36,
-//                 height: 36,
-//                 borderRadius: "50%",
-//                 bgcolor: "primary.main",
-//                 display: "flex",
-//                 alignItems: "center",
-//                 justifyContent: "center",
-//                 color: "#fff",
-//               }}
-//             >
-//               <Visibility fontSize="small" />
-//             </Box>
-//             <Typography fontWeight={700}>View User</Typography>
-//           </Box>
-//           <IconButton onClick={handleClose}>
-//             <CloseRounded />
-//           </IconButton>
-//         </DialogTitle>
+  useEffect(() => {
+    if (loading) {
+      window.dispatchEvent(new CustomEvent("dialogLoading", { detail: true }));
+    } else {
+      window.dispatchEvent(new CustomEvent("dialogLoading", { detail: false }));
+    }
+  }, [loading]);
 
-//         <Divider />
-
-//         <DialogContent>
-//           <Stack spacing={2} alignItems="center">
-//             <Avatar sx={{ width: 72, height: 72 }}>
-//               {fullName?.charAt(0)?.toUpperCase() || "U"}
-//             </Avatar>
-
-//             <Box width="100%">
-//               <Info label="Name" value={fullName} />
-//               <Info label="Email" value={user.em} />
-//               <Info label="Phone" value={user.phone_number} />
-//               <Info label="Role" value={user.role} />
-//               <Info label="Address" value={user.address} />
-//               <Info label="Created At" value={formattedDate} />
-//             </Box>
-//           </Stack>
-//         </DialogContent>
-
-//         <DialogActions>
-//           <Button variant="outlined" onClick={handleClose}>
-//             Close
-//           </Button>
-//         </DialogActions>
-//       </>
-//     );
-//   }
-  
- /* ===================== VIEW USER ===================== */
-if (dialogInfo?.check === "view_user") {
-  return (
-    <>
-      {/* ===== Header ===== */}
-      <DialogTitle sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 38,
-              height: 38,
-              borderRadius: "50%",
-              bgcolor: "primary.main",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-            }}
-          >
-            <Visibility fontSize="small" />
-          </Box>
-          <Typography fontWeight={700} variant="h6">
-            User Details
-          </Typography>
-        </Box>
-        <IconButton onClick={handleClose}>
-          <CloseRounded />
-        </IconButton>
-      </DialogTitle>
-
-      <Divider />
-
-      <DialogContent sx={{ backgroundColor: "#f5f7fb" }}>
-        <Stack spacing={3}>
-          {/* ===== Profile Card ===== */}
-          <Paper
-            elevation={3}
-            sx={{
-              p: 3,
-              borderRadius: 3,
-              textAlign: "center",
-            }}
-          >
-            <Avatar
-              sx={{
-                width: 90,
-                height: 90,
-                mx: "auto",
-                mb: 1.5,
-                bgcolor: "primary.main",
-                fontSize: "2rem",
-                fontWeight: 700,
-              }}
-            >
-              {fullName?.charAt(0)?.toUpperCase() || "U"}
-            </Avatar>
-
-            <Typography variant="h6" fontWeight={700}>
-              {fullName}
-            </Typography>
-
-            <Typography
-              variant="caption"
-              sx={{
-                px: 2,
-                py: 0.5,
-                mt: 1,
-                display: "inline-block",
-                borderRadius: 2,
-                backgroundColor: "#e3f2fd",
-                color: "primary.main",
-                fontWeight: 600,
-              }}
-            >
-              {user.role?.toUpperCase()}
-            </Typography>
-          </Paper>
-
-          {/* ===== Details Card ===== */}
-          <Paper
-            elevation={2}
-            sx={{
-              p: 3,
-              borderRadius: 3,
-            }}
-          >
+  if (dialogInfo?.check === "view_user") {
+    return (
+      <>
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: 2,
+                width: { xs: 28, sm: 34, md: 36 },
+                height: { xs: 28, sm: 34, md: 36 },
+                borderRadius: "50%",
+                bgcolor: "primary.main",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
               }}
             >
-              <Info label="Email" value={user.em} />
-              <Info label="Phone" value={user.phone_number} />
-              <Info label="Address" value={user.address} />
-              <Info label="Created At" value={formattedDate} />
+              <Visibility
+                sx={{
+                  fontSize: { xs: 16, sm: 18, md: 20 },
+                }}
+              />
             </Box>
-          </Paper>
-        </Stack>
-      </DialogContent>
+            <Typography
+              sx={{
+                fontWeight: 700,
+                fontSize: {
+                  xs: "0.95rem",
+                  sm: "1.1rem",
+                  md: "1.25rem",
+                },
+              }}
+              variant="h6"
+            >
+              User Details
+            </Typography>
+          </Box>
+          <IconButton onClick={handleClose}>
+            <CloseRounded />
+          </IconButton>
+        </DialogTitle>
 
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button variant="outlined" onClick={handleClose}>
-          Close
-        </Button>
-      </DialogActions>
-    </>
-  );
-}
+        <Divider />
 
+        <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
+          <Stack spacing={3}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                borderRadius: 3,
+                textAlign: "center",
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: { xs: 70, sm: 90 },
+                  height: { xs: 70, sm: 90 },
+                  mx: "auto",
+                  mb: 1.5,
+                  bgcolor: "primary.main",
+                  fontSize: { xs: "1.5rem", sm: "2rem" },
+                  fontWeight: 700,
+                }}
+              >
+                {fullName?.charAt(0)?.toUpperCase() || "U"}
+              </Avatar>
 
-  /* ===================== DELETE USER ===================== */
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                sx={{
+                  fontSize: { xs: "1rem", sm: "1.15rem", md: "1.25rem" },
+                }}
+              >
+                {fullName}
+              </Typography>
+
+              <Typography
+                variant="caption"
+                sx={{
+                  px: 2,
+                  py: 0.5,
+                  mt: 1,
+                  display: "inline-block",
+                  borderRadius: 2,
+                  backgroundColor: "#e3f2fd",
+                  color: "primary.main",
+                  fontWeight: 600,
+                  fontSize: { xs: "0.7rem", sm: "0.75rem", md: "0.8rem" },
+                }}
+              >
+                {user.role?.toUpperCase()}
+              </Typography>
+            </Paper>
+
+            <Paper
+              elevation={2}
+              sx={{
+                p: 3,
+                borderRadius: 3,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                  gap: 2,
+                }}
+              >
+                <Info label="Email" value={user.em} />
+                <Info label="Phone" value={user.phone_number} />
+                <Info label="Address" value={user.address} />
+                <Info label="Created At" value={formattedDate} />
+              </Box>
+            </Paper>
+          </Stack>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="outlined" onClick={handleClose}>
+            Close
+          </Button>
+        </DialogActions>
+      </>
+    );
+  }
+
   if (dialogInfo?.check === "delete_user") {
     return (
       <>
@@ -243,8 +208,8 @@ if (dialogInfo?.check === "view_user") {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Box
               sx={{
-                width: 36,
-                height: 36,
+                width: { xs: 28, sm: 34, md: 36 },
+                height: { xs: 28, sm: 34, md: 36 },
                 borderRadius: "50%",
                 bgcolor: "error.main",
                 display: "flex",
@@ -253,9 +218,22 @@ if (dialogInfo?.check === "view_user") {
                 color: "#fff",
               }}
             >
-              <Delete fontSize="small" />
+              <Delete
+                sx={{
+                  fontSize: { xs: 16, sm: 18, md: 20 },
+                }}
+              />
             </Box>
-            <Typography fontWeight={700}>
+            <Typography
+              sx={{
+                fontWeight: 700,
+                fontSize: {
+                  xs: "0.9rem",
+                  sm: "1.05rem",
+                  md: "1.25rem",
+                },
+              }}
+            >
               Delete User - {fullName}
             </Typography>
           </Box>
@@ -267,7 +245,7 @@ if (dialogInfo?.check === "view_user") {
         <Divider />
 
         <DialogContent>
-          <Stack direction="row" spacing={2}>
+          <Stack direction="row" spacing={2} alignItems="center">
             <Box
               sx={{
                 bgcolor: "error.main",
@@ -279,10 +257,29 @@ if (dialogInfo?.check === "view_user") {
               <DeleteOutlineRounded />
             </Box>
             <Box>
-              <Typography fontWeight={700}>
+              <Typography
+                fontWeight={700}
+                sx={{
+                  fontWeight: 700,
+                  fontSize: {
+                    xs: "0.9rem",
+                    sm: "1.05rem",
+                    md: "1.25rem",
+                  },
+                }}
+              >
                 Are you sure you want to delete this user?
               </Typography>
-              <DialogContentText sx={{ mt: 1 }}>
+              <DialogContentText
+                sx={{
+                  mt: 1,
+                  fontSize: {
+                    xs: "0.9rem",
+                    sm: "1.05rem",
+                    md: "1.25rem",
+                  },
+                }}
+              >
                 This action cannot be undone.
               </DialogContentText>
             </Box>
@@ -296,29 +293,29 @@ if (dialogInfo?.check === "view_user") {
             variant="contained"
             color="error"
             disabled={loading}
-            startIcon={
-                loading ? <CircularProgress size={20} /> : <Delete />
-            }
+            startIcon={loading ? <CircularProgress size={20} /> : <Delete />}
             sx={{
-                transition: "0.3s",
-                backgroundColor: "#f71d49ff",
-                "&:hover": {
+              fontSize: { xs: "0.75rem", sm: "0.85rem", md: "0.95rem" },
+              transition: "0.3s",
+              backgroundColor: "#f71d49ff",
+              "&:hover": {
                 backgroundColor: "#a10d28ff",
                 transform: loading ? "none" : "scale(1.03)",
                 boxShadow: loading ? "none" : "0px 4px 12px rgba(0, 0, 0, 0.2)",
                 opacity: loading ? 0.8 : 1,
                 cursor: loading ? "not-allowed" : "pointer",
-                },
+              },
             }}
             onClick={handleDelete}
           >
             {loading ? "Deleting..." : "Delete Permanently"}
           </Button>
           <Button
-            onClick={handleClose} 
+            onClick={handleClose}
             variant="outlined"
             disabled={loading}
             sx={{
+              fontSize: { xs: "0.75rem", sm: "0.85rem", md: "0.95rem" },
               transition: "0.3s",
               "&:hover": {
                 transform: loading ? "none" : "scale(1.03)",
@@ -338,13 +335,34 @@ if (dialogInfo?.check === "view_user") {
   return null;
 }
 
-/* ===================== Helper ===================== */
 const Info = ({ label, value }) => (
   <Box sx={{ mb: 1 }}>
-    <Typography variant="caption" color="text.secondary" fontWeight={800}>
+    <Typography
+      variant="caption"
+      color="text.secondary"
+      fontWeight={800}
+      sx={{
+        fontSize: {
+          xs: "0.7rem",
+          sm: "0.75rem",
+          md: "0.8rem",
+        },
+      }}
+    >
       {label}
     </Typography>
-    <Typography variant="body1">
+    <Typography
+      variant="body1"
+      sx={{
+        fontSize: {
+          xs: "0.75rem",
+          sm: "0.95rem",
+          md: "1rem",
+        },
+        fontWeight: 500,
+        mt: 0.3,
+      }}
+    >
       {value || "—"}
     </Typography>
   </Box>

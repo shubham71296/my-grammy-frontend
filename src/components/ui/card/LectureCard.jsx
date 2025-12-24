@@ -19,7 +19,6 @@ const LectureCard = ({ lec, index, onPlay }) => {
       }}
     >
       <Grid item xs={12} sm={6} md={4}>
-        {/* Thumbnail Box */}
         <Box
           sx={{
             position: "relative",
@@ -34,7 +33,6 @@ const LectureCard = ({ lec, index, onPlay }) => {
             justifyContent: "center",
           }}
         >
-          {/* Play Icon */}
           <IconButton
             sx={{
               bgcolor: "white",
@@ -54,7 +52,6 @@ const LectureCard = ({ lec, index, onPlay }) => {
           </IconButton>
         </Box>
 
-        {/* Title */}
         <Box
           mt={1}
           sx={{

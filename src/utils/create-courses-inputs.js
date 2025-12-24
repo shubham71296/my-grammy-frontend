@@ -56,7 +56,7 @@ const createCoursesInputs = [
     _value: [],
     _type: "file",
     _placeholder: "Upload Thumbnail Images",
-    _helperText: "You can upload multiple Thumbnail images",
+    _helperText: "You can upload only one Thumbnail image",
     _mandatory: true,
     _multiple: true,
     _accept: "image/*",

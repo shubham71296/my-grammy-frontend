@@ -66,13 +66,13 @@
 //           setInputs([...tempInputs]);
 //           return;
 //         }
-        
+
 //         // const oldFiles = Array.isArray(tempInputs[i1]._value)
 //         // ? tempInputs[i1]._value
 //         // : [];
 //         // const allowsMultiple = !!p1._multiple;
-//         // tempInputs[i1]._value = allowsMultiple 
-//         // ? [...oldFiles, ...validFiles] 
+//         // tempInputs[i1]._value = allowsMultiple
+//         // ? [...oldFiles, ...validFiles]
 //         // : [...validFiles];
 //         // tempInputs[i1]._errorMsg = "";
 //         // setInputs([...tempInputs]);
@@ -119,7 +119,7 @@
 //             "Content-Type": "multipart/form-data",
 //           },
 //         });
-        
+
 //         const dataobj = response.data.data;
 //         toast.success(response.data.msg);
 //         setInputs(resetInputs(inputs));
@@ -139,7 +139,6 @@
 //       }
 //     }
 //   };
-
 
 //   useEffect(() => {
 //     getAllInstrumentsData(limit, offset, {}); // get all
@@ -178,7 +177,7 @@
 //   useEffect(() => {
 //       setInputs(resetInputs(inputs));
 //   }, []);
-  
+
 //   return (
 //     <Paper
 //       elevation={4}
@@ -295,8 +294,6 @@
 //   );
 // }
 
-
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -308,6 +305,9 @@ import {
   Divider,
   CircularProgress,
   LinearProgress,
+  useTheme,
+  useMediaQuery,
+  Backdrop,
 } from "@mui/material";
 
 import createCoursesInputs from "../../utils/create-courses-inputs";
@@ -337,20 +337,17 @@ export default function CreateCourse() {
   const [query] = useState({});
   const [inputs, setInputs] = useState(createCoursesInputs);
   const [loading, setLoading] = useState(false);
-  const [progressMap, setProgressMap] = useState({}); // { fileName: percent }
-  const [uploadedImagesMeta, setUploadedImagesMeta] = useState([]); // metadata to show
+  const [progressMap, setProgressMap] = useState({});
+  const [uploadedImagesMeta, setUploadedImagesMeta] = useState([]);
   const [uploadedVideosMeta, setUploadedVideosMeta] = useState([]);
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // const handleChange = async (e, p1, i1) => {
-  //   let tempInputs = [...inputs];
-  //   tempInputs[i1]._value = e.target.value;
-  //   tempInputs[i1]._errorMsg = "";
-  //   setInputs(tempInputs);
-  // };
-   const setProgress = (fileKey, percent) => setProgressMap((p) => ({ ...p, [fileKey]: percent }));
+  const setProgress = (fileKey, percent) =>
+    setProgressMap((p) => ({ ...p, [fileKey]: percent }));
 
-   const handleChange = async (e, p1, i1, updatedFiles = null) => {
+  const handleChange = async (e, p1, i1, updatedFiles = null) => {
     let tempInputs = [...inputs];
     if (p1._type === "file") {
       if (updatedFiles !== null) {
@@ -377,17 +374,7 @@ export default function CreateCourse() {
           setInputs([...tempInputs]);
           return;
         }
-        
-        // const oldFiles = Array.isArray(tempInputs[i1]._value)
-        // ? tempInputs[i1]._value
-        // : [];
-        // const allowsMultiple = !!p1._multiple;
-        // tempInputs[i1]._value = allowsMultiple 
-        // ? [...oldFiles, ...validFiles] 
-        // : [...validFiles];
-        // tempInputs[i1]._errorMsg = "";
-        // setInputs([...tempInputs]);
-        // if (e?.target) e.target.value = "";
+
         const firstValid = validFiles[0];
         tempInputs[i1]._value = [firstValid];
 
@@ -403,8 +390,6 @@ export default function CreateCourse() {
     setInputs(tempInputs);
   };
 
-  //checkcoursetitle
-
   const handleSubmit = async () => {
     if (loading) return;
     let obj1 = validateInputs(inputs);
@@ -418,18 +403,14 @@ export default function CreateCourse() {
         const title = titleField?._value?.trim();
 
         try {
-          // check = await axios.post("/api/admin/checkcoursetitle", {
-          //   course_title: title,
-          // });
           check = await api.post("/admin/checkcoursetitle", {
             course_title: title,
           });
         } catch (err) {
-          // Title exists OR server error
           const msg = err?.response?.data?.msg || "Title error";
           toast.error(msg);
           setLoading(false);
-          return; // stop submit
+          return;
         }
 
         if (!check.data.success) {
@@ -441,35 +422,36 @@ export default function CreateCourse() {
         const payload = {};
         let imageFiles = [];
         inputs.forEach((item) => {
-        if (item._type === "file") {
-          if (item._key === "thumbnail_image" && Array.isArray(item._value)) imageFiles = item._value;
-        } else {
-          payload[item._key] = item._value;
-        }
-       });
-       let uploadedImages = [];
+          if (item._type === "file") {
+            if (item._key === "thumbnail_image" && Array.isArray(item._value))
+              imageFiles = item._value;
+          } else {
+            payload[item._key] = item._value;
+          }
+        });
+        let uploadedImages = [];
 
-       if (imageFiles.length > 0) {
-          const presigned = await presignSmallUploads(imageFiles, "public-course-thumbnails");
-  
-          // Create tasks for parallel upload with retry
+        if (imageFiles.length > 0) {
+          const presigned = await presignSmallUploads(
+            imageFiles,
+            "public-course-thumbnails"
+          );
+
           const tasks = presigned.map((meta, idx) => async () => {
             const file = imageFiles[idx];
-            // const uploaded = await uploadToPresignedUrl(meta, file);
-            // setProgress(file.name, 100); // update progress instantly
+
             const uploaded = await uploadToPresignedUrl(meta, file, (pct) =>
               setProgress(file.name, pct)
             );
             return uploaded;
           });
-  
-          // Upload in batches of 4 (adjust batchSize if needed)
+
           uploadedImages = await uploadInBatches(tasks, 4);
           setUploadedImagesMeta(uploadedImages);
         }
-        payload.thumbnail_image = uploadedImages;        
-        // const response = await axios.post("/api/admin/createcourse", payload);   
-        const response = await api.post("/admin/createcourse", payload);       
+        payload.thumbnail_image = uploadedImages;
+
+        const response = await api.post("/admin/createcourse", payload);
         const dataobj = response.data.data;
         toast.success(response.data.msg);
         setInputs(resetInputs(inputs));
@@ -477,7 +459,7 @@ export default function CreateCourse() {
           state: {
             course_id: dataobj._id,
             course_title: dataobj.course_title,
-          }
+          },
         });
         return response;
       } catch (err) {
@@ -490,9 +472,8 @@ export default function CreateCourse() {
     }
   };
 
-
   useEffect(() => {
-    getAllInstrumentsData(limit, offset, {}); // get all
+    getAllInstrumentsData(limit, offset, {});
   }, []);
 
   const getAllInstrumentsData = async (limitVal, offsetVal, queryVal = {}) => {
@@ -510,14 +491,12 @@ export default function CreateCourse() {
       const response = await api.post("/admin/allinstumnts", body);
       const instrumentOptions = response.data.data.map((item) => ({
         label: item.instrument_title,
-        value: item._id
+        value: item._id,
       }));
 
       setInputs((prevInputs) =>
         prevInputs.map((p) =>
-          p._key === "instrument"
-            ? { ...p, _options: instrumentOptions }
-            : p
+          p._key === "instrument" ? { ...p, _options: instrumentOptions } : p
         )
       );
     } catch (error) {
@@ -526,138 +505,184 @@ export default function CreateCourse() {
   };
 
   useEffect(() => {
-      setInputs(resetInputs(inputs));
+    setInputs(resetInputs(inputs));
   }, []);
-  
+
   return (
-    <Paper
-      elevation={4}
-      sx={{
-        p: 3,
-        borderRadius: 2,
-      }}
-    >
-      <Box mb={3}>
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 600,
-            letterSpacing: "0.5px",
-            color: "#1976d2",
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <MenuBook />
-          Create Courses
+    <>
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 999,
+          flexDirection: "column",
+          gap: 2,
+        }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+        <Typography sx={{ fontSize: "0.9rem", mt: 1 }}>
+          Uploading & Processing…
         </Typography>
+      </Backdrop>
 
-        <Divider
-          sx={{
-            mt: 1,
-            mb: 5,
-            borderColor: "#1976d2",
-            borderWidth: "1px",
-            borderRadius: 1,
-          }}
-        />
-      </Box>
-
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        {inputs.map((p1, i1) => {
-          if (p1._type === "dropdown") {
-            return (
-              <Grid item size={{ lg: 6, md: 12, sm: 12 }} key={i1}>
-                <DropDown
-                  {...p1}
-                  onChange={(event) => handleChange(event, p1, i1)}
-                />
-              </Grid>
-            );
-          }
-          if (["text", "number", "password"].includes(p1._type)) {
-            return (
-              <Grid item size={{ lg: 6, md: 12, sm: 12 }} key={i1}>
-                <InputText
-                  {...p1}
-                  onChange={(event) => handleChange(event, p1, i1)}
-                />
-              </Grid>
-            );
-          }
-
-          if (p1._type === "file") {
-            return (
-              <Grid item size={{ lg: 6, md: 12, sm: 12 }} key={i1}>
-                <InputFile
-                  {...p1}
-                  onChange={(event) => handleChange(event, p1, i1)}
-                />
-
-                <FilePreview
-                  files={p1._value}
-                  onRemove={(fileIndex) => {
-                    const updatedFiles = p1._value.filter(
-                      (_, idx) => idx !== fileIndex
-                    );
-                    handleChange(null, p1, i1, updatedFiles);
-                  }}
-                />
-                {Array.isArray(p1._value) &&
-                  p1._value.map((f, idx) => (
-                    <Box key={f.name + idx} sx={{ mt: 1 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                        <div style={{ fontSize: 12 }}>{f.name}</div>
-                        <div style={{ fontSize: 12 }}>{progressMap[f.name] ? `${progressMap[f.name]}%` : ""}</div>
-                      </div>
-                      <LinearProgress variant="determinate" value={progressMap[f.name] || 0} sx={{ mt: 0.5 }} />
-                    </Box>
-                  ))}
-              </Grid>
-            );
-          }
-
-          return null;
-        })}
-
-        {/* Submit */}
-        <Grid item size={{ lg: 6, md: 12, sm: 12 }}>
-          <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-            <Button
-              variant="contained"
-              size="large"
-              fullWidth
-              //startIcon={<AddCircleRounded />}
-              disabled={loading}
-              startIcon={
-                loading ? <CircularProgress size={20} /> : <AddCircleRounded />
-              }
+      <Paper
+        elevation={4}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+        }}
+      >
+        <Box mb={3}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 600,
+              fontSize: {
+                xs: "1rem",
+                sm: "1.2rem",
+                md: "1.5rem",
+              },
+              letterSpacing: "0.5px",
+              color: "#1976d2",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <MenuBook
               sx={{
-                transition: "0.3s",
-                backgroundColor: "#1976d2",
-                "&:hover": {
-                  backgroundColor: "#125aa0",
-                  transform: loading ? "none" : "scale(1.03)",
-                  boxShadow: loading ? "none" : "0px 4px 12px rgba(0,0,0,0.2)",
-                  opacity: loading ? 0.8 : 1,
-                  cursor: loading ? "not-allowed" : "pointer",
+                fontSize: {
+                  xs: "1.1rem",
+                  sm: "1.4rem",
+                  md: "1.6rem",
                 },
+                flexShrink: 0,
               }}
-              onClick={handleSubmit}
-            >
-              {loading ? "Creating..." : "Create Courses"}
-            </Button>
-          </Box>
+            />
+            Create Courses
+          </Typography>
+
+          <Divider
+            sx={{
+              mt: 1.5,
+              mb: 1.5,
+              borderColor: "#1976d2",
+              borderWidth: "1px",
+              borderRadius: 1,
+            }}
+          />
+        </Box>
+
+        <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+          {inputs.map((p1, i1) => {
+            if (p1._type === "dropdown") {
+              return (
+                <Grid size={{ xs: 12, md: 12, lg: 6 }} sx={{ mb: 1 }} key={i1}>
+                  <DropDown
+                    {...p1}
+                    onChange={(event) => handleChange(event, p1, i1)}
+                  />
+                </Grid>
+              );
+            }
+            if (["text", "number", "password"].includes(p1._type)) {
+              return (
+                <Grid size={{ xs: 12, md: 12, lg: 6 }} key={i1}>
+                  <InputText
+                    {...p1}
+                    onChange={(event) => handleChange(event, p1, i1)}
+                  />
+                </Grid>
+              );
+            }
+
+            if (p1._type === "file") {
+              return (
+                <Grid size={{ xs: 12, md: 12, lg: 6 }} key={i1}>
+                  <InputFile
+                    {...p1}
+                    onChange={(event) => handleChange(event, p1, i1)}
+                  />
+
+                  <FilePreview
+                    files={p1._value}
+                    onRemove={(fileIndex) => {
+                      const updatedFiles = p1._value.filter(
+                        (_, idx) => idx !== fileIndex
+                      );
+                      handleChange(null, p1, i1, updatedFiles);
+                    }}
+                  />
+                  {Array.isArray(p1._value) &&
+                    p1._value.map((f, idx) => (
+                      <Box key={f.name + idx} sx={{ mt: 1 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 8,
+                          }}
+                        >
+                          <div style={{ fontSize: 12 }}>{f.name}</div>
+                          <div style={{ fontSize: 12 }}>
+                            {progressMap[f.name]
+                              ? `${progressMap[f.name]}%`
+                              : ""}
+                          </div>
+                        </div>
+                        <LinearProgress
+                          variant="determinate"
+                          value={progressMap[f.name] || 0}
+                          sx={{ mt: 0.5 }}
+                        />
+                      </Box>
+                    ))}
+                </Grid>
+              );
+            }
+
+            return null;
+          })}
+
+          <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+            <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+              <Button
+                variant="contained"
+                size="large"
+                fullWidth
+                disabled={loading}
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={isMobile ? 16 : 20} />
+                  ) : (
+                    <AddCircleRounded />
+                  )
+                }
+                sx={{
+                  fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
+                  "& .MuiButton-startIcon > *": {
+                    fontSize: { xs: 18, sm: 20, md: 22 },
+                  },
+                  transition: "0.3s",
+                  backgroundColor: "#1976d2",
+                  "&:hover": {
+                    backgroundColor: "#125aa0",
+                    transform: loading ? "none" : "scale(1.03)",
+                    boxShadow: loading
+                      ? "none"
+                      : "0px 4px 12px rgba(0,0,0,0.2)",
+                    opacity: loading ? 0.8 : 1,
+                    cursor: loading ? "not-allowed" : "pointer",
+                  },
+                }}
+                onClick={handleSubmit}
+              >
+                {loading ? "Creating..." : "Create Courses"}
+              </Button>
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
-    </Paper>
+      </Paper>
+    </>
   );
 }
-
-
-
-
-
-
-

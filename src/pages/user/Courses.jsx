@@ -1,4 +1,3 @@
-// src/pages/Courses.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -19,7 +18,6 @@ import toast from "react-hot-toast";
 import { MenuBook } from "@mui/icons-material";
 import api from "../../api/axios";
 
-
 const Courses = () => {
   const { token } = useSelector((state) => state.auth);
   const [courseList, setCourseList] = useState([]);
@@ -32,25 +30,10 @@ const Courses = () => {
 
   const addToCart = async (item, type) => {
     try {
-      // const response = await axios.post(
-      //   "/api/user/addtocart",
-      //   {
-      //     productId: item._id,
-      //     productType: type,
-      //   },
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${token}`,
-      //     },
-      //   }
-      // );
-      const response = await api.post(
-        "/user/addtocart",
-        {
-          productId: item._id,
-          productType: type,
-        }
-      );
+      const response = await api.post("/user/addtocart", {
+        productId: item._id,
+        productType: type,
+      });
       toast.success(response.data.msg);
       dispatch(increaseCartCount());
     } catch (err) {
@@ -64,7 +47,6 @@ const Courses = () => {
     getAllCoursesData({});
   }, []);
 
-  // Fetch API
   const getAllCoursesData = async (queryVal = {}) => {
     try {
       const body = {
@@ -77,11 +59,6 @@ const Courses = () => {
         },
       };
 
-      // const response = await axios.post("/api/admin/allcourses", body, {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // });
       const response = await api.post("/admin/allcourses", body);
       setCourseList(response.data.data || []);
     } catch (error) {
@@ -89,7 +66,6 @@ const Courses = () => {
     }
   };
 
-  // When user types in search
   useEffect(() => {
     const q = search.trim();
 
@@ -100,11 +76,9 @@ const Courses = () => {
 
     const queryObj = {};
 
-    // If numeric → treat as price
     if (!isNaN(q)) {
       queryObj.course_price = Number(q);
     } else {
-      // Search title using regex
       queryObj.course_title = { $regex: q, $options: "i" };
     }
 
@@ -115,7 +89,6 @@ const Courses = () => {
     <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 6 }}>
       <Container maxWidth="lg">
         <Paper elevation={4} sx={{ p: 3, borderRadius: 3 }}>
-          {/* Header */}
           <Typography
             variant="h5"
             sx={{
@@ -123,84 +96,123 @@ const Courses = () => {
               color: "#1976d2",
               display: "flex",
               alignItems: "center",
-              fontSize: { xs: "1.1rem", sm: "1.4rem" },
-              gap: 1,
-              mb: 1,
+              flexWrap: "wrap",
+              gap: { xs: 0.8, sm: 1 },
+              fontSize: {
+                xs: "1rem",
+                sm: "1.2rem",
+                md: "1.5rem",
+              },
+              lineHeight: 1.2,
+              letterSpacing: { xs: "0.2px", sm: "0.5px" },
             }}
           >
-            <MenuBook />
+            <MenuBook
+              sx={{
+                fontSize: {
+                  xs: "1.1rem",
+                  sm: "1.4rem",
+                  md: "1.6rem",
+                },
+                flexShrink: 0,
+              }}
+            />
             Courses
           </Typography>
 
-          <Divider sx={{ mb: 3 }} />
+          <Divider
+            sx={{
+              mt: 1.5,
+              mb: 1.5,
+              borderColor: "#1976d2",
+              borderWidth: "1px",
+              borderRadius: 1,
+            }}
+          />
 
-              <Paper
-                elevation={2}
-                sx={{
-                  p: 2,
-                  borderRadius: 2,
-                  mb: 3,
-                  background: "white",
-                }}
-              >
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: "bold", mb: 1, color: "primary.main" }}
-                >
-                  Search Courses
-                </Typography>
+          <Paper
+            elevation={2}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: { xs: 1.5, sm: 2 },
+              mb: { xs: 2, sm: 3 },
+              background: "white",
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: 700,
+                mb: { xs: 0.8, sm: 1 },
+                color: "primary.main",
+                fontSize: {
+                  xs: "0.9rem",
+                  sm: "1.05rem",
+                  md: "1.1rem",
+                },
+              }}
+            >
+              Search Courses
+            </Typography>
 
-                <TextField
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search courses by title or price..."
-                  size="small"
-                  fullWidth
-                  sx={{ width: { xs: "100%", sm: 500 } }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Paper>
+            <TextField
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search courses by title or price..."
+              size="small"
+              fullWidth
+              sx={{
+                width: "100%",
+                maxWidth: { sm: 420, md: 500 },
+                mx: "auto",
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon
+                      sx={{
+                        fontSize: { xs: 18, sm: 20 },
+                        color: "action.active",
+                      }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Paper>
 
-              {/* List Header */}
-              <Box sx={{ mt: 2 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 600,
-                    letterSpacing: "0.5px",
-                    color: "#1976d2",
-                    borderLeft: "5px solid #1976d2",
-                    fontSize: { xs: "1rem", sm: "1.25rem" },
-                    pl: 2,
-                  }}
-                >
-                  List of Courses
-                </Typography>
-                <Divider />
-              </Box>
-      
+          <Box sx={{ mt: 2 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                letterSpacing: { xs: "0.2px", sm: "0.5px" },
+                color: "#1976d2",
+                borderLeft: {
+                  xs: "3px solid #1976d2",
+                  sm: "5px solid #1976d2",
+                },
+                pl: { xs: 1.2, sm: 2 },
+                fontSize: {
+                  xs: "0.9rem",
+                  sm: "1.15rem",
+                  md: "1.25rem",
+                },
 
-          {/* Search */}
+                display: "flex",
+                alignItems: "center",
+                minHeight: { xs: 36, sm: 44 },
+              }}
+            >
+              List of Courses
+            </Typography>
+            <Divider />
+          </Box>
 
-          {/* Card List */}
           <Grid container spacing={3} mt={2}>
             {courseList.length > 0 ? (
               courseList.map((course, idx) => (
-                <Grid item xs={12} sm={6} md={4} key={course.id}>
-                  {/* <CommonCard
-                    title={course.title}
-                    description={course.description}
-                    image={course.image}
-                    price={course.price}
-                    navTo={`/courses/${course.id}`}
-                  /> */}
-
+                <Grid item xs={12} sm={6} md={4} key={course._id}>
                   <CourseCard
                     type="user"
                     idx={idx}
@@ -230,4 +242,3 @@ const Courses = () => {
 };
 
 export default Courses;
-

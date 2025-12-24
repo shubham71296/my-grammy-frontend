@@ -11,33 +11,39 @@ import {
 import { useNavigate } from "react-router-dom";
 import { truncate } from "../../../utils/common-util";
 
-// const CommonCard = ({ title, description, image, price, navTo }) => {
-const CommonCard = ({it, idx, navTo, onAddToCart }) => {
+const CommonCard = ({ it, idx, navTo, onAddToCart }) => {
   const navigate = useNavigate();
 
   return (
     <Card
       key={idx}
       sx={{
-        //maxWidth: 250,
-        //height: 300,
-        width: 220,
+        width: {
+          xs: "100%",
+          sm: 240,
+          md: 220,
+        },
+        maxWidth: "100%",
         display: "flex",
         flexDirection: "column",
-        borderRadius: 3,
+        borderRadius: { xs: 2, sm: 3 },
         overflow: "hidden",
-        background: "rgba(255,255,255,0.8)",
+        background: "rgba(255,255,255,0.85)",
         backdropFilter: "blur(6px)",
-        boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
-        transition: "all .35s ease",
+        boxShadow: {
+          xs: "0 6px 14px rgba(0,0,0,0.12)",
+          sm: "0 10px 25px rgba(0,0,0,0.12)",
+        },
+        transition: "all .3s ease",
         cursor: "pointer",
         "&:hover": {
-          transform: "translateY(-6px)",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.22)",
+          transform: { sm: "translateY(-6px)" },
+          boxShadow: {
+            sm: "0 20px 40px rgba(0,0,0,0.22)",
+          },
         },
       }}
     >
-      {/* ⭐ Image Section */}
       <Box sx={{ position: "relative" }}>
         <CardMedia
           component="img"
@@ -52,7 +58,6 @@ const CommonCard = ({it, idx, navTo, onAddToCart }) => {
           }}
         />
 
-        {/* Price Tag Floating */}
         <Box
           sx={{
             position: "absolute",
@@ -70,14 +75,12 @@ const CommonCard = ({it, idx, navTo, onAddToCart }) => {
             overflow: "hidden",
             zIndex: 2,
 
-            // Hover Shine Glow
             transition: "0.35s ease",
             "&:hover": {
               transform: "scale(1.08)",
               boxShadow: "0px 6px 22px rgba(0,255,0,0.65)",
             },
 
-            // ✨ Shining Swipe Animation
             "&::after": {
               content: '""',
               position: "absolute",
@@ -101,7 +104,6 @@ const CommonCard = ({it, idx, navTo, onAddToCart }) => {
           ₹{it?.instrument_price?.toLocaleString()}
         </Box>
 
-        {/* Soft Gradient Overlay */}
         <Box
           sx={{
             position: "absolute",
@@ -113,18 +115,17 @@ const CommonCard = ({it, idx, navTo, onAddToCart }) => {
         />
       </Box>
 
-      {/* ⭐ Content Section */}
       <CardContent sx={{ p: 1.6 }}>
         <Typography
           variant="subtitle1"
           fontWeight={700}
           sx={{
-            fontSize: "1rem",
+            fontSize: { xs: "0.95rem", sm: "1rem" },
             color: "#151557",
+            mb: 0.6,
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
-            mb: 0.8,
           }}
         >
           {it?.instrument_title}
@@ -133,67 +134,47 @@ const CommonCard = ({it, idx, navTo, onAddToCart }) => {
         <Typography
           variant="body2"
           sx={{
-            fontSize: "0.82rem",
-            // lineHeight: 1.45,
-            // height: 38,
-            overflow: "hidden",
+            fontSize: { xs: "0.75rem", sm: "0.82rem" },
             color: "text.secondary",
+            lineHeight: 1.4,
           }}
         >
           {truncate(it?.instrurment_description, 55)}
-          {/* {it?.instrurment_description} */}
         </Typography>
       </CardContent>
 
-      {/* ⭐ Actions */}
       <CardActions
         sx={{
-          px: 1.6,
-          pb: 1.6,
-          display: "flex",
+          px: { xs: 1.2, sm: 1.6 },
+          pb: { xs: 1.2, sm: 1.6 },
+          gap: 1,
           justifyContent: "space-between",
         }}
       >
-        {/* View Details */}
         <Button
           size="small"
           variant="outlined"
           onClick={() => navigate(navTo)}
           sx={{
-            textTransform: "none",
-            borderRadius: "10px",
-            borderColor: "#1e40af",
-            color: "#1e40af",
+            fontSize: { xs: "0.7rem", sm: "0.74rem" },
+            px: { xs: 1.2, sm: 1.8 },
+            borderRadius: "8px",
             fontWeight: 700,
-            px: 1.8,
-            py: 0.4,
-            fontSize: "0.74rem",
-            transition: ".25s ease",
-            "&:hover": {
-              background: "#1e40af",
-              color: "#fff",
-              boxShadow: "0 4px 12px rgba(30,64,175,0.35)",
-            },
           }}
         >
           View
         </Button>
 
-        {/* Add to Cart */}
         <Button
           size="small"
           variant="contained"
           onClick={() => onAddToCart()}
           sx={{
-            textTransform: "none",
-            borderRadius: "10px",
-            background: "linear-gradient(135deg, #6366f1, #4338ca)",
+            fontSize: { xs: "0.7rem", sm: "0.74rem" },
+            px: { xs: 1.2, sm: 1.8 },
+            borderRadius: "8px",
             fontWeight: 700,
-            px: 1.8,
-            py: 0.4,
-            fontSize: "0.74rem",
-            transition: ".25s ease",
-            boxShadow: "0 4px 12px rgba(67,56,202,0.35)",
+            background: "linear-gradient(135deg, #6366f1, #4338ca)",
             "&:hover": {
               background: "linear-gradient(135deg, #4338ca, #312e81)",
               boxShadow: "0 6px 18px rgba(49,46,129,0.5)",

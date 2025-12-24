@@ -25,7 +25,6 @@ export default function FilePreview({ files, onRemove }) {
               width: 100,
             }}
           >
-            {/* Remove Icon */}
             <span
               style={{
                 position: "absolute",
@@ -58,7 +57,6 @@ export default function FilePreview({ files, onRemove }) {
               </Tooltip>
             </span>
 
-            {/* Thumbnail Preview */}
             {fileType.startsWith("image/") ? (
               <img
                 src={previewURL}
@@ -71,32 +69,21 @@ export default function FilePreview({ files, onRemove }) {
                 }}
               />
             ) : fileType.startsWith("video/") ? (
-              // <video
-              //   src={previewURL}
-              //   controls
-              //   style={{
-              //     width: "100%",
-              //     height: 80,
-              //     borderRadius: 4,
-              //     objectFit: "cover",
-              //   }}
-              // />
               <Box
-    sx={{
-      width: "100%",
-      height: 80,
-      borderRadius: 2,
-      bgcolor: "#000",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "white",
-      fontSize: 30,
-    }}
-  >
-    {/* 🎥 */}
-    <VideoLibrary fontSize="medium" />
-  </Box>
+                sx={{
+                  width: "100%",
+                  height: 80,
+                  borderRadius: 2,
+                  bgcolor: "#000",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontSize: 30,
+                }}
+              >
+                <VideoLibrary fontSize="medium" />
+              </Box>
             ) : fileType === "application/pdf" ? (
               <Box
                 sx={{
@@ -120,7 +107,6 @@ export default function FilePreview({ files, onRemove }) {
               </Box>
             )}
 
-            {/* File name */}
             <Box
               sx={{
                 fontSize: 12,
@@ -139,4 +125,3 @@ export default function FilePreview({ files, onRemove }) {
     </Box>
   );
 }
-

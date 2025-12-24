@@ -13,9 +13,6 @@ import { setTotalCount } from "../../features/dataCountSlice";
 import AppDialog from "../../components/ui/dialog/AppDialog";
 import api from "../../api/axios";
 
-
-//import MyInstrumentsFilter from './MyInstrumentsFilter';
-
 function MyInstrumentsList() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { countTotalData } = useSelector((state) => state.dataCount);
@@ -48,7 +45,6 @@ function MyInstrumentsList() {
     });
     setActiveQuery(newQuery);
     const currentLimit = getCurrentLimitFromUrl();
-    // getData(state.limit, state.offset, newQuery);
     getData(currentLimit, 0, newQuery);
   };
 
@@ -56,10 +52,7 @@ function MyInstrumentsList() {
     const resetInputs = inputs.map((i) => ({ ...i, _value: "" }));
     setInputs(resetInputs);
     setActiveQuery({});
-    // const currentLimit = getCurrentLimitFromUrl();
-    //getData(state.limit, state.offset, {});
     getData(state.limit, 0, {});
-    // getData(currentLimit, 0, {});
   };
 
   const getData = async (limit, offset, query = activeQuery) => {
@@ -68,7 +61,7 @@ function MyInstrumentsList() {
       projection: { pwd: 0 },
       options: { skip: offset, limit, sort: { createdAt: -1 } },
     };
-    // const response = await axios.post("/api/admin/allinstumnts", body);
+
     const response = await api.post("/admin/allinstumnts", body);
     const res = response.data;
     if (res.success) {
@@ -107,7 +100,7 @@ function MyInstrumentsList() {
     },
     baseRoute: "/admin/myinstrumentslist",
     textLabel: "Instrument",
-    buttonRoute: "/admin/addinstruments"
+    buttonRoute: "/admin/addinstruments",
   };
 
   return (
@@ -122,6 +115,11 @@ function MyInstrumentsList() {
         <Typography
           variant="h5"
           sx={{
+            fontSize: {
+              xs: "1rem",
+              sm: "1.2rem",
+              md: "1.5rem",
+            },
             fontWeight: 600,
             letterSpacing: "0.5px",
             color: "#1976d2",
@@ -130,14 +128,23 @@ function MyInstrumentsList() {
             gap: 1,
           }}
         >
-          <LibraryMusic />
+          <LibraryMusic
+            sx={{
+              fontSize: {
+                xs: "1.1rem",
+                sm: "1.4rem",
+                md: "1.6rem",
+              },
+              flexShrink: 0,
+            }}
+          />
           My Instruments
         </Typography>
 
         <Divider
           sx={{
-            mt: 1,
-            mb: 5,
+            mt: 1.5,
+            mb: 1.5,
             borderColor: "#1976d2",
             borderWidth: "1px",
             borderRadius: 1,

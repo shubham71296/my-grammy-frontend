@@ -1,4 +1,3 @@
-// InstrumentDetail.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
@@ -14,17 +13,11 @@ import {
   Paper,
   Chip,
 } from "@mui/material";
-import axios from "axios";
-import {
-  ArrowBack,
-  LibraryMusic,
-  ShoppingCart,
-} from "@mui/icons-material";
+import { ArrowBack, LibraryMusic, ShoppingCart } from "@mui/icons-material";
 import api from "../../api/axios";
 import toast from "react-hot-toast";
 import { increaseCartCount } from "../../features/cartSlice";
 import { useDispatch } from "react-redux";
-
 
 const InstrumentDetail = () => {
   const dispatch = useDispatch();
@@ -40,8 +33,7 @@ const InstrumentDetail = () => {
 
   const getInstrumentDetails = async (id) => {
     try {
-      // const response = await axios.get(`/api/admin/instumntbyid/${id}`);
-       const response = await api.get(`/admin/instumntbyid/${id}`);
+      const response = await api.get(`/admin/instumntbyid/${id}`);
       const data = response.data?.data;
       setInstrument(data);
 
@@ -54,22 +46,19 @@ const InstrumentDetail = () => {
   };
 
   const addToCart = async (item, type) => {
-      try {
-        const response = await api.post(
-          "/user/addtocart",
-          {
-            productId: item._id,
-            productType: type,
-          }
-        );
-        toast.success(response.data.msg);
-        dispatch(increaseCartCount());
-      } catch (err) {
-        console.log("error", err);
-        const errorMsg = err?.response?.data?.msg || "Something went wrong!";
-        toast.error(errorMsg);
-      }
-    };
+    try {
+      const response = await api.post("/user/addtocart", {
+        productId: item._id,
+        productType: type,
+      });
+      toast.success(response.data.msg);
+      dispatch(increaseCartCount());
+    } catch (err) {
+      console.log("error", err);
+      const errorMsg = err?.response?.data?.msg || "Something went wrong!";
+      toast.error(errorMsg);
+    }
+  };
 
   if (!instrument) {
     return (
@@ -77,7 +66,11 @@ const InstrumentDetail = () => {
         <Typography variant="h6" color="error">
           Instrument not found.
         </Typography>
-        <Button sx={{ mt: 2 }} variant="contained" onClick={() => navigate("/instruments")}>
+        <Button
+          sx={{ mt: 2 }}
+          variant="contained"
+          onClick={() => navigate("/instruments")}
+        >
           Go Back
         </Button>
       </Container>
@@ -88,22 +81,35 @@ const InstrumentDetail = () => {
     <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 6 }}>
       <Container maxWidth="lg">
         <Paper elevation={4} sx={{ p: 3, borderRadius: 2 }}>
-          {/* Header */}
           <Box mb={3}>
             <Typography
               variant="h5"
               sx={{
                 fontWeight: 600,
-                letterSpacing: "0.5px",
                 color: "#1976d2",
                 display: "flex",
                 alignItems: "center",
                 flexWrap: "wrap",
-                gap: 1,
-                fontSize: { xs: "1.1rem", sm: "1.4rem" },
+                gap: { xs: 0.8, sm: 1 },
+                fontSize: {
+                  xs: "1rem",
+                  sm: "1.2rem",
+                  md: "1.5rem",
+                },
+                lineHeight: 1.2,
+                letterSpacing: { xs: "0.2px", sm: "0.5px" },
               }}
             >
-              <LibraryMusic />
+              <LibraryMusic
+                sx={{
+                  fontSize: {
+                    xs: "1.1rem",
+                    sm: "1.4rem",
+                    md: "1.6rem",
+                  },
+                  flexShrink: 0,
+                }}
+              />
               Instrument Detail - {instrument.instrument_title}
             </Typography>
 
@@ -119,7 +125,6 @@ const InstrumentDetail = () => {
           </Box>
 
           <Grid container spacing={4}>
-            {/* Image Section */}
             <Grid item xs={12} md={6}>
               <Card
                 sx={{
@@ -137,14 +142,12 @@ const InstrumentDetail = () => {
                   image={selectedImage}
                   alt={instrument.instrument_title}
                   sx={{
-                    //height: 300,
                     objectFit: "cover",
                     height: { xs: 220, sm: 280, md: 300 },
                   }}
                 />
               </Card>
 
-              {/* Thumbnails */}
               <Grid container spacing={1}>
                 {instrument.instrument_images?.map((img, index) => (
                   <Grid item xs={3} sm={2} key={index}>
@@ -153,7 +156,10 @@ const InstrumentDetail = () => {
                         borderRadius: 2,
                         overflow: "hidden",
                         cursor: "pointer",
-                        border: selectedImage === img.url ? "3px solid #1976d2" : "2px solid #ddd",
+                        border:
+                          selectedImage === img.url
+                            ? "3px solid #1976d2"
+                            : "2px solid #ddd",
                         transition: "0.3s",
                         "&:hover": { borderColor: "#1976d2" },
                       }}
@@ -174,16 +180,32 @@ const InstrumentDetail = () => {
               </Grid>
             </Grid>
 
-            {/* Details Section */}
             <Grid item xs={12} md={6}>
-              <Typography variant="h5" fontWeight={700}>
-                {instrument.instrument_title}
+              <Typography
+                variant="h5"
+                fontWeight={700}
+                sx={{
+                  fontSize: {
+                    xs: "1.2rem",
+                    sm: "1.5rem",
+                    md: "1.8rem",
+                  },
+                }}
+              >
+                {instrument.instrument_title}1
               </Typography>
 
               <Chip
                 label={`₹${instrument.instrument_price || 0}`}
                 color="primary"
-                sx={{ mt: 2 }}
+                sx={{
+                  mt: 2,
+                  fontSize: {
+                    xs: "0.8rem",
+                    sm: "0.9rem",
+                    md: "1rem",
+                  },
+                }}
               />
 
               <Typography
@@ -199,23 +221,60 @@ const InstrumentDetail = () => {
               <Divider sx={{ my: 2 }} />
 
               <Stack component="ul" sx={{ pl: 2, mb: 2 }}>
-                <Typography component="li" variant="body2" color="text.secondary">
+                <Typography
+                  component="li"
+                  variant="body2"
+                  sx={{
+                    fontSize: {
+                      xs: "0.8rem",
+                      sm: "0.9rem",
+                    },
+                  }}
+                  color="text.secondary"
+                >
                   Smooth playability & ergonomic design
                 </Typography>
-                <Typography component="li" variant="body2" color="text.secondary">
+                <Typography
+                  component="li"
+                  variant="body2"
+                  sx={{
+                    fontSize: {
+                      xs: "0.8rem",
+                      sm: "0.9rem",
+                    },
+                  }}
+                  color="text.secondary"
+                >
                   Rich, balanced tone ideal for any level
                 </Typography>
-                <Typography component="li" variant="body2" color="text.secondary">
+                <Typography
+                  component="li"
+                  variant="body2"
+                  sx={{
+                    fontSize: {
+                      xs: "0.8rem",
+                      sm: "0.9rem",
+                    },
+                  }}
+                  color="text.secondary"
+                >
                   High-quality craftsmanship
                 </Typography>
               </Stack>
 
-              {/* Action Buttons */}
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{ mt: 2 }}
+              >
                 <Button
                   variant="outlined"
                   startIcon={<ArrowBack />}
                   sx={{
+                    fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
+                    "& .MuiButton-startIcon > *": {
+                      fontSize: { xs: 18, sm: 20, md: 22 },
+                    },
                     textTransform: "none",
                     borderColor: "#1976d2",
                     color: "#1976d2",
@@ -237,6 +296,10 @@ const InstrumentDetail = () => {
                   variant="contained"
                   startIcon={<ShoppingCart />}
                   sx={{
+                    fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
+                    "& .MuiButton-startIcon > *": {
+                      fontSize: { xs: 18, sm: 20, md: 22 },
+                    },
                     textTransform: "none",
                     fontWeight: 700,
                     px: 3,
@@ -245,8 +308,6 @@ const InstrumentDetail = () => {
                 >
                   Add to Cart
                 </Button>
-
-               
               </Stack>
             </Grid>
           </Grid>

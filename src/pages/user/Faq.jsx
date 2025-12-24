@@ -44,7 +44,6 @@ const Faq = () => {
   return (
     <Box sx={{ backgroundColor: "#f4f7fb", minHeight: "100vh", py: 6 }}>
       <Container maxWidth="md">
-        {/* Header */}
         <Paper
           elevation={4}
           sx={{
@@ -52,8 +51,7 @@ const Faq = () => {
             mb: 5,
             textAlign: "center",
             borderRadius: 3,
-            background:
-              "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
+            background: "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
             color: "white",
           }}
         >
@@ -66,7 +64,6 @@ const Faq = () => {
           </Typography>
         </Paper>
 
-        {/* FAQ List */}
         {faqData.map((faq, index) => (
           <Accordion
             key={index}
@@ -89,9 +86,7 @@ const Faq = () => {
             </AccordionSummary>
 
             <AccordionDetails sx={{ backgroundColor: "#fafafa" }}>
-              <Typography color="text.secondary">
-                {faq.answer}
-              </Typography>
+              <Typography color="text.secondary">{faq.answer}</Typography>
             </AccordionDetails>
           </Accordion>
         ))}

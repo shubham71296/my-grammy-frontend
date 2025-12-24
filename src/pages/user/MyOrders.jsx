@@ -20,7 +20,6 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import api from "../../api/axios";
 
-
 const MyOrders = () => {
   const { token } = useSelector((state) => state.auth);
   const [orderList, setOrderList] = useState([]);
@@ -32,7 +31,6 @@ const MyOrders = () => {
   }, []);
 
   const getAllOrdersData = async (queryVal = {}) => {
-    console.log("queryVal", queryVal);
     try {
       const body = {
         query: queryVal,
@@ -44,11 +42,6 @@ const MyOrders = () => {
         },
       };
 
-      // const response = await axios.post("/api/user/getmyorders", body, {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // });
       const response = await api.post("/user/getmyorders", body);
 
       setOrderList(response.data.data || []);
@@ -81,10 +74,8 @@ const MyOrders = () => {
     const queryObj = {};
 
     if (!isNaN(q)) {
-      // numeric search → amount
       queryObj.amount = Number(q);
     } else {
-      // text search → search inside items title
       queryObj["items.title"] = { $regex: q, $options: "i" };
     }
 
@@ -94,15 +85,7 @@ const MyOrders = () => {
   return (
     <Box sx={{ backgroundColor: "#eef2f7", minHeight: "100vh", py: 6 }}>
       <Container maxWidth="lg">
-        <Paper
-          elevation={4}
-          sx={{
-            p: 2,
-            borderRadius: 2,
-            background: "linear-gradient(135deg, #ffffff, #f3f6fb)",
-          }}
-        >
-          {/* Header */}
+        <Paper elevation={4} sx={{ p: 3, borderRadius: 3 }}>
           <Typography
             variant="h5"
             sx={{
@@ -110,66 +93,117 @@ const MyOrders = () => {
               color: "#1976d2",
               display: "flex",
               alignItems: "center",
-              gap: 1,
-              mb: 1,
-              fontSize: { xs: "1.1rem", sm: "1.4rem" },
+              flexWrap: "wrap",
+              gap: { xs: 0.8, sm: 1 },
+              fontSize: {
+                xs: "1rem",
+                sm: "1.2rem",
+                md: "1.5rem",
+              },
+              lineHeight: 1.2,
+              letterSpacing: { xs: "0.2px", sm: "0.5px" },
             }}
           >
-            <ShoppingBag />
+            <ShoppingBag
+              sx={{
+                fontSize: {
+                  xs: "1.1rem",
+                  sm: "1.4rem",
+                  md: "1.6rem",
+                },
+                flexShrink: 0,
+              }}
+            />
             My Orders
           </Typography>
 
-          <Divider sx={{ mb: 3 }} />
+          <Divider
+            sx={{
+              mt: 1.5,
+              mb: 1.5,
+              borderColor: "#1976d2",
+              borderWidth: "1px",
+              borderRadius: 1,
+            }}
+          />
 
-              <Paper
-                elevation={2}
-                sx={{
-                  p: 2,
-                  borderRadius: 2,
-                  mb: 3,
-                  background: "white",
-                }}
-              >
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: "bold", mb: 1, color: "primary.main" }}
-                >
-                  Search Orders
-                </Typography>
-                <TextField
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search orders by title..."
-                  size="small"
-                  fullWidth
-                  sx={{ width: { xs: "100%", sm: 500 } }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Paper>
+          <Paper
+            elevation={2}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: { xs: 1.5, sm: 2 },
+              mb: { xs: 2, sm: 3 },
+              background: "white",
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: 700,
+                mb: { xs: 0.8, sm: 1 },
+                color: "primary.main",
+                fontSize: {
+                  xs: "0.9rem",
+                  sm: "1.05rem",
+                  md: "1.1rem",
+                },
+              }}
+            >
+              Search Orders
+            </Typography>
+            <TextField
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search orders by title..."
+              size="small"
+              fullWidth
+              sx={{
+                width: "100%",
+                maxWidth: { sm: 420, md: 500 },
+                mx: "auto",
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon
+                      sx={{
+                        fontSize: { xs: 18, sm: 20 },
+                        color: "action.active",
+                      }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Paper>
 
-              <Box sx={{ mt: 2 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 600,
-                    letterSpacing: "0.5px",
-                    color: "#1976d2",
-                    borderLeft: "5px solid #1976d2",
-                    pl: 2,
-                    fontSize: { xs: "1rem", sm: "1.25rem" },
-                  }}
-                >
-                  List of Orders
-                </Typography>
-                <Divider />
-              </Box>
-         
+          <Box sx={{ mt: 2 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                letterSpacing: { xs: "0.2px", sm: "0.5px" },
+                color: "#1976d2",
+                borderLeft: {
+                  xs: "3px solid #1976d2",
+                  sm: "5px solid #1976d2",
+                },
+                pl: { xs: 1.2, sm: 2 },
+                fontSize: {
+                  xs: "0.9rem",
+                  sm: "1.15rem",
+                  md: "1.25rem",
+                },
+
+                display: "flex",
+                alignItems: "center",
+                minHeight: { xs: 36, sm: 44 },
+              }}
+            >
+              List of Orders
+            </Typography>
+            <Divider />
+          </Box>
 
           {loading ? (
             <Typography
@@ -207,10 +241,8 @@ const MyOrders = () => {
                   },
                 }}
               >
-                {/* Order Header */}
                 <Box
                   sx={{
-                    display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                     mb: 1,
@@ -218,7 +250,12 @@ const MyOrders = () => {
                 >
                   <Typography
                     variant="subtitle2"
-                    sx={{ fontWeight: 700, color: "#333" }}
+                    sx={{
+                      display: "flex",
+                      fontWeight: 700,
+                      color: "#333",
+                      fontSize: { xs: "0.7rem", sm: "1rem" },
+                    }}
                   >
                     <ReceiptLong sx={{ mr: 1 }} />
                     Order ID: {order._id}
@@ -228,17 +265,17 @@ const MyOrders = () => {
                     label={order.paymentStatus.toUpperCase()}
                     color={getStatusColor(order.paymentStatus)}
                     size="small"
-                    sx={{ fontWeight: 600 }}
+                    sx={{ fontWeight: 600, mt: 1 }}
                   />
                 </Box>
 
-                {/* Amount */}
                 <Typography
                   variant="body1"
                   sx={{
                     mb: 2,
                     fontWeight: 600,
                     color: "#444",
+                    fontSize: { xs: "0.9rem", sm: "1rem" },
                   }}
                 >
                   Total Amount:{" "}
@@ -249,7 +286,6 @@ const MyOrders = () => {
 
                 <Divider sx={{ my: 2 }} />
 
-                {/* Items */}
                 {order.items.map((item, idx) => (
                   <Box
                     key={idx}
@@ -277,10 +313,16 @@ const MyOrders = () => {
                     />
 
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: { xs: "0.9rem", sm: "1rem" },
+                        }}
+                      >
                         {item.title}
                       </Typography>
-                      
+
                       {item.price !== 0 && (
                         <Typography variant="body2" sx={{ color: "#555" }}>
                           Qty: {item.qty}
@@ -289,10 +331,15 @@ const MyOrders = () => {
 
                       <Typography
                         variant="body2"
-                        sx={{ fontWeight: 700, color: "#1976d2" }}
+                        sx={{
+                          fontWeight: 700,
+                          color: "#1976d2",
+                          fontSize: { xs: "0.8rem", sm: "1rem" },
+                        }}
                       >
-                        {/* ₹{item.price} */}
-                        {item.price === 0 ? "Free Course With this Instrument" : `₹${item.price}`}
+                        {item.price === 0
+                          ? "Free Course With this Instrument"
+                          : `₹${item.price}`}
                       </Typography>
                     </Box>
                   </Box>
@@ -300,8 +347,13 @@ const MyOrders = () => {
 
                 <Divider sx={{ mt: 2 }} />
 
-                {/* Footer */}
-                <Typography variant="caption" sx={{ color: "#666" }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "#666",
+                    fontSize: { xs: "0.65rem", sm: "1rem" },
+                  }}
+                >
                   Ordered on: {new Date(order.createdAt).toLocaleString()}
                 </Typography>
               </Paper>

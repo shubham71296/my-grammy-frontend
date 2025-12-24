@@ -20,23 +20,30 @@ export const validateInputs = (inputs) => {
       p._errorMsg = `${p._name} is mandatory`;
       hasError = true;
     } 
-    else if (p._key === "email" && p._value) {
+    else if (p._key === "em" && p._value) {
       const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
       if (!emailRegex.test(p._value)) {
         p._errorMsg = "Invalid email format";
         hasError = true;
       }
     } 
-    // else if (p._key === "password" && p._value) {
-    //   const passwordRegex =
-    //     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    //   if (!passwordRegex.test(p._value)) {
-    //     p._errorMsg =
-    //       "Password must be at least 8 characters, include uppercase, lowercase, number, and special character";
-    //     hasError = true;
-    //   }
-    // } 
-    else if (p._key === "mobile_number" && p._value) {
+    else if (p._key === "pwd" && p._value) {
+      // const passwordRegex =
+      //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      // if (!passwordRegex.test(p._value)) {
+      //   p._errorMsg =
+      //     "Password must be at least 8 characters, include uppercase, lowercase, number, and special character";
+      //   hasError = true;
+      // }
+      const passwordRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/;
+      if (!passwordRegex.test(p._value)) {
+        p._errorMsg =
+          "Password must include uppercase, lowercase, number, and special character";
+        hasError = true;
+      }
+    } 
+    else if (p._key === "phone_number" && p._value) {
       const onlyDigitsRegex = /^[0-9]+$/;
       if (!onlyDigitsRegex.test(p._value)) {
         p._errorMsg = "Phone number must contain only numbers";
@@ -107,5 +114,12 @@ export const truncate = (text, limit) => {
     ? text.substring(0, limit) + "..."
     : text;  // if small, return as it is
 };
+
+export const getFullName = (firstname = "", lastname = "") => {
+  return [firstname?.trim(), lastname?.trim()]
+    .filter(Boolean)
+    .join(" ");
+};
+
 
 

@@ -21,7 +21,6 @@ const PLACEHOLDER =
      </svg>`
   );
 
-// Convert input → { url, originalName }
 function normalizeItem(item) {
   if (!item) return null;
 
@@ -42,8 +41,7 @@ function normalizeItem(item) {
   return {
     url: item.url || item.base64 || item.path || null,
     originalName:
-      item.originalName ||
-      (item.url ? item.url.split("/").pop() : "image"),
+      item.originalName || (item.url ? item.url.split("/").pop() : "image"),
   };
 }
 
@@ -77,7 +75,6 @@ export default function DynamicImagePreview({ val }) {
 
   return (
     <>
-      {/* Thumbnail Area */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         {thumbnails.length === 0 ? (
           <Box
@@ -146,7 +143,6 @@ export default function DynamicImagePreview({ val }) {
           ))
         )}
 
-        {/* More Counter */}
         {moreCount > 0 && (
           <Box
             onClick={() => handleOpen(0)}
@@ -176,7 +172,6 @@ export default function DynamicImagePreview({ val }) {
         )}
       </Box>
 
-      {/* Popup Dialog */}
       <Dialog
         open={open}
         onClose={handleClose}
@@ -190,7 +185,6 @@ export default function DynamicImagePreview({ val }) {
           },
         }}
       >
-        {/* Close Button */}
         <Box
           sx={{
             position: "absolute",
@@ -213,7 +207,6 @@ export default function DynamicImagePreview({ val }) {
 
         <DialogContent sx={{ p: 3 }}>
           <Grid container spacing={3}>
-            {/* Large Image Preview */}
             <Grid item xs={12} md={8}>
               <Box
                 sx={{
@@ -240,7 +233,6 @@ export default function DynamicImagePreview({ val }) {
               </Box>
             </Grid>
 
-            {/* Right Thumbnail List */}
             <Grid item xs={12} md={4}>
               <Typography
                 variant="subtitle1"
@@ -272,7 +264,9 @@ export default function DynamicImagePreview({ val }) {
                       p: 0.5,
                       transition: "0.3s",
                       border:
-                        idx === currentIndex ? "2px solid #1976d2" : "1px solid #e0e0e0",
+                        idx === currentIndex
+                          ? "2px solid #1976d2"
+                          : "1px solid #e0e0e0",
                       bgcolor: idx === currentIndex ? "#e3f2fd" : "white",
                       boxShadow:
                         idx === currentIndex

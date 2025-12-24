@@ -23,12 +23,18 @@ export default function CourseAccordion({ title, children }) {
         transition: "transform 0.25s ease, box-shadow 0.25s ease",
         transformOrigin: "center",
         "&:hover": {
-          transform: "scale(1.01)", // slight pop-out zoom
+          transform: "scale(1.01)",
         },
       }}
     >
       <AccordionSummary
-        expandIcon={<ArrowDownwardOutlined />}
+        expandIcon={
+          <ArrowDownwardOutlined
+            sx={{
+              fontSize: { xs: 18, sm: 22, md: 24 },
+            }}
+          />
+        }
         aria-controls="panel-content"
         id="panel-header"
         sx={{
@@ -40,21 +46,28 @@ export default function CourseAccordion({ title, children }) {
           },
         }}
       >
-        {/* Avatar Icon */}
         <Avatar
           sx={{
             bgcolor: "#1976d2",
-            width: 32,
-            height: 32,
-            fontSize: 16,
+            width: { xs: 28, sm: 32, md: 36 },
+            height: { xs: 28, sm: 32, md: 36 },
+            fontSize: { xs: 14, sm: 16, md: 18 },
             fontWeight: 600,
           }}
         >
           {title ? title.charAt(0).toUpperCase() : "C"}
         </Avatar>
 
-        {/* Title */}
-        <Typography sx={{ fontWeight: 600, fontSize: "1rem" }}>
+        <Typography
+          sx={{
+            fontWeight: 600,
+            fontSize: {
+              xs: "0.9rem",
+              sm: "1rem",
+              md: "1.1rem",
+            },
+          }}
+        >
           {title}
         </Typography>
       </AccordionSummary>
@@ -63,7 +76,6 @@ export default function CourseAccordion({ title, children }) {
         sx={{
           bgcolor: "#fff",
           borderTop: "1px solid #e0e0e0",
-          //margin:"10px"
         }}
       >
         {children}

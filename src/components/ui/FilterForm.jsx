@@ -13,7 +13,6 @@ function FilterForm({ title, inputs, setInputs, onSubmit, onReset }) {
     if (typeof val === "number") return !Number.isNaN(val);
     if (typeof val === "string") return val.trim() !== "";
     if (typeof val === "object") {
-      // treat object with keys as filled (useful for select objects)
       return Object.keys(val).length > 0;
     }
     return false;
@@ -45,22 +44,23 @@ function FilterForm({ title, inputs, setInputs, onSubmit, onReset }) {
     >
       <Typography
         variant="h6"
-        sx={{ mb: 2, fontWeight: "bold", color: "primary.main" }}
+        sx={{
+          mb: 2,
+          fontSize: {
+            xs: "1rem",
+            sm: "1.2rem",
+            md: "1.5rem",
+          },
+          fontWeight: "bold",
+          color: "primary.main",
+        }}
       >
         {title}
       </Typography>
 
-      <Grid container spacing={2}>
+      <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         {inputs.map((p1, i1) => (
-          <Grid
-            item
-            key={`grid-${p1._key}-${i1}`}
-            xs={12}
-            sm={6}
-            md={4}
-            lg={3}
-            size={4}
-          >
+          <Grid key={`grid-${p1._key}-${i1}`} size={{ xs: 12, md: 12, lg: 6 }}>
             <InputText {...p1} onChange={(event) => handleChange(event, i1)} />
           </Grid>
         ))}
@@ -79,6 +79,10 @@ function FilterForm({ title, inputs, setInputs, onSubmit, onReset }) {
             color="primary"
             variant="contained"
             sx={{
+              fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
+              "& .MuiButton-startIcon > *": {
+                fontSize: { xs: 18, sm: 20, md: 22 },
+              },
               minWidth: 140,
               transition: "0.3s",
               backgroundColor: "#1976d2",
@@ -96,6 +100,10 @@ function FilterForm({ title, inputs, setInputs, onSubmit, onReset }) {
             startIcon={<Refresh />}
             variant="outlined"
             sx={{
+              fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
+              "& .MuiButton-startIcon > *": {
+                fontSize: { xs: 18, sm: 20, md: 22 },
+              },
               minWidth: 140,
               transition: "0.3s",
               backgroundColor: "#dcdbf9ff",

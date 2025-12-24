@@ -116,7 +116,13 @@ function DropDown({
 
   return (
     <>
-      <Typography variant="subtitle2" sx={_style._typography}>
+      <Typography
+        variant="subtitle2"
+        sx={{
+          fontSize: { xs: "0.75rem", sm: "0.85rem" },
+          ..._style._typography,
+        }}
+      >
         {_name} {_mandatory && <span style={{ color: "red" }}>*</span>}
       </Typography>
 
@@ -146,7 +152,7 @@ function DropDown({
           {_options.map((opt, i) => (
             <MenuItem
               key={i}
-              value={opt.value} // IMPORTANT: this is ID
+              value={opt.value}
               sx={{
                 borderRadius: "2px",
                 transition: "0.3s",
@@ -170,7 +176,9 @@ function DropDown({
           ))}
         </Select>
 
-        <FormHelperText sx={{ marginLeft: 0 }}>
+        <FormHelperText
+          sx={{ marginLeft: 0, fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
+        >
           {isError ? _errorMsg : _helperText}
         </FormHelperText>
       </FormControl>
@@ -179,4 +187,3 @@ function DropDown({
 }
 
 export default DropDown;
-

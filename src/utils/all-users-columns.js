@@ -1,15 +1,15 @@
 import { Delete, Edit, Visibility } from "@mui/icons-material";
 
 export const menuOptions = [
-    {
-        _label: "Delete",
-        _check: "delete_user",
-        _icon: Delete,
-        _dialogInfo: {
-            title: "Delete User",
-            content: "Are you sure want to delete the selected User? If yes then all the reference data will also be deleted!"
-        }
-    },
+    // {
+    //     _label: "Delete",
+    //     _check: "delete_user",
+    //     _icon: Delete,
+    //     _dialogInfo: {
+    //         title: "Delete User",
+    //         content: "Are you sure want to delete the selected User? If yes then all the reference data will also be deleted!"
+    //     }
+    // },
     {
         _label: "View",
         _check: "view_user",

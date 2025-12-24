@@ -7,9 +7,17 @@ const AddMoreCourseCard = ({ title, onClick }) => {
       elevation={3}
       onClick={onClick}
       sx={{
-        width: 160,
-        height: 180,
-        border:"dashed",
+        width: {
+          xs: 120,
+          sm: 150,
+          md: 160,
+        },
+        height: {
+          xs: 140,
+          sm: 170,
+          md: 180,
+        },
+        border: "dashed",
         borderRadius: 3,
         display: "flex",
         flexDirection: "column",
@@ -26,11 +34,11 @@ const AddMoreCourseCard = ({ title, onClick }) => {
     >
       <Box
         sx={{
-          transition: "transform 0.3s ease", // smooth zoom
-            "&:hover": {
-             transform: "scale(1.15)", // zoom effect on hover
-             bgcolor: "white", // prevent dimming
-            },
+          transition: "transform 0.3s ease",
+          "&:hover": {
+            transform: "scale(1.15)",
+            bgcolor: "white",
+          },
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -38,16 +46,19 @@ const AddMoreCourseCard = ({ title, onClick }) => {
       >
         <AddCircleOutlineIcon
           sx={{
-            fontSize: 36,
+            fontSize: { xs: 30, sm: 38, md: 42 },
             color: "#1976d2",
           }}
         />
 
         <Typography
-          //mt={1}
           sx={{
             fontWeight: 600,
-            fontSize: 12,
+            fontSize: {
+              xs: "0.55rem",
+              sm: "0.85rem",
+              md: "0.9rem",
+            },
             transition: "0.3s ease",
             color: "#1976d2",
           }}

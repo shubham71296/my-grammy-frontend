@@ -10,15 +10,12 @@ import { useSelector } from "react-redux";
 const UserLayout = () => {
   return (
     <Box display="flex" flexDirection="column" minHeight="100vh">
-      {/* Navbar */}
       <Navbar />
 
-      {/* Page content */}
       <Box component="main" flexGrow={1}>
         <Outlet />
       </Box>
 
-      {/* Footer */}
       <Footer />
     </Box>
   );

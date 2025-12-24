@@ -4,8 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { filterData } from "../../utils/common-util";
 import { headCells, menuOptions } from "../../utils/all-users-columns";
-//import MyInstrumentsFilterInputs from "../../utils/myinstruments-filter-inputs";
-//import FilterForm from "../../components/ui/FilterForm";
 import { useSearchParams } from "react-router-dom";
 import { Box, Divider, Paper, Typography } from "@mui/material";
 import { LibraryMusic } from "@mui/icons-material";
@@ -13,15 +11,12 @@ import { setTotalCount } from "../../features/dataCountSlice";
 import AppDialog from "../../components/ui/dialog/AppDialog";
 import api from "../../api/axios";
 
-//import MyInstrumentsFilter from './MyInstrumentsFilter';
-
 function AllUsers() {
   const { token } = useSelector((state) => state.auth);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { countTotalData } = useSelector((state) => state.dataCount);
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  //const [inputs, setInputs] = useState(MyInstrumentsFilterInputs);
   const [activeQuery, setActiveQuery] = useState({});
 
   const [state, setState] = useState({
@@ -39,37 +34,13 @@ function AllUsers() {
     return !isNaN(parsed) && parsed > 0 ? parsed : state.limit;
   };
 
-  // const handleFilterSubmit = () => {
-  //   const newQuery = {};
-  //   inputs.forEach((input) => {
-  //     if (input._value) {
-  //       newQuery[input._key] = { $regex: input._value, $options: "i" };
-  //     }
-  //   });
-  //   setActiveQuery(newQuery);
-  //   const currentLimit = getCurrentLimitFromUrl();
-  //   // getData(state.limit, state.offset, newQuery);
-  //   getData(currentLimit, 0, newQuery);
-  // };
-
-  // const handleFilterReset = () => {
-  //   const resetInputs = inputs.map((i) => ({ ...i, _value: "" }));
-  //   setInputs(resetInputs);
-  //   setActiveQuery({});
-  //   getData(state.limit, 0, {});
-  // };
-
   const getData = async (limit, offset, query = activeQuery) => {
     const body = {
       query,
       projection: { pwd: 0 },
       options: { skip: offset, limit, sort: { createdAt: -1 } },
     };
-    // const response = await axios.post("/api/admin/allusers", body, {
-    //   headers: {
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    // });
+
     const response = await api.post("/admin/allusers", body);
     const res = response.data;
     if (res.success) {
@@ -108,8 +79,6 @@ function AllUsers() {
     },
     baseRoute: "/admin/allusers",
     textLabel: "User",
-    //textLabel: "Users",
-    //buttonRoute: "/admin/addinstruments"
   };
 
   return (
@@ -124,6 +93,11 @@ function AllUsers() {
         <Typography
           variant="h5"
           sx={{
+            fontSize: {
+              xs: "1rem",
+              sm: "1.2rem",
+              md: "1.5rem",
+            },
             fontWeight: 600,
             letterSpacing: "0.5px",
             color: "#1976d2",
@@ -132,7 +106,16 @@ function AllUsers() {
             gap: 1,
           }}
         >
-          <LibraryMusic />
+          <LibraryMusic
+            sx={{
+              fontSize: {
+                xs: "1.1rem",
+                sm: "1.4rem",
+                md: "1.6rem",
+              },
+              flexShrink: 0,
+            }}
+          />
           All Users
         </Typography>
 
@@ -146,15 +129,6 @@ function AllUsers() {
           }}
         />
       </Box>
-      {/* {countTotalData > 0 && (
-        <FilterForm
-          title="Filter Instruments"
-          inputs={inputs}
-          setInputs={setInputs}
-          onSubmit={handleFilterSubmit}
-          onReset={handleFilterReset}
-        />
-      )} */}
       <CommonTable {...config} />
       <AppDialog />
     </Paper>

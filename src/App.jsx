@@ -4,6 +4,8 @@ import { getUserProfile } from "./features/auth/authSlice";
 import { useEffect } from "react";
 import axios from "axios";
 import { setCartCount } from "./features/cartSlice";
+import api from "./api/axios";
+
 
 function App() {
   const { token } = useSelector((state) => state.auth);
@@ -18,12 +20,7 @@ function App() {
 
   const loadCartCount = async () => {
     try {
-      const res = await axios.get("/api/user/getcartitems", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      console.log("resp@@@@@@@@@@@@@@@@",res)
-
+      const res = await api.get("/user/getcartitems");
       const count = res.data?.data?.items?.length || 0;
       dispatch(setCartCount(count));
     } catch (err) {
@@ -35,4 +32,3 @@ function App() {
 
 export default App
 
-//http://localhost:5173/user/payment-success?session_id=cs_test_a1rQqC4sWyVPD8shjsY5LdBEm8EJ7GCdub57dIMZygaInWCWUjYjQs33DZ

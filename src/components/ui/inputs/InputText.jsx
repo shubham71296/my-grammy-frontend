@@ -1,5 +1,11 @@
-import { TextField, Typography } from '@mui/material';
-import React from 'react';
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
+import React, { useState } from "react";
 
 function InputText({
   _name,
@@ -10,25 +16,44 @@ function InputText({
   _errorMsg,
   onChange,
   _style = {
-    _typography: {}
+    _typography: {},
   },
-  _elementSize = '',
+  _elementSize = "",
   _disabled,
   _mandatory,
   _options,
 }) {
+  const [showPassword, setShowPassword] = useState(false);
   const isError = Boolean(_errorMsg);
   const isMultiline = _options?.multiline === true;
+
+  const handleTogglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   return (
     <>
-      <Typography variant="subtitle2" sx={_style._typography}>
-        {_name} {_mandatory && <span style={{ color: 'red' }}>*</span>}&nbsp;
+      <Typography
+        variant="subtitle2"
+        sx={{
+          fontSize: { xs: "0.75rem", sm: "0.85rem" },
+          ..._style._typography,
+        }}
+      >
+        {_name} {_mandatory && <span style={{ color: "red" }}>*</span>}&nbsp;
       </Typography>
       <TextField
         size={_elementSize}
         fullWidth
-        // type={_type}
-        type={isMultiline ? undefined : _type}
+        type={
+          isMultiline
+            ? undefined
+            : _type === "password"
+            ? showPassword
+              ? "text"
+              : "password"
+            : _type
+        }
         disabled={_disabled}
         placeholder={_placeholder}
         name={_name}
@@ -40,13 +65,32 @@ function InputText({
         FormHelperTextProps={{
           sx: {
             marginLeft: 0,
-          }
+            fontSize: { xs: "0.7rem", sm: "0.8rem" },
+          },
         }}
         sx={{
-          '& .MuiInputBase-input': {
-            padding: '12px 14px',     // 👈 input padding
-            height: '20px',           // 👈 input height
+          mb: 1,
+          "& .MuiInputBase-input": {
+            padding: { xs: "10px 12px", sm: "12px 14px" },
+            fontSize: { xs: "0.9rem", sm: "1rem" },
           },
+          "& .MuiIconButton-root > *": {
+            fontSize: { xs: 16, sm: 18 },
+          },
+        }}
+        InputProps={{
+          endAdornment:
+            _type === "password" ? (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleTogglePassword}
+                  edge="end"
+                  size="small"
+                >
+                  {showPassword ? <Visibility /> : <VisibilityOff />}
+                </IconButton>
+              </InputAdornment>
+            ) : null,
         }}
       />
     </>

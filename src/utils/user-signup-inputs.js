@@ -31,6 +31,7 @@ const userSignupInputs = [
     _mandatory: true,
     _disabled: false,
     _errorMsg: "",
+    // _options: { inputProps: { maxLength: 10 } }
   },
   {
     _key: "em",

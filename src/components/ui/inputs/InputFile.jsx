@@ -19,7 +19,13 @@ function InputFile({
 
   return (
     <div>
-      <Typography variant="subtitle2" sx={_style._typography}>
+      <Typography
+        variant="subtitle2"
+        sx={{
+          fontSize: { xs: "0.75rem", sm: "0.85rem" },
+          ..._style._typography,
+        }}
+      >
         {_name} {_mandatory && <span style={{ color: "red" }}>*</span>}&nbsp;
       </Typography>
 
@@ -30,21 +36,15 @@ function InputFile({
         disabled={_disabled}
         sx={{ width: "100%", justifyContent: "flex-start" }}
       >
-       
-          Choose file
-        <input
-          hidden
-          type="file"
-          multiple={_multiple}
-          onChange={onChange}
-        />
+        Choose file
+        <input hidden type="file" multiple={_multiple} onChange={onChange} />
       </Button>
 
       <Typography
         variant="caption"
         color={isError ? "error" : "textSecondary"}
         display="block"
-        sx={{ mt: 0.5 }}
+        sx={{ mt: 0.5, fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
       >
         {isError ? _errorMsg : _helperText}
       </Typography>

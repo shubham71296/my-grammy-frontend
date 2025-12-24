@@ -1,4 +1,3 @@
-// MyCourseDetail.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -39,7 +38,6 @@ import AddMoreCard from "../../components/ui/card/AddMoreCard";
 import LectureCard from "../../components/ui/card/LectureCard";
 import api from "../../api/axios";
 
-
 const formatCurrency = (value) => {
   const n = Number(value);
   if (Number.isFinite(n)) {
@@ -60,13 +58,12 @@ const CourseDetail = () => {
   const [course, setCourse] = useState(null);
   const [lectures, setLectures] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [previewUrl, setPreviewUrl] = useState(null); // url of video to preview
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [previewTitle, setPreviewTitle] = useState("");
 
   const [activeVideo, setActiveVideo] = useState(null);
 
   const openFullScreen = (lec) => {
-    //setActiveVideo(lec.lecture_video?.[0]?.url); //edit_lecture
     dispatch(
       openDialogAction({
         openDialog: true,
@@ -118,9 +115,7 @@ const CourseDetail = () => {
   const getCourseDetails = async (courseId) => {
     setLoading(true);
     try {
-      // const response = await axios.get(`/api/admin/coursebyid/${courseId}`);
       const response = await api.get(`/admin/coursebyid/${courseId}`);
-      console.log("response", response);
       const payload = response?.data?.data || response?.data;
       const courseData = payload?.course_data;
       const lecturesData = payload?.lectures_data || [];
@@ -173,21 +168,35 @@ const CourseDetail = () => {
     <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 6 }}>
       <Container maxWidth="lg">
         <Paper elevation={4} sx={{ p: 3, borderRadius: 2 }}>
-          {/* Header */}
           <Box mb={3}>
             <Typography
               variant="h5"
               sx={{
                 fontWeight: 600,
-                letterSpacing: "0.5px",
                 color: "#1976d2",
                 display: "flex",
                 alignItems: "center",
-                gap: 1,
-                fontSize: { xs: "1.1rem", sm: "1.4rem" },
+                flexWrap: "wrap",
+                gap: { xs: 0.8, sm: 1 },
+                fontSize: {
+                  xs: "1rem",
+                  sm: "1.2rem",
+                  md: "1.5rem",
+                },
+                lineHeight: 1.2,
+                letterSpacing: { xs: "0.2px", sm: "0.5px" },
               }}
             >
-              <MenuBook />
+              <MenuBook
+                sx={{
+                  fontSize: {
+                    xs: "1.1rem",
+                    sm: "1.4rem",
+                    md: "1.6rem",
+                  },
+                  flexShrink: 0,
+                }}
+              />
               My Course Detail
             </Typography>
 
@@ -212,8 +221,6 @@ const CourseDetail = () => {
             </Typography>
           </Box>
 
-          {/* Thumbnail */}
-          {/* Thumbnail (smaller + clickable preview) */}
           <Card
             sx={{
               mt: 2,
@@ -232,7 +239,6 @@ const CourseDetail = () => {
                 opacity: 1,
               },
             }}
-            // onClick={() => setPreviewUrl(course.thumbnail_image?.[0]?.url)}
             onClick={() => {
               dispatch(
                 openDialogAction({
@@ -257,7 +263,6 @@ const CourseDetail = () => {
                 sx={{ objectFit: "cover" }}
               />
 
-              {/* Overlay */}
               <Box
                 className="overlay"
                 sx={{
@@ -283,12 +288,30 @@ const CourseDetail = () => {
             </Box>
           </Card>
 
-          {/* Course meta */}
           <Box mb={3}>
-            <Typography variant="h6" fontWeight={700}>
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              sx={{
+                fontSize: {
+                  xs: "0.8rem",
+                  sm: "1rem",
+                  md: "1.2rem",
+                },
+              }}
+            >
               {course.course_title}
             </Typography>
-            <Typography color="text.secondary" sx={{ mt: 1 }}>
+            <Typography
+              color="text.secondary"
+              sx={{
+                fontSize: {
+                  xs: "0.8rem",
+                  sm: "1rem",
+                  md: "1.2rem",
+                },
+              }}
+            >
               {course.course_description}
             </Typography>
 
@@ -296,6 +319,13 @@ const CourseDetail = () => {
               <Chip
                 label={formatCurrency(course.course_price)}
                 color="primary"
+                sx={{
+                  fontSize: {
+                    xs: "0.8rem",
+                    sm: "0.9rem",
+                    md: "1rem",
+                  },
+                }}
               />
               <Typography variant="body2" color="text.secondary">
                 Instrument:{" "}
@@ -310,14 +340,33 @@ const CourseDetail = () => {
 
           <Divider sx={{ my: 2 }} />
 
-          {/* Lectures */}
           <Box>
-            <Typography variant="h6" fontWeight={700} mb={2}>
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              mb={2}
+              sx={{
+                fontSize: {
+                  xs: "0.8rem",
+                  sm: "1rem",
+                  md: "1.2rem",
+                },
+              }}
+            >
               Lectures ({lectures.length})
             </Typography>
 
             {lectures.length === 0 ? (
-              <Typography color="text.secondary">
+              <Typography
+                color="text.secondary"
+                sx={{
+                  fontSize: {
+                    xs: "0.8rem",
+                    sm: "0.9rem",
+                    md: "1rem",
+                  },
+                }}
+              >
                 No lectures available for this course.
               </Typography>
             ) : (
@@ -326,75 +375,6 @@ const CourseDetail = () => {
                   const vidUrl = lec.lecture_video?.[0]?.url || "";
 
                   return (
-                    // <Paper
-                    //   elevation={4}
-                    //   sx={{
-                    //     p: 1,
-                    //     borderRadius: 1,
-                    //     width: "fit-content",
-                    //   }}
-                    //   key={lec._id}
-                    // >
-                    //   <Grid item xs={12} sm={6} md={4}>
-                    //     <Box
-                    //       sx={{
-                    //         position: "relative",
-                    //         borderRadius: 2,
-                    //         overflow: "hidden",
-                    //         boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
-                    //         height: "120px",
-                    //         width: "120px",
-                    //         bgcolor: "#18243aff",
-                    //         display: "flex",
-                    //         alignItems: "center",
-                    //         justifyContent: "center",
-                    //       }}
-                    //     >
-                    //       {/* Smaller Play Icon */}
-                    //       <IconButton
-                    //         sx={{
-                    //           bgcolor: "white",
-                    //           width: 40,
-                    //           height: 40,
-                    //           borderRadius: "50%",
-                    //           boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
-                    //           transition: "transform 0.3s ease",
-                    //           "&:hover": {
-                    //             transform: "scale(1.15)",
-                    //             bgcolor: "white",
-                    //           },
-                    //         }}
-                    //         onClick={() => openFullScreen(lec)}
-                    //       >
-                    //         <VideoLibrary fontSize="medium" />
-                    //       </IconButton>
-                    //     </Box>
-
-                    //     {/* Title */}
-                    //     <Box
-                    //       mt={1}
-                    //       sx={{
-                    //         display: "flex",
-                    //         justifyContent: "space-between",
-                    //         alignItems: "center",
-                    //         width: "120px",
-                    //       }}
-                    //     >
-                    //       <Typography
-                    //         mt={1}
-                    //         fontWeight={700}
-                    //         sx={{
-                    //           flexGrow: 1,
-                    //           fontSize: 11,
-                    //           mr: 1,
-                    //           lineHeight: 1.2,
-                    //         }}
-                    //       >
-                    //         {idx + 1}. {lec.lecture_title}
-                    //       </Typography>
-                    //     </Box>
-                    //   </Grid>
-                    // </Paper>
                     <LectureCard
                       key={lec._id}
                       lec={lec}

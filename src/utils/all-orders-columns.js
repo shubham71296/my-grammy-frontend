@@ -34,18 +34,10 @@ export const headCells = [
         _col: 'paymentStatus',
         _label: 'Payment Status',
     },
-    // {
-    //     _col: 'em',
-    //     _label: 'Email',
-    // },
     {
         _col: 'createdAt',
         _label: 'Created At',
     },
-    // {
-    //     _col: 'role',
-    //     _label: 'Role',
-    // },
     {
         _col: 'temp_action',
         _label: 'Action',

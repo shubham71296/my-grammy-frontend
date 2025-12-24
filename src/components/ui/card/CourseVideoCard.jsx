@@ -44,7 +44,11 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
       sx={{
         p: 1,
         borderRadius: 1,
-        width: "180px",
+        width: {
+          xs: 140,   
+          sm: 160,   
+          md: 180,   
+        },
         transition: "all 0.35s ease",
         "&:hover": {
           transform: "translateY(-6px)",
@@ -58,25 +62,15 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
           borderRadius: 2,
           overflow: "hidden",
           boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
-          height: "180px",
+          height: {
+            xs: 120,   
+            sm: 150,   
+            md: 180,   
+          },
           backgroundColor:'black'
-          //width: "165px", // SMALL PREVIEW HEIGHT
         }}
       >
-        {/* <video
-          src={vidUrl}
-          muted
-          controls
-          preload="metadata"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block",
-          }}
-          onLoadedMetadata={(e) => (e.target.currentTime = 0.1)} // freeze first frame
-        /> */}
-
+       
         <Box
           sx={{
             position: "absolute",
@@ -87,27 +81,26 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            //pointerEvents: "none",          // allow hover to pass through
             "&:hover": {
-              bgcolor: "rgba(107, 171, 240, 0.4)", // hover effect works!
+              bgcolor: "rgba(107, 171, 240, 0.4)", 
             },
           }}
         >
           <IconButton
             sx={{
               bgcolor: "white",
-              width: 60,
-              height: 60,
+              width: { xs: 44, sm: 55, md: 60 },
+              height: { xs: 44, sm: 55, md: 60 },
               borderRadius: "50%",
-              transition: "transform 0.3s ease", // smooth zoom
+              transition: "transform 0.3s ease", 
               "&:hover": {
-                transform: "scale(1.15)", // zoom effect on hover
-                bgcolor: "white", // prevent dimming
+                transform: "scale(1.15)", 
+                bgcolor: "white", 
               },
             }}
             onClick={() => openFullScreen(lec)}
           >
-            <VideoLibrary fontSize="large" />
+            <VideoLibrary fontSize="large" sx={{ fontSize: { xs: 28, sm: 34, md: 40 } }}/>
           </IconButton>
         </Box>
       </Box>
@@ -118,15 +111,17 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          //width: "180px",
         }}
       >
         <Typography
           mt={1}
           fontWeight={700}
           sx={{
-            //flexGrow: 1,
-            fontSize: 12,
+           fontSize: {
+              xs: "0.70rem",
+              sm: "0.80rem",
+              md: "0.85rem",
+            },
             mr: 1,
           }}
         >
@@ -136,13 +131,15 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
           onClick={handleMenuOpen}
           size="small"
           sx={{
+            width: { xs: 24, sm: 28 },
+            height: { xs: 24, sm: 28 },
             bgcolor: "#f1f1f1",
             "&:hover": {
               bgcolor: "#e0e0e0",
             },
           }}
         >
-          <MoreVert fontSize="small" />
+          <MoreVert fontSize="small" sx={{ fontSize: { xs: 18, sm: 20 } }} />
         </IconButton>
 
         <Menu
@@ -163,7 +160,6 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
               alignItems: "center",
               px: 1,
               py: 0.5,
-              //bgcolor: "rgba(0,0,0,0.04)",
               borderBottom: "1px solid rgba(0,0,0,0.08)",
               borderTopLeftRadius: "8px",
               borderTopRightRadius: "8px",
