@@ -8,8 +8,10 @@ import {
   Chip,
   TextField,
   InputAdornment,
+  Button,
 } from "@mui/material";
 import {
+  ArrowBack,
   LibraryMusic,
   ReceiptLong,
   SearchOutlined,
@@ -19,12 +21,14 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import api from "../../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const MyOrders = () => {
   const { token } = useSelector((state) => state.auth);
   const [orderList, setOrderList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     getAllOrdersData();
@@ -83,7 +87,7 @@ const MyOrders = () => {
   }, [search]);
 
   return (
-    <Box sx={{ backgroundColor: "#eef2f7", minHeight: "100vh", py: 6 }}>
+    <Box sx={{ backgroundColor: "#eef2f7", minHeight: "100vh", py: 4 }}>
       <Container maxWidth="lg">
         <Paper elevation={4} sx={{ p: 3, borderRadius: 3 }}>
           <Typography
@@ -359,6 +363,33 @@ const MyOrders = () => {
               </Paper>
             ))
           )}
+          <Box display="flex" mt={5}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBack />}
+              onClick={() => navigate("/user")}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                //px: { xs: 2, sm: 3 },
+                //py: { xs: 0.8, sm: 1 },
+                borderRadius: 2,
+                fontSize: {
+                  xs: "0.75rem",
+                  sm: "0.9rem",
+                  md: "1rem",
+                },
+                "& .MuiButton-startIcon": {
+                  "& svg": {
+                    fontSize: { xs: "1rem", sm: "1.2rem" },
+                  },
+                },
+              }}
+            >
+              Back
+            </Button>
+          </Box>
         </Paper>
       </Container>
     </Box>

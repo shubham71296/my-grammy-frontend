@@ -25,8 +25,11 @@ import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { increaseCartCount } from "../../features/cartSlice";
 import api from "../../api/axios";
+import PageSpinner from "../../components/ui/loader/PageSpinner";
 
 export default function Home() {
+  const [loadingInstruments, setLoadingInstruments] = useState(true);
+  const [loadingCourses, setLoadingCourses] = useState(true);
   const { token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -38,6 +41,8 @@ export default function Home() {
   const [limit, setLimit] = useState(4);
   const [offset, setOffset] = useState(0);
   const [query, setQuery] = useState({});
+
+  const loading = loadingInstruments || loadingCourses;
 
   const addToCart = async (item, type) => {
     try {
@@ -61,6 +66,7 @@ export default function Home() {
 
   const getAllInstrumentsData = async (limitVal, offsetVal, queryVal = {}) => {
     try {
+      setLoadingInstruments(true);
       const body = {
         query: queryVal,
         projection: { pwd: 0 },
@@ -75,6 +81,8 @@ export default function Home() {
       setInstrumentList(response.data.data || []);
     } catch (error) {
       console.error("Error fetching instruments:", error);
+    } finally {
+      setLoadingInstruments(false); // always hide loader
     }
   };
 
@@ -84,6 +92,7 @@ export default function Home() {
 
   const getAllCoursesData = async (queryVal = {}) => {
     try {
+      setLoadingCourses(true);
       const body = {
         query: queryVal,
         projection: {},
@@ -98,8 +107,13 @@ export default function Home() {
       setCourseList(response.data.data || []);
     } catch (error) {
       console.error("Error fetching courses:", error);
+    } finally {
+      setLoadingCourses(false);
     }
   };
+
+  if (loading) return <PageSpinner />;
+
 
   return (
     <div>
@@ -107,7 +121,7 @@ export default function Home() {
         component="section"
         aria-label="Hero banner"
         sx={{
-          mt: 4,
+          //mt: 2,
           height: { xs: "50vh", sm: "50vh", md: "60vh", lg: "68vh" },
           display: "flex",
           alignItems: "center",

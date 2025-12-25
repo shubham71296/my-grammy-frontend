@@ -18,7 +18,7 @@ import lecturesInputs from "../../utils/add-lectures-inputs";
 import InputText from "../../components/ui/inputs/InputText";
 import InputFile from "../../components/ui/inputs/InputFile";
 import FilePreview from "../../components/ui/inputs/FilePreview";
-import { AddCircleRounded, MenuBook, Visibility } from "@mui/icons-material";
+import { AddCircleRounded, ArrowBack, MenuBook, Visibility } from "@mui/icons-material";
 import axios from "axios";
 import {
   extractJsonObject,
@@ -417,6 +417,33 @@ export default function AddLectures() {
             + Create New Course
           </Box>
         </Box>
+        <Box display="flex" mt={5}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<ArrowBack />}
+                    onClick={() => navigate(-1)}
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 600,
+                      //px: { xs: 2, sm: 3 },
+                      //py: { xs: 0.8, sm: 1 },
+                      borderRadius: 2,
+                      fontSize: {
+                        xs: "0.75rem",
+                        sm: "0.9rem",
+                        md: "1rem",
+                      },
+                      "& .MuiButton-startIcon": {
+                        "& svg": {
+                          fontSize: { xs: "1rem", sm: "1.2rem" },
+                        },
+                      },
+                    }}
+                  >
+                    Back
+                  </Button>
+                </Box>
       </Paper>
     </>
   );

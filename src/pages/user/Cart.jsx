@@ -8,7 +8,7 @@ import {
   CircularProgress,
   Container,
 } from "@mui/material";
-import { MenuBook } from "@mui/icons-material";
+import { ArrowBack, MenuBook } from "@mui/icons-material";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import CartItemCard from "../../components/ui/card/CartItemCard";
@@ -36,7 +36,11 @@ const Cart = () => {
     try {
       const response = await api.get("/user/getcartitems");
       const payload = response?.data?.data;
-
+      // if (Array.isArray(payload)) {
+      //   setCart({ items: [] });
+      // } else {
+      //   setCart(payload);
+      // }
       setCart(payload);
     } catch (err) {
       console.log("Error fetching cart details:", err);
@@ -90,7 +94,6 @@ const Cart = () => {
 
   const handleRemoveCart = async (item) => {
     try {
-      
       const productId =
         typeof item.productId === "string"
           ? item.productId
@@ -176,7 +179,7 @@ const Cart = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: "#f0f4f8", minHeight: "100vh", py: 6 }}>
+    <Box sx={{ backgroundColor: "#f0f4f8", minHeight: "100vh", py: 4 }}>
       <Container maxWidth="lg">
         <Paper
           elevation={4}
@@ -342,6 +345,34 @@ const Cart = () => {
               ) : null}
             </Box>
           )}
+
+          <Box display="flex" mt={5}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBack />}
+              onClick={() => navigate(-1)}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                //px: { xs: 2, sm: 3 },
+                //py: { xs: 0.8, sm: 1 },
+                borderRadius: 2,
+                fontSize: {
+                  xs: "0.75rem",
+                  sm: "0.9rem",
+                  md: "1rem",
+                },
+                "& .MuiButton-startIcon": {
+                  "& svg": {
+                    fontSize: { xs: "1rem", sm: "1.2rem" },
+                  },
+                },
+              }}
+            >
+              Back
+            </Button>
+          </Box>
         </Paper>
       </Container>
       <AppDialog />

@@ -51,7 +51,6 @@ export default function VideoPreviewDialog() {
         try {
           setLoading(true);
           const url = await getVideoStreamUrl(videoKey, lectureId, token);
-          console.log("url",url)
           setVideoUrl(url);
         } catch (err) {
           console.error("Video load failed", err);

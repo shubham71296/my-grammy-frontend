@@ -143,8 +143,10 @@ const Navbar = () => {
               src={WebsiteLogoImage}
               alt="Musically"
               style={{
+                // width: 90,
+                // height: 82,
                 width: 90,
-                height: 82,
+                height: 52,
                 borderRadius: 20,
               }}
             />

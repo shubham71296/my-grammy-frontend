@@ -31,7 +31,7 @@ import {
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import CourseVideoCard from "../../components/ui/card/CourseVideoCard";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { openDialogAction } from "../../features/ui/uiSlice";
 import AppDialog from "../../components/ui/dialog/AppDialog";
 import AddMoreCard from "../../components/ui/card/AddMoreCard";
@@ -53,6 +53,7 @@ const formatCurrency = (value) => {
 const CourseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   const [course, setCourse] = useState(null);
@@ -116,6 +117,7 @@ const CourseDetail = () => {
     setLoading(true);
     try {
       const response = await api.get(`/admin/coursebyid/${courseId}`);
+      console.log("response?.data?.data", response?.data?.data);
       const payload = response?.data?.data || response?.data;
       const courseData = payload?.course_data;
       const lecturesData = payload?.lectures_data || [];
@@ -165,7 +167,7 @@ const CourseDetail = () => {
   };
 
   return (
-    <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 6 }}>
+    <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 4 }}>
       <Container maxWidth="lg">
         <Paper elevation={4} sx={{ p: 3, borderRadius: 2 }}>
           <Box mb={3}>
@@ -300,7 +302,7 @@ const CourseDetail = () => {
                 },
               }}
             >
-              {course.course_title}
+              Course Name - {course.course_title}
             </Typography>
             <Typography
               color="text.secondary"
@@ -316,7 +318,7 @@ const CourseDetail = () => {
             </Typography>
 
             <Box display="flex" gap={2} mt={2} alignItems="center">
-              <Chip
+              {/* <Chip
                 label={formatCurrency(course.course_price)}
                 color="primary"
                 sx={{
@@ -326,15 +328,30 @@ const CourseDetail = () => {
                     md: "1rem",
                   },
                 }}
+              /> */}
+              <Chip
+                label={
+                  course.isPurchased
+                    ? "✓ Purchased"
+                    : formatCurrency(course.course_price)
+                }
+                color={course.isPurchased ? "success" : "primary"}
+                sx={{
+                  fontSize: {
+                    xs: "0.8rem",
+                    sm: "0.9rem",
+                    md: "1rem",
+                  },
+                }}
               />
-              <Typography variant="body2" color="text.secondary">
+              {/* <Typography variant="body2" color="text.secondary">
                 Instrument:{" "}
                 <strong>
                   {course.instrument?.instrument_title ||
                     course.instrument ||
                     "—"}
                 </strong>
-              </Typography>
+              </Typography> */}
             </Box>
           </Box>
 
@@ -351,9 +368,28 @@ const CourseDetail = () => {
                   sm: "1rem",
                   md: "1.2rem",
                 },
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
               Lectures ({lectures.length})
+              <Chip
+                label={course.isPurchased ? "FREE" : "PAID"}
+                variant="outlined"
+                color={course.isPurchased ? "success" : "error"}
+                sx={{
+                  fontWeight: 700,
+                  //borderWidth: "1px",
+                  //px: 1.5,
+                  //py: 0.5,
+                  fontSize: {
+                    xs: "0.6rem",
+                    sm: "0.75rem",
+                    md: "0.85rem",
+                  },
+                }}
+              />
             </Typography>
 
             {lectures.length === 0 ? (
@@ -385,6 +421,33 @@ const CourseDetail = () => {
                 })}
               </Grid>
             )}
+          </Box>
+          <Box display="flex" mt={5}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBack />}
+              onClick={() => navigate(-1)}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                //px: { xs: 2, sm: 3 },
+                //py: { xs: 0.8, sm: 1 },
+                borderRadius: 2,
+                fontSize: {
+                  xs: "0.75rem",
+                  sm: "0.9rem",
+                  md: "1rem",
+                },
+                "& .MuiButton-startIcon": {
+                  "& svg": {
+                    fontSize: { xs: "1rem", sm: "1.2rem" },
+                  },
+                },
+              }}
+            >
+              Back
+            </Button>
           </Box>
         </Paper>
       </Container>

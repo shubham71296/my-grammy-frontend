@@ -8,14 +8,17 @@ import {
   Paper,
   Avatar,
   Divider,
+  Button,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import moment from "moment";
+import { ArrowBack } from "@mui/icons-material";
 
 const UserProfile = () => {
   const { user } = useSelector((state) => state.auth);
-
+  const navigate = useNavigate();
   const fullName = `${user?.first_name || ""} ${user?.last_name || ""}`.trim();
 
   return (
@@ -23,7 +26,7 @@ const UserProfile = () => {
       sx={{
         minHeight: "100vh",
         backgroundColor: "#f4f7fb",
-        py: 6,
+        py: 4,
       }}
     >
       <Container maxWidth="md">
@@ -161,6 +164,33 @@ const UserProfile = () => {
               </Typography>
             </Grid>
           </Grid>
+          <Box display="flex" mt={5}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBack />}
+              onClick={() => navigate(-1)}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                //px: { xs: 2, sm: 3 },
+                //py: { xs: 0.8, sm: 1 },
+                borderRadius: 2,
+                fontSize: {
+                  xs: "0.75rem",
+                  sm: "0.9rem",
+                  md: "1rem",
+                },
+                "& .MuiButton-startIcon": {
+                  "& svg": {
+                    fontSize: { xs: "1rem", sm: "1.2rem" },
+                  },
+                },
+              }}
+            >
+              Back
+            </Button>
+          </Box>
         </Paper>
       </Container>
     </Box>

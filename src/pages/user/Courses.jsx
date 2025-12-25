@@ -8,18 +8,21 @@ import {
   Divider,
   TextField,
   InputAdornment,
+  Button,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CourseCard from "../../components/ui/card/CourseCard";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { increaseCartCount } from "../../features/cartSlice";
 import toast from "react-hot-toast";
-import { MenuBook } from "@mui/icons-material";
+import { ArrowBack, MenuBook } from "@mui/icons-material";
 import api from "../../api/axios";
 
 const Courses = () => {
   const { token } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [courseList, setCourseList] = useState([]);
   const [search, setSearch] = useState("");
   const dispatch = useDispatch();
@@ -86,7 +89,7 @@ const Courses = () => {
   }, [search]);
 
   return (
-    <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 6 }}>
+    <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 4 }}>
       <Container maxWidth="lg">
         <Paper elevation={4} sx={{ p: 3, borderRadius: 3 }}>
           <Typography
@@ -235,6 +238,33 @@ const Courses = () => {
               </Typography>
             )}
           </Grid>
+          <Box display="flex" mt={5}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<ArrowBack />}
+              onClick={() => navigate(-1)}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                //px: { xs: 2, sm: 3 },
+                //py: { xs: 0.8, sm: 1 },
+                borderRadius: 2,
+                fontSize: {
+                  xs: "0.75rem",
+                  sm: "0.9rem",
+                  md: "1rem",
+                },
+                "& .MuiButton-startIcon": {
+                  "& svg": {
+                    fontSize: { xs: "1rem", sm: "1.2rem" },
+                  },
+                },
+              }}
+            >
+              Back
+            </Button>
+          </Box>
         </Paper>
       </Container>
     </Box>

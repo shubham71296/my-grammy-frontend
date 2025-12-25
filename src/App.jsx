@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import { setCartCount } from "./features/cartSlice";
 import api from "./api/axios";
+import RouteProgressBar from "./components/ui/loader/RouteProgressBar";
 
 
 function App() {
@@ -27,7 +28,10 @@ function App() {
       console.log("Error loading cart count:", err);
     }
   };
-  return <AppRoutes />
+  return <>
+    <RouteProgressBar />
+    <AppRoutes />
+  </>
 }
 
 export default App

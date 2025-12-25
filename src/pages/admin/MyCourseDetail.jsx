@@ -301,7 +301,7 @@ const MyCourseDetail = () => {
               },
             }}
           >
-            {course.course_title}
+            Course Name - {course.course_title}
           </Typography>
           <Typography
             color="text.secondary"
@@ -328,14 +328,14 @@ const MyCourseDetail = () => {
                 },
               }}
             />
-            <Typography variant="body2" color="text.secondary">
+            {/* <Typography variant="body2" color="text.secondary">
               Instrument:{" "}
               <strong>
                 {course.instrument?.instrument_title ||
                   course.instrument ||
                   "—"}
               </strong>
-            </Typography>
+            </Typography> */}
           </Box>
         </Box>
 
@@ -400,6 +400,33 @@ const MyCourseDetail = () => {
               />
             </Grid>
           </Grid>
+        </Box>
+        <Box display="flex" mt={5}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<ArrowBack />}
+            onClick={() => navigate(-1)}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              //px: { xs: 2, sm: 3 },
+              //py: { xs: 0.8, sm: 1 },
+              borderRadius: 2,
+              fontSize: {
+                xs: "0.75rem",
+                sm: "0.9rem",
+                md: "1rem",
+              },
+              "& .MuiButton-startIcon": {
+                "& svg": {
+                  fontSize: { xs: "1rem", sm: "1.2rem" },
+                },
+              },
+            }}
+          >
+            Back
+          </Button>
         </Box>
       </Paper>
       <AppDialog />

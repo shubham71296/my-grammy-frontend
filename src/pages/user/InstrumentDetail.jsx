@@ -78,7 +78,7 @@ const InstrumentDetail = () => {
   }
 
   return (
-    <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 6 }}>
+    <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 4 }}>
       <Container maxWidth="lg">
         <Paper elevation={4} sx={{ p: 3, borderRadius: 2 }}>
           <Box mb={3}>
