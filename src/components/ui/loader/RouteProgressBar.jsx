@@ -25,6 +25,7 @@ const RouteProgressBar = () => {
         height: "3px",
         width: "100%",
         zIndex: 9999,
+        pointerEvents: "none", 
         background: "linear-gradient(90deg, #1976d2, #42a5f5)",
         animation: "progressAnim 1s infinite",
         "@keyframes progressAnim": {

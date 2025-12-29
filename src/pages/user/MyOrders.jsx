@@ -22,6 +22,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
+import { formatDateTime } from "../../utils/common-util";
 
 const MyOrders = () => {
   const { token } = useSelector((state) => state.auth);
@@ -358,7 +359,8 @@ const MyOrders = () => {
                     fontSize: { xs: "0.65rem", sm: "1rem" },
                   }}
                 >
-                  Ordered on: {new Date(order.createdAt).toLocaleString()}
+                  {/* Ordered on: {new Date(order.createdAt).toLocaleString()} */}
+                  Ordered on: {formatDateTime(order.createdAt)}
                 </Typography>
               </Paper>
             ))

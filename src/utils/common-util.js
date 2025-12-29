@@ -121,5 +121,27 @@ export const getFullName = (firstname = "", lastname = "") => {
     .join(" ");
 };
 
+export const formatDateTime = (dateStr) => {
+  const d = new Date(dateStr);
+
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  // AM/PM
+  const ampm = hours >= 12 ? "PM" : "AM";
+
+  // Convert to 12-hour format
+  hours = hours % 12;
+  hours = hours ? hours : 12; // 0 → 12
+  const hh = String(hours).padStart(2, "0");
+
+  return `${dd}/${mm}/${yyyy} ${hh}:${minutes}:${seconds} ${ampm}`;
+};
+
 
 

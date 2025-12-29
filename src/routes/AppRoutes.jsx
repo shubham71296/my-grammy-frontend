@@ -97,6 +97,7 @@ const Instruments = lazy(() => import("../pages/user/Instruments"));
 const InstrumentDetail = lazy(() => import("../pages/user/InstrumentDetail"));
 const ContactUs = lazy(() => import("../pages/user/ContactUs"));
 const Cart = lazy(() => import("../pages/user/Cart"));
+const Landing = lazy(() => import("../pages/user/Landing"));
 const MyOrders = lazy(() => import("../pages/user/MyOrders"));
 const Faq = lazy(() => import("../pages/user/Faq"));
 const UserProfile = lazy(() => import("../pages/user/UserProfile"));
@@ -131,7 +132,10 @@ function AppRoutes() {
       }
     >
       <Routes>
-        <Route path="/" element={<Navigate to="/user" replace />} />
+        {/* <Route path="/" element={<Navigate to="/user" replace />} /> */}
+
+        <Route path="/" element={<Navigate to="/landing" replace />} />
+        <Route path="/landing" element={<PublicRoute><Landing /></PublicRoute>} />
 
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />

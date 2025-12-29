@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -12,7 +12,9 @@ import {
   School,
   CurrencyRupee,
   ListAlt,
+  LibraryMusic,
 } from "@mui/icons-material";
+import api from "../../api/axios";
 
 const StatCard = ({ icon, title, value, color }) => (
   <Paper
@@ -68,6 +70,30 @@ const StatCard = ({ icon, title, value, color }) => (
 
 
 const Dashboard = () => {
+  const [summary, setSummary] = useState(null);
+  
+  useEffect(() => {
+    const loadSummary = async () => {
+      try {
+        const res = await api.get("/admin/getdashboardsummary");
+        if (res.data.success) {
+          setSummary(res.data.data);
+        }
+      } catch (err) {
+        console.log("Dashboard error:", err);
+      }
+    };
+    loadSummary();
+  }, []);
+
+  if (!summary) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Typography>Loading summary...</Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f4f6f8", py: { xs: 2, sm: 3 } }}>
       <Container maxWidth="lg">
@@ -93,28 +119,39 @@ const Dashboard = () => {
           </Typography>
         </Paper>
 
-        {/* Stats */}
-        <Grid container spacing={{ xs: 2, sm: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard icon={<ListAlt />} title="Total Orders" value="12" color="primary" />
+        <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+          <Grid size={{ xs: 12, md: 12, lg: 4 }} sx={{mb:1}}>
+            <StatCard icon={<ListAlt />} title="Total Orders" value={summary.orders} color="primary" />
+          </Grid>
+
+           <Grid size={{ xs: 12, md: 12, lg: 4 }} sx={{mb:1}}>
+            <StatCard icon={<LibraryMusic />} title="Total Instruments" value={summary.instruments} color="warning" />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 12, lg: 4 }} sx={{mb:1}}>
+            <StatCard icon={<School />} title="Total Courses" value={summary.courses} color="success" />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 12, lg: 4 }} sx={{mb:1}}>
+            <StatCard icon={<CurrencyRupee />} title="Revenue" value={`₹${summary.revenue}`} color="error" />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 12, lg: 4 }} sx={{mb:1}}>
+            <StatCard icon={<ShoppingCart />} title="Paid Orders" value={summary.paidOrders} color="info" />
+          </Grid>
+
+          {/* <Grid item xs={12} sm={6} md={3}>
+            <StatCard icon={<CurrencyRupee />} title="Today’s Revenue" value={`₹${summary.todaysRevenue}`} color="secondary" />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <StatCard icon={<School />} title="My Courses" value="5" color="success" />
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard icon={<ShoppingCart />} title="Cart Items" value="2" color="warning" />
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard icon={<CurrencyRupee />} title="Total Spent" value="₹4,500" color="error" />
-          </Grid>
+            <StatCard icon={<CurrencyRupee />} title="Razorpay Collected" value={`₹${summary.razorpayCollected}`} color="success" />
+          </Grid> */}
         </Grid>
 
         <Paper
           sx={{
-            mt: { xs: 4, sm: 5 },
+            mt: { xs: 1, sm: 2 },
             p: { xs: 2, sm: 3 },
             borderRadius: 2,
           }}

@@ -133,7 +133,7 @@ export default function CourseCard({
           }}
         />
 
-        <Typography
+        {/* <Typography
           variant="subtitle1"
           sx={{
             position: "absolute",
@@ -143,6 +143,30 @@ export default function CourseCard({
             fontWeight: 700,
             fontSize: { xs: "0.9rem", sm: "1rem" },
             textShadow: "0px 2px 6px rgba(0,0,0,0.5)",
+          }}
+        >
+          {course.course_title}
+        </Typography> */}
+        <Typography
+          variant="subtitle1"
+          sx={{
+            position: "absolute",
+            bottom: 12,
+            left: 12,
+            maxWidth: "90%",
+            color: "#fff",
+            fontWeight: 700,
+            px: 1.3,
+            py: 0.6,
+            borderRadius: 1.5,
+            backdropFilter: "blur(6px)",
+            background:
+              "linear-gradient(135deg, rgba(0,0,0,0.65), rgba(0,0,0,0.25))",
+            fontSize: { xs: "0.85rem", sm: "0.95rem" },
+            textShadow: "0px 2px 6px rgba(0,0,0,0.5)",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
           }}
         >
           {course.course_title}
