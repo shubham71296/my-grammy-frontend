@@ -87,17 +87,23 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
+
 import UserLayout from "../layout/UserLayout";
 import AdminLayout from "../layout/AdminLayout";
+import GuestLayout from "../layout/GuestLayout";
 
 const Home = lazy(() => import("../pages/user/Home"));
 const Courses = lazy(() => import("../pages/user/Courses"));
+const GuestCourses = lazy(() => import("../pages/user/GuestCourses"));
 const CourseDetail = lazy(() => import("../pages/user/CourseDetail"));
+const GuestCourseDetails = lazy(() => import("../pages/user/GuestCourseDetails"));
 const Instruments = lazy(() => import("../pages/user/Instruments"));
+const GuestInstruments = lazy(() => import("../pages/user/GuestInstruments"));
+const GuestInstrumentDetails = lazy(() => import("../pages/user/GuestInstrumentDetails"));
 const InstrumentDetail = lazy(() => import("../pages/user/InstrumentDetail"));
 const ContactUs = lazy(() => import("../pages/user/ContactUs"));
 const Cart = lazy(() => import("../pages/user/Cart"));
-const Landing = lazy(() => import("../pages/user/Landing"));
+const Guest = lazy(() => import("../pages/user/Guest"));
 const MyOrders = lazy(() => import("../pages/user/MyOrders"));
 const Faq = lazy(() => import("../pages/user/Faq"));
 const UserProfile = lazy(() => import("../pages/user/UserProfile"));
@@ -134,8 +140,17 @@ function AppRoutes() {
       <Routes>
         {/* <Route path="/" element={<Navigate to="/user" replace />} /> */}
 
-        <Route path="/" element={<Navigate to="/landing" replace />} />
-        <Route path="/landing" element={<PublicRoute><Landing /></PublicRoute>} />
+        <Route path="/" element={<Navigate to="/guest" replace />} />
+        
+        <Route path="/guest" element={<PublicRoute><GuestLayout /></PublicRoute>}>
+          <Route index element={<Guest />} />
+          <Route path="guestinstruments" element={<GuestInstruments />} />
+          <Route path="guestinstrument/:id" element={<GuestInstrumentDetails />} />
+          <Route path="guestcourses" element={<GuestCourses />} />
+          <Route path="guestcourse/:id" element={<GuestCourseDetails />} />
+        </Route>
+
+        {/* <Route path="/landing" element={<PublicRoute><Landing /></PublicRoute>} /> */}
 
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />

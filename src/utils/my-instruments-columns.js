@@ -1,5 +1,6 @@
 import { Delete, Edit, Visibility } from "@mui/icons-material";
 import DynamicImagePreview from "../components/ui/table/DynamicImagePreview";
+import DynamicAmount from "../components/ui/table/DynamicAmount";
 // import { MdEditNote, MdDeleteOutline, MdRemoveRedEye } from "react-icons/md";
 
 
@@ -41,6 +42,7 @@ export const headCells = [
      {
         _col: 'instrument_price',
         _label: 'Instrument Price',
+        _comp: DynamicAmount
     },    
     {
         _col: 'instrurment_description',

@@ -192,7 +192,7 @@ const InstrumentDetail = () => {
                   },
                 }}
               >
-                {instrument.instrument_title}1
+                {instrument.instrument_title}
               </Typography>
 
               <Chip

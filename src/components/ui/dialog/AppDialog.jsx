@@ -9,6 +9,7 @@ import VideoPreviewDialog from "./VideoPreviewDialog";
 import UserDialog from "./UserDialog";
 import OrderDialog from "./OrderDialog";
 import { useEffect, useState } from "react";
+import LoginRequiredDialog from "./LoginRequiredDialog";
 
 
 export default function AppDialog() {
@@ -70,6 +71,8 @@ export default function AppDialog() {
       {dialogInfo.check === "delete_user" && <UserDialog />}
 
       {dialogInfo.check === "view_order" && <OrderDialog />}
+
+      {dialogInfo.check === "guest_login_required" && <LoginRequiredDialog />}
     </Dialog>
   );
 }

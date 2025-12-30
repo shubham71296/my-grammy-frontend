@@ -26,6 +26,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 import { useNavigate } from "react-router-dom";
 import { CloseRounded, Visibility } from "@mui/icons-material";
+import ReportGmailerrorredRoundedIcon from "@mui/icons-material/ReportGmailerrorredRounded";
 import { closeDialog } from "../../../features/ui/uiSlice";
 import { getVideoStreamUrl } from "../../../api/video";
 
@@ -45,32 +46,32 @@ export default function VideoPreviewDialog() {
   const handleClose = () => dispatch(closeDialog());
 
   useEffect(() => {
-      if (!videoKey || !lectureId || !token) return;
+    if (!videoKey || !lectureId || !token) return;
 
-      async function loadVideo() {
-        try {
-          setLoading(true);
-          const url = await getVideoStreamUrl(videoKey, lectureId, token);
-          setVideoUrl(url);
-        } catch (err) {
-          console.error("Video load failed", err);
-          const status = err?.response?.status;
-          const msg = err?.response?.data?.msg;
+    async function loadVideo() {
+      try {
+        setLoading(true);
+        const url = await getVideoStreamUrl(videoKey, lectureId, token);
+        setVideoUrl(url);
+      } catch (err) {
+        console.error("Video load failed", err);
+        const status = err?.response?.status;
+        const msg = err?.response?.data?.msg;
 
-          if (status === 403) {
-            setErrorMsg(msg || "You are not allowed to watch this video");
-          } else if (status === 401) {
-            setErrorMsg("Session expired. Please login again.");
-          } else {
-            setErrorMsg("Failed to load video. Please try again later.");
-          }
-        } finally {
-          setLoading(false);
+        if (status === 403) {
+          setErrorMsg(msg || "You are not allowed to watch this video");
+        } else if (status === 401) {
+          setErrorMsg("Session expired. Please login again.");
+        } else {
+          setErrorMsg("Failed to load video. Please try again later.");
         }
+      } finally {
+        setLoading(false);
       }
+    }
 
-      loadVideo();
-    }, [videoKey, lectureId, token]);
+    loadVideo();
+  }, [videoKey, lectureId, token]);
 
   if (dialogInfo?.check !== "view_video") return null;
 
@@ -98,16 +99,24 @@ export default function VideoPreviewDialog() {
               boxShadow: "0 3px 8px rgba(107, 77, 255, 0.4)",
             }}
           >
-            <Visibility sx={{
-                  fontSize: { xs: 16, sm: 18, md: 20 },
-                }} />
+            <Visibility
+              sx={{
+                fontSize: { xs: 16, sm: 18, md: 20 },
+              }}
+            />
           </Box>
 
-          <Typography variant="h6" sx={{ fontWeight: 700, fontSize: {
-                  xs: "0.95rem", 
-                  sm: "1.1rem", 
-                  md: "1.25rem", 
-                }, }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              fontSize: {
+                xs: "0.95rem",
+                sm: "1.1rem",
+                md: "1.25rem",
+              },
+            }}
+          >
             {previewTitle}
           </Typography>
         </Box>
@@ -122,16 +131,11 @@ export default function VideoPreviewDialog() {
       </DialogTitle>
 
       <Divider />
-      <DialogContent
-       dividers 
-       sx={{ p: { xs: 2, md: 3 } }}
-      >
+      <DialogContent dividers sx={{ p: { xs: 2, md: 3 } }}>
         {loading && (
           <Stack alignItems="center" gap={2} py={5}>
             <CircularProgress />
-            <Typography color="text.secondary">
-              Loading video…
-            </Typography>
+            <Typography color="text.secondary">Loading video…</Typography>
           </Stack>
         )}
 
@@ -142,7 +146,7 @@ export default function VideoPreviewDialog() {
               justifyContent: "center",
             }}
           >
-          <Paper
+            {/* <Paper
             elevation={0}
             sx={{
               p: 4,
@@ -174,7 +178,107 @@ export default function VideoPreviewDialog() {
             >
               Close
             </Button>
-          </Paper>
+          </Paper> */}
+
+            <Paper
+              elevation={3}
+              sx={{
+                p: { xs: 3, sm: 4 },
+                textAlign: "center",
+                maxWidth: 420,
+                mx: "auto",
+                borderRadius: 3,
+                background: "linear-gradient(135deg, #fff5f5, #ffecec)",
+                boxShadow: "0 8px 24px rgba(255,0,0,0.12)",
+                animation: "fadeIn 0.4s ease",
+                "@keyframes fadeIn": {
+                  from: { opacity: 0, transform: "translateY(8px)" },
+                  to: { opacity: 1, transform: "translateY(0)" },
+                },
+              }}
+            >
+              {/* Icon */}
+              <Box
+                sx={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: "50%",
+                  mx: "auto",
+                  mb: 2,
+                  background: "rgba(244,67,54,0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ReportGmailerrorredRoundedIcon
+                  sx={{
+                    fontSize: 36,
+                    color: "error.main",
+                  }}
+                />
+              </Box>
+
+              {/* Title */}
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                color="error"
+                sx={{
+                  fontSize: {
+                    xs: "1.05rem",
+                    sm: "1.2rem",
+                    md: "1.35rem",
+                  },
+                  mb: 1,
+                }}
+              >
+                Access Denied
+              </Typography>
+
+              {/* Message */}
+              <Typography
+                sx={{
+                  color: "text.secondary",
+                  fontSize: {
+                    xs: "0.9rem",
+                    sm: "1rem",
+                    md: "1.1rem",
+                  },
+                  lineHeight: 1.5,
+                  px: 1,
+                }}
+              >
+                {errorMsg}
+              </Typography>
+
+              {/* Button */}
+              <Button
+                variant="contained"
+                onClick={handleClose}
+                sx={{
+                  mt: 3,
+                  px: 4,
+                  py: 1,
+                  fontWeight: 600,
+                  textTransform: "none",
+                  borderRadius: 2,
+                  fontSize: {
+                    xs: "0.85rem",
+                    sm: "0.95rem",
+                  },
+                  background: "linear-gradient(135deg, #e53935, #b71c1c)",
+                  transition: "0.3s ease",
+                  "&:hover": {
+                    background: "linear-gradient(135deg, #f44336, #d32f2f)",
+                    transform: "scale(1.03)",
+                    boxShadow: "0 6px 18px rgba(244,67,54,0.3)",
+                  },
+                }}
+              >
+                Close
+              </Button>
+            </Paper>
           </Box>
         )}
 
@@ -191,7 +295,6 @@ export default function VideoPreviewDialog() {
               p: 2,
             }}
           >
-
             <video
               src={videoUrl}
               controls
@@ -212,4 +315,3 @@ export default function VideoPreviewDialog() {
     </>
   );
 }
-
