@@ -97,7 +97,7 @@ export default function Landing() {
           sort: { createdAt: -1 },
         },
       };
-      const res = await api.post("/admin/allinstumnts", body);
+      const res = await api.post("/admin/landingallinstumnts", body);
       setInstrumentList(res.data.data || []);
     } finally {
       setLoadingInstruments(false);
@@ -116,7 +116,7 @@ export default function Landing() {
           sort: { createdAt: -1 },
         },
       };
-      const res = await api.post("/admin/allcourses", body);
+      const res = await api.post("/admin/landingallcourses", body);
       setCourseList(res.data.data || []);
     } finally {
       setLoadingCourses(false);
