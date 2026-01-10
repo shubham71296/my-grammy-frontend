@@ -161,13 +161,21 @@ const Courses = () => {
             <TextField
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search courses by title or price..."
+              placeholder="Search course"
               size="small"
               fullWidth
               sx={{
                 width: "100%",
                 maxWidth: { sm: 420, md: 500 },
                 mx: "auto",
+                "& .MuiInputBase-input::placeholder": {
+                  fontSize: { xs: "0.75rem", sm: "0.9rem" },  
+                  //opacity: 0.8,
+                },
+                "& .MuiInputBase-input": {
+                  fontSize: { xs: "0.8rem", sm: "0.95rem" },
+                  py: { xs: 1, sm: 1.2 },
+                },
               }}
               InputProps={{
                 startAdornment: (

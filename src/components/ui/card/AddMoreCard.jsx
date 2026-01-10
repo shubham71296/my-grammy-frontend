@@ -9,13 +9,13 @@ const AddMoreCourseCard = ({ title, onClick }) => {
       sx={{
         width: {
           xs: 120,
-          sm: 150,
-          md: 160,
+          // sm: 150,
+          // md: 160,
         },
         height: {
           xs: 140,
-          sm: 170,
-          md: 180,
+          // sm: 170,
+          // md: 180,
         },
         border: "dashed",
         borderRadius: 3,
@@ -46,7 +46,10 @@ const AddMoreCourseCard = ({ title, onClick }) => {
       >
         <AddCircleOutlineIcon
           sx={{
-            fontSize: { xs: 30, sm: 38, md: 42 },
+            fontSize: { 
+              xs: 30, 
+              //sm: 38  
+            },
             color: "#1976d2",
           }}
         />
@@ -56,8 +59,8 @@ const AddMoreCourseCard = ({ title, onClick }) => {
             fontWeight: 600,
             fontSize: {
               xs: "0.55rem",
-              sm: "0.85rem",
-              md: "0.9rem",
+              //sm: "0.85rem",
+              //md: "0.9rem",
             },
             transition: "0.3s ease",
             color: "#1976d2",

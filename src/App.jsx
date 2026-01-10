@@ -6,6 +6,8 @@ import axios from "axios";
 import { setCartCount } from "./features/cartSlice";
 import api from "./api/axios";
 import RouteProgressBar from "./components/ui/loader/RouteProgressBar";
+import ScrollToTop from "./components/ui/ScrollToTop";
+import ScrollToTopButton from "./components/ui/ScrollToTopButton";
 
 
 function App() {
@@ -30,7 +32,9 @@ function App() {
   };
   return <>
     <RouteProgressBar />
+    <ScrollToTop /> 
     <AppRoutes />
+    <ScrollToTopButton />
   </>
 }
 

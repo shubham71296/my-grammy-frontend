@@ -48,7 +48,7 @@ const LectureCard = ({ lec, index, onPlay }) => {
             }}
             onClick={() => onPlay(lec)}
           >
-            <VideoLibrary fontSize="medium" />
+            <VideoLibrary sx={{color: "#FF0000"}} fontSize="medium" />
           </IconButton>
         </Box>
 

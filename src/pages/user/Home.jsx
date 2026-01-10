@@ -520,7 +520,8 @@ export default function Home() {
             borderRadius: 3,
             background: "rgba(2, 2, 94, 0.04)",
             //border: "1px solid rgba(2, 2, 94, 0.1)",
-            borderLeft: 3,
+            //borderLeft: 3,
+            borderLeft: "4px solid #02025e",
           }}
         >
           <Typography

@@ -293,7 +293,8 @@ const CourseDetail = () => {
           <Box mb={3}>
             <Typography
               variant="h6"
-              fontWeight={700}
+              color="primary"
+              //fontWeight={800}
               sx={{
                 fontSize: {
                   xs: "0.8rem",
@@ -302,20 +303,34 @@ const CourseDetail = () => {
                 },
               }}
             >
-              Course Name - {course.course_title}
+              Course Name: <strong>{course.course_title}</strong>
             </Typography>
-            <Typography
-              color="text.secondary"
+
+            <Paper
+              elevation={0}
               sx={{
-                fontSize: {
-                  xs: "0.8rem",
-                  sm: "1rem",
-                  md: "1.2rem",
-                },
+                p: { xs: 2, sm: 3 },
+                mt:1,
+                mb: 4,
+                borderRadius: 3,
+                background: "rgba(2, 2, 94, 0.04)",
+                //border: "1px solid rgba(2, 2, 94, 0.1)",
+                  borderLeft: "4px solid #02025e",
               }}
             >
-              {course.course_description}
-            </Typography>
+              <Typography
+                color="text.secondary"
+                 sx={{
+                  fontSize: { xs: "14px", sm: "16px", md: "18px" },
+                  lineHeight: 1.8,
+                  color: "#1b085c",
+                  //textAlign: "center",
+                  maxWidth: 900,
+                }}
+              >
+                {course.course_description}
+              </Typography>
+            </Paper>
 
             <Box display="flex" gap={2} mt={2} alignItems="center">
               {/* <Chip

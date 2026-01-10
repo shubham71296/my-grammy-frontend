@@ -149,7 +149,7 @@ const Dashboard = () => {
           </Grid> */}
         </Grid>
 
-        <Paper
+        {/* <Paper
           sx={{
             mt: { xs: 1, sm: 2 },
             p: { xs: 2, sm: 3 },
@@ -175,7 +175,7 @@ const Dashboard = () => {
           <Typography sx={{ fontSize: { xs: "0.85rem", sm: "1rem" } }} color="text.secondary">
             • Completed payment successfully
           </Typography>
-        </Paper>
+        </Paper> */}
       </Container>
     </Box>
   );

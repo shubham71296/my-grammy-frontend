@@ -82,7 +82,7 @@ export default function FilePreview({ files, onRemove }) {
                   fontSize: 30,
                 }}
               >
-                <VideoLibrary fontSize="medium" />
+                <VideoLibrary sx={{color: "#FF0000"}} fontSize="medium" />
               </Box>
             ) : fileType === "application/pdf" ? (
               <Box

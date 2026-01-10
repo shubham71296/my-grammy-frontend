@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
   Avatar,
@@ -54,6 +54,7 @@ const menuItems = [
 ];
 
 const GuestLayout = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const [active, setActive] = useState("Home");
   const [anchorEl, setAnchorEl] = useState(null);
@@ -61,7 +62,7 @@ const GuestLayout = () => {
 
   const [open, setOpen] = useState(false);
   const theme = useTheme();
-  const isSm = useMediaQuery(theme.breakpoints.down("sm"));  
+  const isSm = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleAvatarClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -69,6 +70,22 @@ const GuestLayout = () => {
   const handleAvatarClose = () => {
     setAnchorEl(null);
   };
+
+  useEffect(() => {
+    if (location.pathname === "/guest") {
+      setActive("Home");
+    } else if (
+      location.pathname.includes("guestcourses") ||
+      location.pathname.includes("guestcourse/")
+    ) {
+      setActive("Courses");
+    } else if (
+      location.pathname.includes("guestinstruments") ||
+      location.pathname.includes("guestinstrument/")
+    ) {
+      setActive("Instruments");
+    }
+  }, [location.pathname]);
 
   return (
     <>
@@ -105,7 +122,12 @@ const GuestLayout = () => {
           </Stack>
 
           <Box
-            sx={{ flexGrow: 1, display: { xs: "none", sm: "flex" }, gap: 1, ml:2 }}
+            sx={{
+              flexGrow: 1,
+              display: { xs: "none", sm: "flex" },
+              gap: 1,
+              ml: 2,
+            }}
           >
             {menuItems.map((it) => (
               <Button
@@ -145,7 +167,7 @@ const GuestLayout = () => {
                     transition: "all 180ms ease",
                   },
                 }}
-              > 
+              >
                 {it.icon}
                 <Box component="span" sx={{ ml: 1 }}>
                   {it.label}
@@ -235,82 +257,79 @@ const GuestLayout = () => {
             anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
           >
             <MenuItem onClick={() => navigate("/login")}>
-              <Login sx={{ mr: 1, color: "error.main" }} /> Login
+              <Login sx={{ mr: 1, color: "success.main" }} /> Login / Signup
             </MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
-        
-      <Drawer anchor="left" open={open} onClose={() => setOpen(false)}>
-              <Box sx={{ width: 280, position: "relative" }}>
-                <IconButton
-                  onClick={() => setOpen(false)}
-                  sx={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    color: "text.secondary",
-                    "&:hover": { color: "error.main" },
-                  }}
-                  aria-label="close drawer"
-                >
-                  <CloseIcon />
-                </IconButton>
-      
-                <Box
-                  sx={{ p: 3, pt: 5, display: "flex", alignItems: "center", gap: 2 }}
-                >
-                  <Box
-                    sx={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: 2,
-                      bgcolor: "primary.main",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#fff",
-                      fontWeight: 700,
-                      boxShadow: 2,
-                    }}
-                  >
-                    G
-                  </Box>
-                  <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                      Grammy
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Discover instruments & courses
-                    </Typography>
-                  </Box>
-                </Box>
-      
-                <Divider />
-      
-                <List>
-                  {menuItems.map((it) => (
-                    <ListItemButton
-                      key={it.id}
-                      selected={active === it.id}
-                      onClick={() => {
-                        setActive(it.id);
-                        navigate(it.to);
-                        setOpen(false);
-                      }}
-                    > 
-                      <ListItemIcon>
-                        {it.icon}
-                      </ListItemIcon>
-                      <ListItemText primary={it.label} />
-                    </ListItemButton>
-                  ))}
-                </List>
-      
-                <Divider />
-              </Box>
-            </Drawer>
 
+      <Drawer anchor="left" open={open} onClose={() => setOpen(false)}>
+        <Box sx={{ width: 280, position: "relative" }}>
+          <IconButton
+            onClick={() => setOpen(false)}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: "text.secondary",
+              "&:hover": { color: "error.main" },
+            }}
+            aria-label="close drawer"
+          >
+            <CloseIcon />
+          </IconButton>
+
+          <Box
+            sx={{ p: 3, pt: 5, display: "flex", alignItems: "center", gap: 2 }}
+          >
+            <Box
+              sx={{
+                width: 52,
+                height: 52,
+                borderRadius: 2,
+                bgcolor: "primary.main",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontWeight: 700,
+                boxShadow: 2,
+              }}
+            >
+              G
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                Grammy
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Discover instruments & courses
+              </Typography>
+            </Box>
+          </Box>
+
+          <Divider />
+
+          <List>
+            {menuItems.map((it) => (
+              <ListItemButton
+                key={it.id}
+                selected={active === it.id}
+                onClick={() => {
+                  setActive(it.id);
+                  navigate(it.to);
+                  setOpen(false);
+                }}
+              >
+                <ListItemIcon>{it.icon}</ListItemIcon>
+                <ListItemText primary={it.label} />
+              </ListItemButton>
+            ))}
+          </List>
+
+          <Divider />
+        </Box>
+      </Drawer>
 
       <Toolbar />
       <Outlet />

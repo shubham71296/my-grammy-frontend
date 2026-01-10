@@ -213,6 +213,29 @@ export default function Login() {
               Sign up
             </Typography>
           </Typography>
+         
+         <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/guest")}
+            sx={{
+              mt:2,
+              backgroundColor: "#2e7d32", // green
+              color: "#fff",
+              fontSize: { xs: "0.75rem", sm: "0.85rem" },
+              fontWeight: 600,
+              textTransform: "none",
+              borderRadius: "8px",
+              px: 2.5,
+              py: 0.8,
+              "&:hover": {
+                backgroundColor: "#1b5e20",
+              },
+            }}
+          >
+            {"<< "}Go to Home Page
+          </Button>
+          </Box>
         </Paper>
       </Box>
     </>

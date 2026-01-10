@@ -78,12 +78,13 @@ export default function LectureDialog() {
       }
       const files = e?.target?.files;
       if (files && files.length > 0) {
-        const allowedVideoTypes = ["video/mp4", "video/mkv", "video/mov"];
+        // const allowedVideoTypes = ["video/mp4", "video/mkv", "video/mov"];
+        const allowedVideoTypes = ["video/mp4", "video/quicktime", "video/webm", "video/ogg"];
         const maxVideoSize = 500 * 1024 * 1024; 
         const validFiles = Array.from(files).filter((file) => {
           if (!allowedVideoTypes.includes(file.type)) {
             tempInputs[i1]._errorMsg =
-              "Only mp4, webm and ogg videos are allowed";
+              "Only MP4, MOV, WEBM and OGG videos are allowed";
             return false;
           }
           if (file.size > maxVideoSize) {

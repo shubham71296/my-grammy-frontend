@@ -12,6 +12,8 @@ import {
   Divider,
   Paper,
   Chip,
+  CircularProgress,
+  Skeleton,
 } from "@mui/material";
 import { ArrowBack, LibraryMusic, ShoppingCart } from "@mui/icons-material";
 import api from "../../api/axios";
@@ -23,6 +25,9 @@ const InstrumentDetail = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const [imageLoading, setImageLoading] = useState(false);
+  const [thumbLoading, setThumbLoading] = useState({});
 
   const [instrument, setInstrument] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
@@ -38,7 +43,9 @@ const InstrumentDetail = () => {
       setInstrument(data);
 
       if (data?.instrument_images?.length > 0) {
-        setSelectedImage(data.instrument_images[0].url);
+        //setSelectedImage(data.instrument_images[0].url);
+        const firstImage = data.instrument_images[0].url;
+        setSelectedImage(firstImage);
       }
     } catch (error) {
       console.error("Error fetching instruments:", error);
@@ -124,10 +131,11 @@ const InstrumentDetail = () => {
             />
           </Box>
 
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+          <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+            <Grid size={{ xs: 12, md: 12, lg: 6 }}>
               <Card
                 sx={{
+                  position: "relative",
                   borderRadius: 3,
                   overflow: "hidden",
                   cursor: "pointer",
@@ -137,22 +145,54 @@ const InstrumentDetail = () => {
                   "&:hover": { transform: "scale(1.03)" },
                 }}
               >
+                {imageLoading && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      zIndex: 2,
+                      backgroundColor: "rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    <CircularProgress
+                      size={36}
+                      sx={{ position: "absolute", zIndex: 2 }}
+                    />
+                  </Box>
+                )}
                 <CardMedia
                   component="img"
                   image={selectedImage}
                   alt={instrument.instrument_title}
                   sx={{
-                    objectFit: "cover",
+                    //objectFit: "cover",
+                    bgcolor: "grey.200",
+                    objectFit: "contain",
                     height: { xs: 220, sm: 280, md: 300 },
+                    opacity: imageLoading ? 0.4 : 1,
+                    transition: "opacity 0.3s ease",
+                  }}
+                  onLoad={() => setImageLoading(false)}
+                  onError={(e) => {
+                    e.currentTarget.src = PLACEHOLDER;
+                    setImageLoading(false);
                   }}
                 />
               </Card>
 
-              <Grid container spacing={1}>
+              <Grid
+                container
+                columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+                sx={{ mt: 3 }}
+              >
                 {instrument.instrument_images?.map((img, index) => (
-                  <Grid item xs={3} sm={2} key={index}>
+                  <Grid size={{ xs: 3, sm: 2, md: 2 }} key={index}>
                     <Box
                       sx={{
+                        position: "relative",
                         borderRadius: 2,
                         overflow: "hidden",
                         cursor: "pointer",
@@ -163,152 +203,195 @@ const InstrumentDetail = () => {
                         transition: "0.3s",
                         "&:hover": { borderColor: "#1976d2" },
                       }}
-                      onClick={() => setSelectedImage(img.url)}
+                      //onClick={() => setSelectedImage(img.url)}
+                      onClick={() => {
+                        if (selectedImage === img.url) return;
+                        setSelectedImage(img.url);
+                        setImageLoading(true);
+                      }}
                     >
+                      {/* {thumbLoading[index] && (
+                        <Skeleton
+                          variant="rectangular"
+                          animation="wave"
+                          width="100%"
+                          height="100%"
+                          sx={{
+                            position: "absolute",
+                            inset: 0,
+                            borderRadius: 2,
+                          }}
+                        />
+                      )} */}
                       <CardMedia
                         component="img"
                         image={img.url}
                         sx={{
                           height: 70,
                           width: "100%",
-                          objectFit: "cover",
+                          //objectFit: "cover",
+                          bgcolor: "grey.200",
+                          objectFit: "contain",
+                          opacity: thumbLoading[index] ? 0.4 : 1,
+                          transition: "opacity 0.3s ease",
                         }}
                       />
                     </Box>
+                    <Box sx={{ mt: 1 }}></Box>
                   </Grid>
                 ))}
               </Grid>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Typography
-                variant="h5"
-                fontWeight={700}
+            <Grid size={{ xs: 12, md: 12, lg: 6 }}>
+              <Box
                 sx={{
-                  fontSize: {
-                    xs: "1.2rem",
-                    sm: "1.5rem",
-                    md: "1.8rem",
+                  px: {
+                    xs: 0,
+                    sm: 0,
+                    md: 0,
+                    lg: 2,
                   },
                 }}
               >
-                {instrument.instrument_title}
-              </Typography>
-
-              <Chip
-                label={`₹${instrument.instrument_price || 0}`}
-                color="primary"
-                sx={{
-                  mt: 2,
-                  fontSize: {
-                    xs: "0.8rem",
-                    sm: "0.9rem",
-                    md: "1rem",
-                  },
-                }}
-              />
-
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ mt: 2, lineHeight: 1.7 }}
-              >
-                {instrument.instrurment_description ||
-                  instrument.instrument_description ||
-                  "A beautifully crafted musical instrument."}
-              </Typography>
-
-              <Divider sx={{ my: 2 }} />
-
-              <Stack component="ul" sx={{ pl: 2, mb: 2 }}>
                 <Typography
-                  component="li"
-                  variant="body2"
+                  variant="h5"
+                  fontWeight={700}
                   sx={{
+                    fontSize: {
+                      xs: "1.2rem",
+                      sm: "1.5rem",
+                      md: "1.8rem",
+                    },
+                    mt: {
+                      xs: 2,
+                      sm: 2,
+                      md: 2,
+                      lg: 0,
+                    },
+                  }}
+                >
+                  {instrument.instrument_title}
+                </Typography>
+
+                <Chip
+                  label={`₹${instrument.instrument_price || 0}`}
+                  color="primary"
+                  sx={{
+                    mt: 2,
                     fontSize: {
                       xs: "0.8rem",
                       sm: "0.9rem",
+                      md: "1rem",
                     },
                   }}
-                  color="text.secondary"
-                >
-                  Smooth playability & ergonomic design
-                </Typography>
-                <Typography
-                  component="li"
-                  variant="body2"
-                  sx={{
-                    fontSize: {
-                      xs: "0.8rem",
-                      sm: "0.9rem",
-                    },
-                  }}
-                  color="text.secondary"
-                >
-                  Rich, balanced tone ideal for any level
-                </Typography>
-                <Typography
-                  component="li"
-                  variant="body2"
-                  sx={{
-                    fontSize: {
-                      xs: "0.8rem",
-                      sm: "0.9rem",
-                    },
-                  }}
-                  color="text.secondary"
-                >
-                  High-quality craftsmanship
-                </Typography>
-              </Stack>
+                />
 
-              <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={2}
-                sx={{ mt: 2 }}
-              >
-                <Button
-                  variant="outlined"
-                  startIcon={<ArrowBack />}
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
                   sx={{
-                    fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
-                    "& .MuiButton-startIcon > *": {
-                      fontSize: { xs: 18, sm: 20, md: 22 },
-                    },
-                    textTransform: "none",
-                    borderColor: "#1976d2",
-                    color: "#1976d2",
-                    fontWeight: 700,
-                    px: 3,
-                    borderRadius: "10px",
-                    "&:hover": {
-                      backgroundColor: "#1976d2",
-                      color: "#fff",
-                    },
+                    mt: 2,
+                    lineHeight: 1.7,
                   }}
-                  onClick={() => navigate(-1)}
                 >
-                  Back
-                </Button>
+                  {instrument.instrurment_description ||
+                    instrument.instrument_description ||
+                    "A beautifully crafted musical instrument."}
+                </Typography>
 
-                <Button
-                  onClick={() => addToCart(instrument, "instrument")}
-                  variant="contained"
-                  startIcon={<ShoppingCart />}
-                  sx={{
-                    fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
-                    "& .MuiButton-startIcon > *": {
-                      fontSize: { xs: 18, sm: 20, md: 22 },
-                    },
-                    textTransform: "none",
-                    fontWeight: 700,
-                    px: 3,
-                    borderRadius: "10px",
-                  }}
+                <Divider sx={{ my: 2 }} />
+
+                <Stack component="ul" sx={{ pl: 2, mb: 2 }}>
+                  <Typography
+                    component="li"
+                    variant="body2"
+                    sx={{
+                      fontSize: {
+                        xs: "0.8rem",
+                        sm: "0.9rem",
+                      },
+                    }}
+                    color="text.secondary"
+                  >
+                    Smooth playability & ergonomic design
+                  </Typography>
+                  <Typography
+                    component="li"
+                    variant="body2"
+                    sx={{
+                      fontSize: {
+                        xs: "0.8rem",
+                        sm: "0.9rem",
+                      },
+                    }}
+                    color="text.secondary"
+                  >
+                    Rich, balanced tone ideal for any level
+                  </Typography>
+                  <Typography
+                    component="li"
+                    variant="body2"
+                    sx={{
+                      fontSize: {
+                        xs: "0.8rem",
+                        sm: "0.9rem",
+                      },
+                    }}
+                    color="text.secondary"
+                  >
+                    High-quality craftsmanship
+                  </Typography>
+                </Stack>
+
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  sx={{ mt: 4 }}
                 >
-                  Add to Cart
-                </Button>
-              </Stack>
+                  <Button
+                    variant="outlined"
+                    startIcon={<ArrowBack />}
+                    sx={{
+                      fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
+                      "& .MuiButton-startIcon > *": {
+                        fontSize: { xs: 18, sm: 20, md: 22 },
+                      },
+                      textTransform: "none",
+                      borderColor: "#1976d2",
+                      color: "#1976d2",
+                      fontWeight: 700,
+                      px: 3,
+                      borderRadius: "10px",
+                      "&:hover": {
+                        backgroundColor: "#1976d2",
+                        color: "#fff",
+                      },
+                    }}
+                    onClick={() => navigate(-1)}
+                  >
+                    Back
+                  </Button>
+
+                  <Button
+                    onClick={() => addToCart(instrument, "instrument")}
+                    variant="contained"
+                    startIcon={<ShoppingCart />}
+                    sx={{
+                      fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
+                      "& .MuiButton-startIcon > *": {
+                        fontSize: { xs: 18, sm: 20, md: 22 },
+                      },
+                      textTransform: "none",
+                      fontWeight: 700,
+                      px: 3,
+                      borderRadius: "10px",
+                    }}
+                  >
+                    Add to Cart
+                  </Button>
+                </Stack>
+              </Box>
             </Grid>
           </Grid>
         </Paper>

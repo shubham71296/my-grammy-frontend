@@ -287,7 +287,17 @@ export default function AdminLayout() {
             {user?.em}
           </Typography>
 
-          <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
+          <IconButton 
+            onClick={handleProfileClick} 
+            sx={{ 
+              p: 0,
+              transition: "0.25s ease",
+              "&:hover": {
+                transform: "scale(1.08)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }, 
+            }}
+          >
             <Avatar alt="Profile" />
           </IconButton>
 
@@ -300,7 +310,7 @@ export default function AdminLayout() {
           >
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
-                <Logout fontSize="small" />
+                <Logout fontSize="small" sx={{ color: "error.main" }}/>
               </ListItemIcon>
               <ListItemText>Logout</ListItemText>
             </MenuItem>

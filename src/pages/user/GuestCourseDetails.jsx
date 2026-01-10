@@ -67,14 +67,13 @@ const GuestCourseDetails = () => {
 
   const openFullScreen = (lec) => {
     dispatch(
-        openDialogAction({
+      openDialogAction({
         openDialog: true,
         dialogInfo: { check: "guest_login_required" },
-        })
+      })
     );
   };
 
-  
   useEffect(() => {
     if (!id) return;
     getCourseDetails(id);
@@ -119,7 +118,6 @@ const GuestCourseDetails = () => {
       </Typography>
     );
   }
-
 
   return (
     <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 4 }}>
@@ -167,6 +165,8 @@ const GuestCourseDetails = () => {
               }}
             />
           </Box>
+          
+          
           <Box sx={{}}>
             <Typography sx={{ fontSize: "18px", color: "warning.main" }}>
               Instrument:{" "}
@@ -248,8 +248,10 @@ const GuestCourseDetails = () => {
           <Box mb={3}>
             <Typography
               variant="h6"
-              fontWeight={700}
+              color="primary"
+              //fontWeight={800}
               sx={{
+                //mb:1,
                 fontSize: {
                   xs: "0.8rem",
                   sm: "1rem",
@@ -257,20 +259,34 @@ const GuestCourseDetails = () => {
                 },
               }}
             >
-              Course Name - {course.course_title}
+              Course Name: <strong>{course.course_title}</strong>
             </Typography>
+           
+           <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2, sm: 3 },
+              mt:1,
+              mb: 4,
+              borderRadius: 3,
+              background: "rgba(2, 2, 94, 0.04)",
+              //border: "1px solid rgba(2, 2, 94, 0.1)",
+               borderLeft: "4px solid #02025e",
+            }}
+          >
             <Typography
               color="text.secondary"
               sx={{
-                fontSize: {
-                  xs: "0.8rem",
-                  sm: "1rem",
-                  md: "1.2rem",
-                },
+               fontSize: { xs: "14px", sm: "16px", md: "18px" },
+              lineHeight: 1.8,
+              color: "#1b085c",
+              //textAlign: "center",
+              maxWidth: 900,
               }}
             >
               {course.course_description}
             </Typography>
+          </Paper>
 
             <Box display="flex" gap={2} mt={2} alignItems="center">
               {/* <Chip
@@ -373,6 +389,9 @@ const GuestCourseDetails = () => {
               </Grid>
             )}
           </Box>
+        
+        
+        
           <Box display="flex" mt={5}>
             <Button
               variant="outlined"

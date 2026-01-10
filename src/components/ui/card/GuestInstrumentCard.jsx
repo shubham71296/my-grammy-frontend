@@ -120,7 +120,7 @@ export default function GuestInstrumentCard({
               lineHeight: 1.4,
             }}
           >
-            {truncate(description, 55)}
+            {truncate(description, 35)}
           </Typography>
         </CardContent>
 

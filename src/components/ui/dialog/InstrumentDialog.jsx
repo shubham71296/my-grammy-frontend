@@ -21,6 +21,7 @@ import {
   Paper,
   CircularProgress,
   LinearProgress,
+  Skeleton,
 } from "@mui/material";
 import instrumentsInputs from "../../../utils/add-instruments-inputs";
 import InputText from "../../../components/ui/inputs/InputText";
@@ -70,6 +71,9 @@ export default function InstrumentDialog() {
   const [progressMap, setProgressMap] = useState({});
   const [uploadedImagesMeta, setUploadedImagesMeta] = useState([]);
   const [uploadedVideosMeta, setUploadedVideosMeta] = useState([]);
+
+  const [imageLoading, setImageLoading] = useState(false);
+  const [thumbLoading, setThumbLoading] = useState({});
 
   const setProgress = (fileKey, percent) =>
     setProgressMap((p) => ({ ...p, [fileKey]: percent }));
@@ -380,16 +384,44 @@ export default function InstrumentDialog() {
               >
                 {images && images.length > 0 ? (
                   <>
-                    <img
-                      src={images[lightboxIndex]?.url || images[0].url}
-                      alt={images[lightboxIndex]?.originalName || images[0].key}
-                      style={{
+                    <Box
+                      sx={{
                         width: "100%",
-                        height: "auto",
-                        maxHeight: 250,
-                        objectFit: "cover",
+                        height: 260,
+                        bgcolor: "grey.100",
+                        borderRadius: 2,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        position: "relative",
                       }}
-                    />
+                    >
+                      {imageLoading && (
+                        <CircularProgress
+                          size={36}
+                          sx={{ position: "absolute", zIndex: 2 }}
+                        />
+                      )}
+                      <img
+                        src={images[lightboxIndex]?.url || images[0].url}
+                        alt={
+                          images[lightboxIndex]?.originalName || images[0].key
+                        }
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          opacity: imageLoading ? 0.4 : 1,
+                          transition: "opacity 0.3s ease",
+                        }}
+                        onLoad={() => setImageLoading(false)}
+                        onError={(e) => {
+                          e.currentTarget.src = PLACEHOLDER;
+                          setImageLoading(false);
+                        }}
+                      />
+                    </Box>
 
                     <Box sx={{ p: 1 }}>
                       <ImageList cols={3} gap={8} sx={{ m: 0 }}>
@@ -403,6 +435,7 @@ export default function InstrumentDialog() {
                                 borderRadius: 1,
                                 overflow: "hidden",
                                 position: "relative",
+                                bgcolor: "grey.200",
                                 border: isActive
                                   ? `2px solid ${theme.palette.primary.main}`
                                   : "2px solid transparent",
@@ -411,9 +444,27 @@ export default function InstrumentDialog() {
                                 "&:hover": { transform: "scale(1.02)" },
                               }}
                               onClick={() => {
-                                setLightboxIndex(i);
+                                if (i !== lightboxIndex) {
+                                  setLightboxIndex(i);
+                                  setImageLoading(true);
+                                }
                               }}
                             >
+                              {/* {thumbLoading[i] && (
+                                <Skeleton
+                                  variant="rectangular"
+                                  animation="wave"
+                                  width="100%"
+                                  height="100%"
+                                  sx={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    borderRadius: 1,
+                                    zIndex: 1,
+                                  }}
+                                />
+                               
+                              )} */}
                               <img
                                 src={img.url}
                                 alt={img.originalName || img.key}
@@ -421,9 +472,24 @@ export default function InstrumentDialog() {
                                 style={{
                                   width: "100%",
                                   height: 84,
-                                  objectFit: "cover",
+                                  objectFit: "contain",
                                   display: "block",
                                   borderRadius: 6,
+                                  opacity: thumbLoading[i] ? 0 : 1,
+                                  transition: "opacity 0.3s ease",
+                                }}
+                                onLoad={() => {
+                                  setThumbLoading((prev) => ({
+                                    ...prev,
+                                    [i]: false,
+                                  }));
+                                }}
+                                onError={() => {
+                                  e.currentTarget.src = PLACEHOLDER;
+                                  setThumbLoading((prev) => ({
+                                    ...prev,
+                                    [i]: false,
+                                  }));
                                 }}
                               />
 

@@ -124,7 +124,7 @@ export default function GuestCourseCard({
               lineHeight: 1.4,
             }}
           >
-            {truncate(description, 55)}
+            {truncate(description, 35)}
           </Typography>
 
           {/* Price */}

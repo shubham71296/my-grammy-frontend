@@ -139,7 +139,7 @@ const CommonCard = ({ it, idx, navTo, onAddToCart }) => {
             lineHeight: 1.4,
           }}
         >
-          {truncate(it?.instrurment_description, 55)}
+          {truncate(it?.instrurment_description, 35)}
         </Typography>
       </CardContent>
 

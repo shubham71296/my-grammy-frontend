@@ -2003,7 +2003,7 @@ export default function Guest() {
             mb: 4,
             borderRadius: 3,
             background: "rgba(2, 2, 94, 0.04)",
-            borderLeft: 3,
+            borderLeft: "4px solid #02025e",
           }}
         >
           <Typography

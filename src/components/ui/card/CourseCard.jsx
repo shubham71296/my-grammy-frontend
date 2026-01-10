@@ -207,7 +207,7 @@ export default function CourseCard({
             lineHeight: 1.4,
           }}
         >
-          {truncate(course.course_description, 55)}
+          {truncate(course.course_description, 35)}
         </Typography>
 
         <Box

@@ -1,6 +1,6 @@
 // src/components/Navbar.jsx
-import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -58,6 +58,7 @@ const menuItems = [
 ];
 
 const Navbar = () => {
+  const location = useLocation();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { count } = useSelector((state) => state.cart);
@@ -87,6 +88,23 @@ const Navbar = () => {
     handleAvatarClose();
     dispatch(logout());
   };
+
+  useEffect(() => {
+    if (location.pathname === "/user") {
+      setActive("Home");
+    } else if (
+      location.pathname.includes("instruments") ||
+      location.pathname.includes("instrument/")
+    ) {
+      setActive("Instruments");
+    } else if (location.pathname.includes("courses")) {
+      setActive("Courses");
+    } else if (location.pathname.includes("cart")) {
+      setActive("Cart");
+    } else if (location.pathname.includes("myorders")) {
+      setActive("MyOrder");
+    }
+  }, [location.pathname]);
 
   const CartIconWithBadge = () => (
     <Box sx={{ position: "relative", display: "inline-flex" }}>

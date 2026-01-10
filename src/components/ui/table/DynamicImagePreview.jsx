@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Avatar,
@@ -7,6 +7,8 @@ import {
   DialogContent,
   Grid,
   Typography,
+  Skeleton,
+  CircularProgress,
 } from "@mui/material";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import BrokenImageIcon from "@mui/icons-material/BrokenImage";
@@ -63,6 +65,9 @@ export default function DynamicImagePreview({ val }) {
   const [open, setOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const [imageLoading, setImageLoading] = useState(false);
+  const [thumbLoading, setThumbLoading] = useState({});
+
   const handleOpen = (idx) => {
     setCurrentIndex(idx);
     setOpen(true);
@@ -75,7 +80,7 @@ export default function DynamicImagePreview({ val }) {
 
   return (
     <>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, p: 0.5 }}>
         {thumbnails.length === 0 ? (
           <Box
             sx={{
@@ -206,8 +211,8 @@ export default function DynamicImagePreview({ val }) {
         </Box>
 
         <DialogContent sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
+          <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+            <Grid size={{ xs: 12, md: 12, lg: 6 }}>
               <Box
                 sx={{
                   width: "100%",
@@ -220,23 +225,47 @@ export default function DynamicImagePreview({ val }) {
                   boxShadow: "inset 0 0 15px rgba(0,0,0,0.08)",
                 }}
               >
-                <img
-                  src={images[currentIndex]?.url}
-                  alt="preview-large"
-                  style={{
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                    objectFit: "contain",
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                  onError={(e) => (e.currentTarget.src = PLACEHOLDER)}
-                />
+                >
+                  {imageLoading && (
+                    <CircularProgress
+                      size={40}
+                      sx={{ position: "absolute", zIndex: 2 }}
+                    />
+                  )}
+                  <img
+                    src={images[currentIndex]?.url}
+                    alt="preview-large"
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      objectFit: "contain",
+                      opacity: imageLoading ? 0.4 : 1,
+                      transition: "opacity 0.3s ease",
+                    }}
+                    onLoad={() => setImageLoading(false)}
+                    onError={(e) => {
+                      e.currentTarget.src = PLACEHOLDER;
+                      setImageLoading(false);
+                    }}
+                    // onError={(e) => (e.currentTarget.src = PLACEHOLDER)}
+                  />
+                </Box>
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 12, lg: 6 }}>
               <Typography
                 variant="subtitle1"
-                sx={{ mb: 1, fontWeight: 600, color: "text.primary" }}
+                sx={{ mb: 1, mt: 1, fontWeight: 600, color: "text.primary" }}
               >
                 Images ({images.length})
               </Typography>
@@ -254,7 +283,12 @@ export default function DynamicImagePreview({ val }) {
                 {images.map((item, idx) => (
                   <Box
                     key={idx}
-                    onClick={() => setCurrentIndex(idx)}
+                    onClick={() => {
+                      if (idx !== currentIndex) {
+                        setCurrentIndex(idx);
+                        setImageLoading(true);
+                      }
+                    }}
                     sx={{
                       display: "flex",
                       alignItems: "center",
@@ -272,9 +306,12 @@ export default function DynamicImagePreview({ val }) {
                         idx === currentIndex
                           ? "0 3px 12px rgba(25,118,210,0.3)"
                           : "0 2px 6px rgba(0,0,0,0.08)",
+                      "&:hover": {
+                        border: "1px solid #1976d2",
+                      },
                     }}
                   >
-                    <Avatar
+                    {/* <Avatar
                       variant="rounded"
                       src={item.url}
                       sx={{
@@ -282,7 +319,49 @@ export default function DynamicImagePreview({ val }) {
                         height: 45,
                         borderRadius: 2,
                       }}
-                    />
+                    /> */}
+                    <Box
+                      sx={{
+                        width: 60,
+                        height: 45,
+                        borderRadius: 2,
+                        bgcolor: "grey.100",
+                        position: "relative",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {/* {thumbLoading[idx] && (
+                        <Skeleton
+                          variant="rectangular"
+                          animation="wave"
+                          width="100%"
+                          height="100%"
+                            sx={{
+                            position: "absolute",
+                            inset: 0,
+                            borderRadius: 1,
+                            zIndex: 1,
+                          }}
+                        />
+                      )} */}
+                      <img
+                        src={item.url}
+                        alt={item.originalName}
+                        onLoad={() =>
+                          setThumbLoading((p) => ({ ...p, [idx]: false }))
+                        }
+                        onError={() =>
+                          setThumbLoading((p) => ({ ...p, [idx]: false }))
+                        }
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          opacity: thumbLoading[idx] ? 0 : 1,
+                          transition: "opacity 0.3s ease",
+                        }}
+                      />
+                    </Box>
                     <Typography
                       variant="caption"
                       sx={{

@@ -46,8 +46,8 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
         borderRadius: 1,
         width: {
           xs: 140,   
-          sm: 160,   
-          md: 180,   
+          //sm: 160,   
+          //md: 180,   
         },
         transition: "all 0.35s ease",
         "&:hover": {
@@ -64,8 +64,8 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
           boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
           height: {
             xs: 120,   
-            sm: 150,   
-            md: 180,   
+            //sm: 150,   
+            //md: 180,   
           },
           backgroundColor:'black'
         }}
@@ -89,8 +89,16 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
           <IconButton
             sx={{
               bgcolor: "white",
-              width: { xs: 44, sm: 55, md: 60 },
-              height: { xs: 44, sm: 55, md: 60 },
+              width: { 
+                xs: 44, 
+                // sm: 55, 
+                // md: 60 
+              },
+              height: { 
+                xs: 44, 
+                // sm: 55, 
+                // md: 60 
+              },
               borderRadius: "50%",
               transition: "transform 0.3s ease", 
               "&:hover": {
@@ -100,7 +108,7 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
             }}
             onClick={() => openFullScreen(lec)}
           >
-            <VideoLibrary fontSize="large" sx={{ fontSize: { xs: 28, sm: 34, md: 40 } }}/>
+            <VideoLibrary fontSize="large" sx={{ color: "#FF0000",fontSize: { xs: 28 } }}/>
           </IconButton>
         </Box>
       </Box>
@@ -119,8 +127,8 @@ const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
           sx={{
            fontSize: {
               xs: "0.70rem",
-              sm: "0.80rem",
-              md: "0.85rem",
+              //sm: "0.75rem",
+              //md: "0.85rem",
             },
             mr: 1,
           }}
