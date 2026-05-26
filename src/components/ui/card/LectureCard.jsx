@@ -1,81 +1,64 @@
-// LectureCard.jsx
-import React from "react";
-import { Paper, Grid, Box, IconButton, Typography } from "@mui/material";
-import { VideoLibrary } from "@mui/icons-material";
+import { Play } from "lucide-react";
+import { cn } from "../../../lib/cn";
 
-const LectureCard = ({ lec, index, onPlay }) => {
+const LectureCard = ({ lec, index, onPlay, variant = "default" }) => {
+  const isLight = variant === "light";
+
   return (
-    <Paper
-      elevation={4}
-      sx={{
-        p: 1,
-        borderRadius: 1,
-        width: "fit-content",
-         transition: "all 0.35s ease",
-        "&:hover": {
-          transform: "translateY(-6px)",
-          boxShadow: "0 16px 32px rgba(0,0,0,0.25)",
-        },
-      }}
+    <button
+      type="button"
+      onClick={() => onPlay(lec)}
+      className={cn(
+        "group w-full text-left outline-none transition duration-200",
+        "focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2",
+        isLight ? "hover:-translate-y-0.5" : "w-[132px] hover:-translate-y-1"
+      )}
     >
-      <Grid item xs={12} sm={6} md={4}>
-        <Box
-          sx={{
-            position: "relative",
-            borderRadius: 2,
-            overflow: "hidden",
-            boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
-            height: "120px",
-            width: "120px",
-            bgcolor: "#18243aff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+      <div
+        className={cn(
+          "relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl transition",
+          isLight
+            ? "border border-slate-200/90 bg-gradient-to-b from-white to-slate-50 shadow-sm group-hover:border-slate-300 group-hover:shadow-md"
+            : "bg-gradient-to-br from-brand-900 via-brand-700 to-indigo-600 shadow-md ring-1 ring-slate-200/80 group-hover:shadow-lg group-hover:ring-brand-300"
+        )}
+      >
+        {!isLight && (
+          <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_55%)]" />
+        )}
+        <span
+          className={cn(
+            "relative flex h-11 w-11 items-center justify-center rounded-full shadow-lg transition group-hover:scale-110",
+            isLight
+              ? "bg-brand-600 text-white"
+              : "bg-white text-brand-600"
+          )}
         >
-          <IconButton
-            sx={{
-              bgcolor: "white",
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
-              transition: "transform 0.3s ease",
-              "&:hover": {
-                transform: "scale(1.15)",
-                bgcolor: "white",
-              },
-            }}
-            onClick={() => onPlay(lec)}
-          >
-            <VideoLibrary sx={{color: "#FF0000"}} fontSize="medium" />
-          </IconButton>
-        </Box>
-
-        <Box
-          mt={1}
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "120px",
-          }}
+          <Play
+            className={cn("h-5 w-5 pl-0.5", isLight ? "fill-white" : "fill-brand-600")}
+          />
+        </span>
+        <span
+          className={cn(
+            "absolute left-2 top-2 rounded-lg px-2 py-0.5 text-[10px] font-bold backdrop-blur-sm",
+            isLight
+              ? "bg-slate-800/75 text-white"
+              : "bg-black/40 text-white"
+          )}
         >
-          <Typography
-            mt={1}
-            fontWeight={700}
-            sx={{
-              flexGrow: 1,
-              fontSize: 11,
-              mr: 1,
-              lineHeight: 1.2,
-            }}
-          >
-            {index + 1}. {lec.lecture_title}
-          </Typography>
-        </Box>
-      </Grid>
-    </Paper>
+          {String(index + 1).padStart(2, "0")}
+        </span>
+      </div>
+      <p
+        className={cn(
+          "mt-2 line-clamp-2 text-xs font-semibold leading-snug",
+          isLight
+            ? "text-navy group-hover:text-brand-700"
+            : "text-navy group-hover:text-brand-700"
+        )}
+      >
+        {lec.lecture_title}
+      </p>
+    </button>
   );
 };
 

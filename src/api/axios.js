@@ -1,9 +1,10 @@
 import axios from "axios";
-import {store} from "../store";
-
+import { store } from "../store";
+import { logout } from "../features/auth/authSlice";
+import { normalizeApiBase } from "../utils/apiBase";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: normalizeApiBase(import.meta.env.VITE_API_BASE_URL),
 });
 
 // 🔹 Request Interceptor (Attach Token)
@@ -25,7 +26,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
+      store.dispatch(logout());
       window.location.href = "/login";
     }
     return Promise.reject(error);

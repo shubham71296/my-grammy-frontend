@@ -18,7 +18,7 @@ const uiSlice = createSlice({
     openDialogAction: (state, action) => {
       state.dialog.openDialog = action.payload.openDialog;
       state.dialog.selectedData = action.payload.selectedData;
-      state.dialog.dialogInfo = action.payload.dialogInfo || state.dialogInfo;
+      state.dialog.dialogInfo = action.payload.dialogInfo || state.dialog.dialogInfo;
     },
     closeDialog: (state, action) => {
       state.dialog.openDialog = false;

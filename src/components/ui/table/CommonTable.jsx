@@ -1,28 +1,107 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  Button,
-  IconButton,
-  Menu,
-  MenuItem,
-  Pagination,
-  Paper,
-  Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  Box,
-} from "@mui/material";
+  MoreVertical,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  ListOrdered,
+} from "lucide-react";
 import DynamicRowComponent from "./DynamicRowComponent";
 import DynamicOption from "./DynamicOption";
-import { AddCircle, MoreVert } from "@mui/icons-material";
 import DataNotFoundDynamicTable from "./DataNotFoundDynamicTable";
 import { renderTableAction } from "../../../features/ui/uiSlice";
+import { Dropdown } from "../tw/Dropdown";
+import { Spinner } from "../tw/Spinner";
+import { cn } from "../../../lib/cn";
+
+const DEFAULT_LIMITS = [5, 10, 20, 50];
+
+function parsePagination(searchParams, defaultLimit) {
+  const pageRaw = parseInt(searchParams.get("page") ?? "", 10);
+  const limitRaw = parseInt(searchParams.get("limit") ?? "", 10);
+  const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
+  const limit =
+    Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : defaultLimit;
+  return { page, limit, offset: (page - 1) * limit };
+}
+
+const TableDataRow = memo(function TableDataRow({
+  row,
+  rowIndex,
+  headCells,
+  menuOptions,
+  isLastRow,
+}) {
+  const actionCell = row.find(
+    (c) => typeof c === "object" && c !== null && !Array.isArray(c)
+  );
+
+  return (
+    <tr
+      className={cn(
+        "group border-b border-slate-100/90 bg-white transition duration-200",
+        "hover:bg-gradient-to-r hover:from-brand-50/60 hover:to-violet-50/30",
+        rowIndex % 2 === 1 && "bg-slate-50/35",
+        isLastRow && "border-b-0"
+      )}
+    >
+      {row.map((cell, colIndex) => {
+        const isAction =
+          typeof cell === "object" && cell !== null && !Array.isArray(cell);
+
+        if (isAction) {
+          return (
+            <td
+              key={colIndex}
+              className="w-12 px-1.5 py-2.5 text-center sm:w-14 sm:px-3 sm:py-3"
+            >
+              <Dropdown
+                align="right"
+                trigger={
+                  <button
+                    type="button"
+                    aria-label="Row actions"
+                    className={cn(
+                      "inline-flex h-9 w-9 items-center justify-center rounded-xl",
+                      "border border-slate-200/90 bg-white text-slate-500 shadow-sm",
+                      "transition group-hover:border-brand-200 group-hover:text-brand-700",
+                      "hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+                    )}
+                  >
+                    <MoreVertical size={18} />
+                  </button>
+                }
+              >
+                {(close) =>
+                  menuOptions?.map((option, i) => (
+                    <DynamicOption
+                      key={option._check ?? i}
+                      selectedData={actionCell}
+                      handleClose={close}
+                      {...option}
+                    />
+                  ))
+                }
+              </Dropdown>
+            </td>
+          );
+        }
+
+        return (
+          <td
+            key={colIndex}
+            className="max-w-[15rem] px-3 py-3 text-sm text-slate-700 sm:max-w-none sm:px-4 sm:py-3.5 first:pl-4 sm:first:pl-5"
+          >
+            <DynamicRowComponent val={cell} i2={colIndex} headCells={headCells} />
+          </td>
+        );
+      })}
+    </tr>
+  );
+});
 
 function CommonTable({
   getData,
@@ -31,307 +110,290 @@ function CommonTable({
   menuOptions,
   data,
   totalDataCount,
-  baseRoute,
-  style = {},
-  limitDropdown,
+  limitDropdown = DEFAULT_LIMITS,
   textLabel,
   buttonRoute,
   query,
+  tableTitle,
+  tableSubtitle = "Sorted by newest first",
+  filterBadge,
+  className,
 }) {
   const dispatch = useDispatch();
   const { renderTable } = useSelector((state) => state.ui);
   const { countTotalData } = useSelector((state) => state.dataCount);
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  let pageNumber = searchParams.get("page");
-  let offset = searchParams.get("offset");
-  let limit = searchParams.get("limit");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  if (
-    !pageNumber ||
-    !offset ||
-    !limit ||
-    isNaN(parseInt(pageNumber)) ||
-    isNaN(parseInt(offset)) ||
-    isNaN(parseInt(limit))
-  ) {
-    pageNumber = 1;
-    offset = 0;
-    limit = limitDropdown?.[0] || 5;
-  } else {
-    pageNumber = parseInt(pageNumber);
-    offset = parseInt(offset);
-    limit = parseInt(limit);
-  }
+  const defaultLimit = limitDropdown[0] ?? 5;
+  const { page, limit, offset } = useMemo(
+    () => parsePagination(searchParams, defaultLimit),
+    [searchParams, defaultLimit]
+  );
 
-  const pageCount = Math.ceil(totalDataCount / limit);
-  const [pageState, setPageState] = useState({
-    page: pageNumber,
-    offset: (pageNumber - 1) * limit,
-    limit: limit,
-    total: 0,
-    condition: "change_page",
-    data: [],
-  });
+  const paramsReady =
+    searchParams.has("page") &&
+    searchParams.has("limit") &&
+    searchParams.has("offset");
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [selectedData, setSelectedData] = React.useState({});
-  const open = Boolean(anchorEl);
+  const pageCount = Math.max(1, Math.ceil(totalDataCount / limit) || 1);
+  const safePage = Math.min(page, pageCount);
+  const rangeStart = totalDataCount === 0 ? 0 : (safePage - 1) * limit + 1;
+  const rangeEnd = Math.min(safePage * limit, totalDataCount);
 
-  const [menuRowIndex, setMenuRowIndex] = React.useState(null);
-  const [menuCellIndex, setMenuCellIndex] = React.useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleClick = (event, rowIndex, cellIndex) => {
-    setAnchorEl(event.currentTarget);
-    setMenuRowIndex(rowIndex);
-    setMenuCellIndex(cellIndex);
-    setSelectedData(cellIndex);
-  };
+  const syncPaginationUrl = useCallback(
+    (nextPage, nextLimit) => {
+      const nextOffset = (nextPage - 1) * nextLimit;
+      setSearchParams(
+        {
+          page: String(nextPage),
+          limit: String(nextLimit),
+          offset: String(nextOffset),
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
 
-  const handleClose = () => {
-    setAnchorEl(null);
-    setMenuRowIndex(null);
-    setMenuCellIndex(null);
-  };
-
-  const updateURL = (values) => {
-    const params = new URLSearchParams(searchParams);
-    Object.entries(values).forEach(([key, val]) => params.set(key, val));
-    navigate(`${baseRoute}?${params.toString()}`);
-  };
-
-  const onChangeLimit = async (event) => {
-    const tempLimit = parseInt(event.target.value);
-    const newOffset = 0;
-    const newPage = 1;
-    updateURL({
-      page: newPage,
-      limit: tempLimit,
-      offset: newOffset,
-    });
-    setPageState((prev) => ({
-      ...prev,
-      limit: tempLimit,
-      page: newPage,
-      offset: newOffset,
-      condition: "change_limit",
-    }));
-  };
-
-  const onChangePage = async (event, pageNumber) => {
-    const newOffset = (pageNumber - 1) * limit;
-    updateURL({
-      page: pageNumber,
-      limit: pageState.limit,
-      offset: newOffset,
-    });
-    setPageState((prev) => ({
-      ...prev,
-      page: pageNumber,
-      offset: newOffset,
-      condition: "change_page",
-    }));
-  };
+  const getDataRef = useRef(getData);
+  getDataRef.current = getData;
 
   useEffect(() => {
+    if (!paramsReady) {
+      syncPaginationUrl(1, defaultLimit);
+      return;
+    }
+    let cancelled = false;
     (async () => {
-      const offset = (pageState.page - 1) * pageState.limit;
-      navigate(
-        `${baseRoute}?offset=${offset}&page=${pageState.page}&limit=${pageState.limit}`
-      );
-      if (pageState.condition === "change_limit") {
-        await getData(pageState.limit, offset, query);
-      }
-      if (pageState.condition === "change_page") {
-        await getData(pageState.limit, offset, query);
+      setLoading(true);
+      try {
+        await getDataRef.current(limit, offset, query);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, [pageState]);
+    return () => {
+      cancelled = true;
+    };
+  }, [paramsReady, limit, offset, query, defaultLimit, syncPaginationUrl]);
 
   useEffect(() => {
-    if (renderTable) {
-      const offset = (pageState.page - 1) * pageState.limit;
+    if (!renderTable || !paramsReady) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        await getDataRef.current(limit, offset, query);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+      if (!cancelled) dispatch(renderTableAction({ renderTable: false }));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [renderTable, paramsReady, limit, offset, query, dispatch]);
 
-      getData(pageState.limit, offset, query);
+  const onChangeLimit = (event) => {
+    const nextLimit = parseInt(event.target.value, 10);
+    syncPaginationUrl(1, nextLimit);
+  };
 
-      dispatch(renderTableAction({ renderTable: false }));
-    }
-  }, [renderTable]);
+  const onChangePage = (nextPage) => {
+    if (nextPage < 1 || nextPage > pageCount) return;
+    syncPaginationUrl(nextPage, limit);
+  };
 
-  if (data.length === 0)
+  const resolvedTitle =
+    tableTitle ?? (textLabel ? `All ${textLabel}s` : "Data table");
+
+  if (!loading && data.length === 0) {
     return (
-      <DataNotFoundDynamicTable
-        showSimple={true}
-        textLabel={textLabel}
-        buttonRoute={buttonRoute}
-        countTotalData={countTotalData}
-      />
+      <div className={cn("w-full", className)}>
+        <DataNotFoundDynamicTable
+          showSimple
+          textLabel={textLabel}
+          buttonRoute={buttonRoute}
+          countTotalData={countTotalData}
+        />
+      </div>
     );
+  }
 
   return (
-    <>
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: "74vw",
-        }}
-      >
-        <Paper sx={{ mb: 2, width: "100%", overflow: "hidden" }}>
-          <TableContainer
-            sx={{
-              width: "100%",
-              overflowX: "auto",
-              WebkitOverflowScrolling: "touch",
-            }}
-          >
-            <Table
-              sx={{
-                minWidth: { xs: 800, sm: "100%" },
-                whiteSpace: "nowrap",
-              }}
-              aria-labelledby="tableTitle"
-              size={"small"}
+    <div
+      className={cn(
+        "min-w-0 w-full max-w-[calc(100vw-1.5rem)] overflow-hidden md:max-w-full",
+        className
+      )}
+    >
+      <div className="min-w-0 max-w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_4px_24px_-10px_rgba(15,23,42,0.12)]">
+        {(tableTitle || tableSubtitle || filterBadge) && (
+          <div className="flex flex-col gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50/90 via-white to-brand-50/40 px-4 py-3.5 md:flex-row md:items-center md:justify-between md:px-5">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white shadow-md shadow-brand-600/20">
+                <ListOrdered className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-extrabold text-navy sm:text-base">
+                  {resolvedTitle}
+                </h3>
+                {tableSubtitle ? (
+                  <p className="text-xs text-muted">{tableSubtitle}</p>
+                ) : null}
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              {filterBadge}
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                {totalDataCount.toLocaleString("en-IN")} total
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="relative">
+          {loading && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-white/80 backdrop-blur-[2px]">
+              <Spinner size="lg" />
+              <p className="text-xs font-semibold text-slate-600">Loading…</p>
+            </div>
+          )}
+
+          <div className="w-full max-w-[calc(100vw-1.5rem)] overflow-x-auto overscroll-x-contain pb-2 [scrollbar-gutter:stable] md:max-w-full">
+            <table
+              className="w-full min-w-[720px] border-collapse text-left text-sm lg:min-w-full"
+              aria-label={textLabel ? `${textLabel} table` : "data table"}
             >
-              <TableHead>
-                <TableRow>
-                  {header?.map((headCell) => (
-                    <TableCell
-                      sx={{
-                        borderBottom: "1px solid #1e2896ff",
-                        color: "primary.main",
-                        fontWeight: 700,
-                        fontSize: "0.9rem",
-                        letterSpacing: "0.5px",
-                      }}
+              <thead>
+                <tr className="border-b-2 border-brand-100 bg-brand-50/60">
+                  {header?.map((headCell, i) => (
+                    <th
                       key={headCell}
+                      className={cn(
+                        "whitespace-nowrap px-3 py-3 text-[11px] font-bold uppercase tracking-wider text-brand-900/70 sm:px-4 sm:py-4 sm:text-xs",
+                        i === 0 && "pl-4 sm:pl-5",
+                        i === header.length - 1 &&
+                          "bg-brand-50 text-center"
+                      )}
                     >
                       {headCell}
-                    </TableCell>
+                    </th>
                   ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.map((p1, i1) => (
-                  <TableRow
-                    key={i1}
-                    role="checkbox"
-                    sx={{
-                      cursor: "pointer",
-                      "& > td, & > th": {
-                        paddingX: 2,
-                      },
-                    }}
-                  >
-                    {p1.map((p2, i2) => {
-                      if (typeof p2 === "object" && !Array.isArray(p2)) {
-                        return (
-                          <TableCell
-                            key={i2}
-                            component="th"
-                            scope="row"
-                            padding="none"
-                          >
-                            <IconButton
-                              aria-label="more"
-                              id="long-button"
-                              aria-controls={open ? "long-menu" : undefined}
-                              aria-expanded={open ? "true" : undefined}
-                              aria-haspopup="true"
-                              onClick={(e) => handleClick(e, p1, p2)}
-                            >
-                              <MoreVert />
-                            </IconButton>
-                            <Menu
-                              id="long-menu"
-                              anchorEl={anchorEl}
-                              open={
-                                open &&
-                                menuRowIndex === p1 &&
-                                menuCellIndex === p2
-                              }
-                              onClose={handleClose}
-                              slotProps={{
-                                paper: {
-                                  style: {
-                                    maxHeight: 48 * 4.5,
-                                    width: "20ch",
-                                    boxShadow: "2px 2px 5px 0px #b0b0b0",
-                                  },
-                                },
-                                list: {
-                                  "aria-labelledby": "long-button",
-                                },
-                              }}
-                            >
-                              {menuOptions.map((p3, i3) => (
-                                <DynamicOption
-                                  key={i3}
-                                  MenuItem={MenuItem}
-                                  selectedData={selectedData}
-                                  handleClose={handleClose}
-                                  {...p3}
-                                />
-                              ))}
-                            </Menu>
-                          </TableCell>
-                        );
-                      } else {
-                        return (
-                          <TableCell
-                            key={i2}
-                            component="th"
-                            scope="row"
-                            padding="none"
-                          >
-                            <DynamicRowComponent
-                              val={p2}
-                              i2={i2}
-                              headCells={headCells}
-                            >
-                              {p2}
-                            </DynamicRowComponent>
-                          </TableCell>
-                        );
-                      }
-                    })}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <div
-            style={{
-              borderTop: "1px solid #1e2896ff",
-              height: "49px",
-              padding: "5px",
-              width: "100%",
-            }}
-          >
-            <Pagination
-              count={pageCount}
-              page={pageState.page}
-              sx={{ ...style.paginateStyle.sx, marginTop: "3px" }}
-              onChange={onChangePage}
-            />
-            <Select
-              size="small"
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={pageState.limit}
-              label="limit"
-              onChange={onChangeLimit}
-              sx={{ ...style.limitDropdownStyle.sx }}
-            >
-              {limitDropdown.map((p3, i3) => (
-                <MenuItem key={i3} value={p3}>
-                  {p3}
-                </MenuItem>
-              ))}
-            </Select>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((row, rowIndex) => {
+                  const actionCell = row.find(
+                    (c) =>
+                      typeof c === "object" && c !== null && !Array.isArray(c)
+                  );
+                  const rowKey = actionCell?._id ?? rowIndex;
+                  return (
+                    <TableDataRow
+                      key={rowKey}
+                      row={row}
+                      rowIndex={rowIndex}
+                      headCells={headCells}
+                      menuOptions={menuOptions}
+                      isLastRow={rowIndex === data.length - 1}
+                    />
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </Paper>
-      </Box>
-    </>
+        </div>
+
+        <div className="flex flex-col gap-4 border-t border-slate-100 bg-gradient-to-r from-slate-50/80 via-white to-brand-50/30 px-3 py-4 md:flex-row md:items-center md:justify-between md:px-5">
+          <p className="text-center text-xs font-medium text-slate-600 md:text-left">
+            Showing{" "}
+            <span className="font-bold text-navy">
+              {rangeStart.toLocaleString("en-IN")}–{rangeEnd.toLocaleString("en-IN")}
+            </span>{" "}
+            of{" "}
+            <span className="font-bold text-brand-700">
+              {totalDataCount.toLocaleString("en-IN")}
+            </span>
+          </p>
+
+          <div className="flex w-full min-w-0 flex-col items-center gap-3 md:w-auto md:flex-row">
+            <div className="inline-flex max-w-full items-center gap-0.5 rounded-xl border border-slate-200/90 bg-white p-1 shadow-sm sm:gap-1">
+              <button
+                type="button"
+                disabled={safePage <= 1}
+                onClick={() => onChangePage(1)}
+                className={cn(
+                  "rounded-lg p-1.5 text-slate-600 transition hover:bg-brand-50 hover:text-brand-700 sm:p-2",
+                  safePage <= 1 && "cursor-not-allowed opacity-35"
+                )}
+                aria-label="First page"
+              >
+                <ChevronsLeft size={16} />
+              </button>
+              <button
+                type="button"
+                disabled={safePage <= 1}
+                onClick={() => onChangePage(safePage - 1)}
+                className={cn(
+                  "rounded-lg p-1.5 text-slate-600 transition hover:bg-brand-50 hover:text-brand-700 sm:p-2",
+                  safePage <= 1 && "cursor-not-allowed opacity-35"
+                )}
+                aria-label="Previous page"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="min-w-[4.75rem] px-1.5 text-center text-sm font-bold text-navy sm:min-w-[5.5rem] sm:px-2">
+                {safePage}{" "}
+                <span className="font-medium text-slate-400">/</span> {pageCount}
+              </span>
+              <button
+                type="button"
+                disabled={safePage >= pageCount}
+                onClick={() => onChangePage(safePage + 1)}
+                className={cn(
+                  "rounded-lg p-1.5 text-slate-600 transition hover:bg-brand-50 hover:text-brand-700 sm:p-2",
+                  safePage >= pageCount && "cursor-not-allowed opacity-35"
+                )}
+                aria-label="Next page"
+              >
+                <ChevronRight size={18} />
+              </button>
+              <button
+                type="button"
+                disabled={safePage >= pageCount}
+                onClick={() => onChangePage(pageCount)}
+                className={cn(
+                  "rounded-lg p-1.5 text-slate-600 transition hover:bg-brand-50 hover:text-brand-700 sm:p-2",
+                  safePage >= pageCount && "cursor-not-allowed opacity-35"
+                )}
+                aria-label="Last page"
+              >
+                <ChevronsRight size={16} />
+              </button>
+            </div>
+
+            <label className="flex w-full items-center justify-center gap-2 text-xs font-semibold text-slate-600 md:w-auto">
+              <span className="hidden md:inline">Rows</span>
+              <select
+                value={limit}
+                onChange={onChangeLimit}
+                className="input-search-elevated min-w-[7rem] py-2 text-sm font-medium"
+                aria-label="Rows per page"
+              >
+                {limitDropdown.map((n) => (
+                  <option key={n} value={n}>
+                    {n} / page
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

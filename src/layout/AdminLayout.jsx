@@ -1,375 +1,205 @@
-import React from "react";
-import {
-  AppBar,
-  Avatar,
-  Box,
-  CssBaseline,
-  Divider,
-  Drawer,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Toolbar,
-  Typography,
-  Badge,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import SettingsIcon from "@mui/icons-material/Settings";
-import PeopleIcon from "@mui/icons-material/People";
-import LogoutIcon from "@mui/icons-material/Logout";
+import React, { Suspense } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import PageSpinner from "../components/ui/loader/PageSpinner";
 import {
-  Group,
-  LibraryMusic,
-  ListAlt,
-  Logout,
-  MenuBook,
-  Person,
+  Menu,
+  LayoutDashboard,
+  Library,
+  List,
+  BookOpen,
+  Users,
   ShoppingBag,
-} from "@mui/icons-material";
+  LogOut,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../features/auth/authSlice";
 import WebsiteLogoImage from "../assets/grammy-icon1.jpg";
+import AppDialog from "../components/ui/dialog/AppDialog";
+import { Drawer } from "../components/ui/tw/Drawer";
+import { Dropdown, DropdownItem } from "../components/ui/tw/Dropdown";
+import { cn } from "../lib/cn";
 
-const drawerWidth = 260;
+const DRAWER_WIDTH = 260;
+
+const menuItems = [
+  { title: "Dashboard", icon: LayoutDashboard, route: "/admin" },
+  { title: "Add Instruments", icon: Library, route: "/admin/addinstruments" },
+  { title: "Create Courses", icon: BookOpen, route: "/admin/createcourse" },
+  {
+    title: "Instruments List",
+    icon: List,
+    route: "/admin/myinstrumentslist",
+  },
+  { title: "Courses List", icon: BookOpen, route: "/admin/mycourseslist" },
+  { title: "Users", icon: Users, route: "/admin/allusers" },
+  { title: "Orders", icon: ShoppingBag, route: "/admin/allorders" },
+];
+
+function SidebarNav({ onNavigate }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const selectedRoute = location.pathname;
+
+  const isItemSelected = (item) => {
+    const itemPath = item.route?.startsWith("/")
+      ? item.route
+      : `/admin${item.route ? `/${item.route}` : ""}`;
+
+    if (itemPath === "/admin") {
+      return (
+        selectedRoute === "/admin" || selectedRoute === "/admin/dashboard"
+      );
+    }
+    return (
+      selectedRoute === itemPath || selectedRoute.startsWith(`${itemPath}/`)
+    );
+  };
+
+  return (
+    <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto p-2.5 sm:p-3">
+      <ul className="space-y-1">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const selected = isItemSelected(item);
+          return (
+            <li key={item.route}>
+              <button
+                type="button"
+                onClick={() => {
+                  navigate(item.route);
+                  onNavigate?.();
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition sm:gap-3 sm:px-4",
+                  selected
+                    ? "bg-white text-brand-900 shadow-sm"
+                    : "text-white/85 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="h-[18px] w-[18px] shrink-0" />
+                {item.title}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+function SidebarContent({ onNavigate }) {
+  return (
+    <div className="flex h-full min-h-0 flex-col bg-brand-900 text-white">
+      <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3.5 sm:py-4">
+        <img
+          src={WebsiteLogoImage}
+          alt="Musically"
+          className="h-12 w-12 rounded-2xl object-cover shadow-sm ring-2 ring-white/20"
+        />
+        <div>
+          <p className="text-lg font-bold leading-tight">Grammy</p>
+          <p className="text-xs text-white/80">Admin Panel</p>
+        </div>
+      </div>
+
+      <SidebarNav onNavigate={onNavigate} />
+
+      <div className="mt-auto border-t border-white/10 p-3 sm:p-4">
+        <div className="flex justify-between text-xs text-white/70">
+          <span>© {new Date().getFullYear()} Musically</span>
+          <span>v1.2</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminLayout() {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const openMenu = Boolean(anchorEl);
-
-  const handleProfileClick = (event) => setAnchorEl(event.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
-
   const handleDrawerToggle = () => setMobileOpen((s) => !s);
+  const closeMobile = () => setMobileOpen(false);
 
   const handleLogout = () => {
-    handleMenuClose();
     dispatch(logout());
   };
 
-  const menuItems = [
-    { title: "Dashboard", icon: <DashboardIcon />, route: "/admin" },
-    {
-      title: "Add Instruments",
-      icon: <LibraryMusic />,
-      route: "/admin/addinstruments",
-    },
-    {
-      title: "Create Courses",
-      icon: <MenuBook />,
-      route: "/admin/createcourse",
-    },
-    {
-      title: "Instruments List",
-      icon: <ListAlt />,
-      route: "/admin/myinstrumentslist",
-    },
-    {
-      title: "Courses List",
-      icon: <MenuBook />,
-      route: "/admin/mycourseslist",
-    },
-    { title: "Users", icon: <Group />, route: "/admin/allusers" },
-    { title: "Orders", icon: <ShoppingBag />, route: "/admin/allorders" },
-  ];
-
-  const selectedRoute = location.pathname;
-
-  const drawer = (
-    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <Toolbar sx={{ alignItems: "center", gap: 1 }}>
-        <img
-          src={WebsiteLogoImage}
-          alt="Musically"
-          style={{
-            width: 100,
-            height: 82,
-            borderRadius: 20,
-            padding: 4,
-          }}
-        />
-
-        <Box>
-          <Typography variant="h6" sx={{ lineHeight: 1 }}>
-            Grammy
-          </Typography>
-          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-            Admin Panel
-          </Typography>
-        </Box>
-      </Toolbar>
-
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.06)" }} />
-
-      <Box sx={{ p: 2 }}>
-        <List>
-          {menuItems.map((item, index) => {
-            const itemPath = item.route?.startsWith("/")
-              ? item.route
-              : `/admin${item.route ? `/${item.route}` : ""}`;
-
-            if (itemPath === "/admin") {
-              const isSelected =
-                selectedRoute === "/admin" ||
-                selectedRoute === "/admin/dashboard";
-              return (
-                <ListItem key={index} disablePadding sx={{ mb: 0.5 }}>
-                  <ListItemButton
-                    onClick={() => {
-                      navigate(item.route), setMobileOpen(false);
-                    }}
-                    selected={isSelected}
-                    sx={{
-                      borderRadius: 1.5,
-                      py: 1.2,
-                      pl: 1.6,
-                      pr: 2,
-                      color: "#fff",
-                      transition: "all 260ms ease",
-                      position: "relative",
-                      "&.Mui-selected": {
-                        background:
-                          "linear-gradient(90deg, rgba(108,99,255,0.25) 0%, rgba(72,61,255,0.12) 100%)",
-                        boxShadow: "inset 0 0 12px rgba(108,99,255,0.35)",
-                      },
-                      "&:hover": {
-                        background:
-                          "linear-gradient(90deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.06) 100%)",
-                        boxShadow: "inset 0 0 10px rgba(255,255,255,0.1)",
-                      },
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        color: "inherit",
-                        minWidth: 40,
-                        "& svg": { fontSize: 18 },
-                      }}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.title}
-                      sx={{
-                        "& .MuiListItemText-primary": {
-                          fontWeight: 600,
-                          fontSize: "0.85rem",
-                        },
-                      }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            }
-
-            const isSelected =
-              selectedRoute === itemPath ||
-              selectedRoute.startsWith(itemPath + "/");
-
-            return (
-              <ListItem key={index} disablePadding sx={{ mb: 0.5 }}>
-                <ListItemButton
-                  onClick={() => {
-                    navigate(item.route);
-                    setMobileOpen(false);
-                  }}
-                  selected={isSelected}
-                  sx={{
-                    borderRadius: 1.5,
-                    py: 1.2,
-                    pl: 1.6,
-                    pr: 2,
-                    color: "#fff",
-                    transition: "all 260ms ease",
-                    position: "relative",
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(90deg, rgba(108,99,255,0.25) 0%, rgba(72,61,255,0.12) 100%)",
-                      boxShadow: "inset 0 0 12px rgba(108,99,255,0.35)",
-                    },
-                    "&:hover": {
-                      background:
-                        "linear-gradient(90deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.06) 100%)",
-                      boxShadow: "inset 0 0 10px rgba(255,255,255,0.1)",
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{
-                      color: "inherit",
-                      minWidth: 40,
-                      "& svg": { fontSize: 18 },
-                    }}
-                  >
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.title}
-                    sx={{
-                      "& .MuiListItemText-primary": {
-                        fontWeight: 600,
-                        fontSize: "0.85rem",
-                      },
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-      </Box>
-
-      <Box sx={{ flexGrow: 1 }} />
-
-      <Box sx={{ p: 2 }}>
-        <Divider sx={{ borderColor: "rgba(255,255,255,0.04)", mb: 1.5 }} />
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="caption" sx={{ opacity: 0.85 }}>
-            © {new Date().getFullYear()} Musically
-          </Typography>
-          <Typography variant="caption" sx={{ opacity: 0.7 }}>
-            v1.2
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
-  );
-
   return (
-    <Box sx={{ display: "flex" }}>
-      <CssBaseline />
-
-      {/* AppBar */}
-      <AppBar
-        position="fixed"
-        elevation={6}
-        sx={{
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` },
-          background: "#2b437bff",
-        }}
+    <div className="flex min-h-screen">
+      <header
+        className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-brand-900 shadow-[0_4px_30px_rgba(2,2,94,0.22)] md:left-[260px] md:w-[calc(100%-260px)]"
       >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            sx={{ mr: 2, display: { md: "none" } }}
+        <div className="flex h-14 items-center gap-2.5 px-3 sm:gap-3 sm:px-4">
+          <button
+            type="button"
+            className="rounded-lg p-2 text-white md:hidden"
             onClick={handleDrawerToggle}
+            aria-label="Open menu"
           >
-            <MenuIcon />
-          </IconButton>
+            <Menu size={22} />
+          </button>
 
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{ flexGrow: 1, fontWeight: 700 }}
-          ></Typography>
+          <div className="flex-1" />
 
-          <Typography variant="body2" sx={{ mr: 2, opacity: 0.9 }}>
+          <p className="hidden max-w-[180px] truncate text-sm text-white/90 sm:block">
             {user?.em}
-          </Typography>
+          </p>
 
-          <IconButton 
-            onClick={handleProfileClick} 
-            sx={{ 
-              p: 0,
-              transition: "0.25s ease",
-              "&:hover": {
-                transform: "scale(1.08)",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              }, 
-            }}
+          <Dropdown
+            align="right"
+            trigger={
+              <button
+                type="button"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-sm font-bold text-white transition hover:scale-105 hover:bg-white/30"
+                aria-label="Profile menu"
+              >
+                {user?.em?.[0]?.toUpperCase() || "A"}
+              </button>
+            }
           >
-            <Avatar alt="Profile" />
-          </IconButton>
+            {(close) => (
+              <DropdownItem
+                danger
+                onClick={() => {
+                  close();
+                  handleLogout();
+                }}
+              >
+                <LogOut size={16} />
+                Logout
+              </DropdownItem>
+            )}
+          </Dropdown>
+        </div>
+      </header>
 
-          <Menu
-            anchorEl={anchorEl}
-            open={openMenu}
-            onClose={handleMenuClose}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
-          >
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <Logout fontSize="small" sx={{ color: "error.main" }}/>
-              </ListItemIcon>
-              <ListItemText>Logout</ListItemText>
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-
-      <Box component="nav" aria-label="mailbox folders">
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: "block", md: "none" },
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              background: "linear-gradient(180deg,#0f172a 0%,#1b2a4e 100%)",
-              color: "#fff",
-              position: "fixed",
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-
-        <Drawer
-          variant="permanent"
-          open
-          sx={{
-            display: { xs: "none", md: "block" },
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              boxSizing: "border-box",
-              background: "#093560ff",
-              color: "#fff",
-              borderRight: "1px solid rgba(255,255,255,0.04)",
-              position: "fixed",
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          ml: { md: `${drawerWidth}px` },
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          minHeight: "100vh",
-          background: "linear-gradient(180deg, #f6f8fb 0%, #eef3fb 100%)",
-        }}
+      <aside
+        className="fixed bottom-0 left-0 top-0 z-30 hidden w-[260px] flex-col border-r-2 border-white/25 bg-brand-900 md:flex"
+        style={{ width: DRAWER_WIDTH }}
+        aria-label="Admin navigation"
       >
-        <Toolbar />
-        <Outlet />
-      </Box>
-    </Box>
+        <SidebarContent />
+      </aside>
+
+      <Drawer
+        open={mobileOpen}
+        onClose={closeMobile}
+        className="w-[min(100vw-3rem,260px)] border-r-2 border-white/25 bg-brand-900 text-white"
+      >
+        <SidebarContent onNavigate={closeMobile} />
+      </Drawer>
+
+      <main className="page-gradient min-w-0 max-w-full flex-1 overflow-x-hidden pt-14 md:ml-[260px] md:w-[calc(100%-260px)]">
+        <div className="min-w-0 max-w-full p-3 sm:p-5 md:p-6 xl:p-8">
+          <Suspense fallback={<PageSpinner />}>
+            <Outlet />
+          </Suspense>
+        </div>
+      </main>
+
+      <AppDialog />
+    </div>
   );
 }

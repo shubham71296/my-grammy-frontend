@@ -1,22 +1,33 @@
+import { lazy, Suspense } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Dialog } from "@mui/material";
-import { closeDialog } from "../../../features/ui/uiSlice";
-import InstrumentDialog from "./InstrumentDialog";
-import FilePreviewDialog from "./FilePreviewDialog";
-import LectureDialog from "./LectureDialog";
-import CourseDialog from "./CourseDialog";
-import VideoPreviewDialog from "./VideoPreviewDialog";
-import UserDialog from "./UserDialog";
-import OrderDialog from "./OrderDialog";
 import { useEffect, useState } from "react";
-import LoginRequiredDialog from "./LoginRequiredDialog";
+import { closeDialog } from "../../../features/ui/uiSlice";
+import { Modal } from "../tw/Modal";
+import { Spinner } from "../tw/Spinner";
 
+const InstrumentDialog = lazy(() => import("./InstrumentDialog"));
+const FilePreviewDialog = lazy(() => import("./FilePreviewDialog"));
+const LectureDialog = lazy(() => import("./LectureDialog"));
+const CourseDialog = lazy(() => import("./CourseDialog"));
+const VideoPreviewDialog = lazy(() => import("./VideoPreviewDialog"));
+const UserDialog = lazy(() => import("./UserDialog"));
+const LoginRequiredDialog = lazy(() => import("./LoginRequiredDialog"));
+
+function DialogFallback() {
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 px-8 py-16">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-100 to-violet-100">
+        <Spinner size="lg" />
+      </div>
+      <p className="text-sm font-semibold text-slate-600">Loading dialog…</p>
+    </div>
+  );
+}
 
 export default function AppDialog() {
   const dispatch = useDispatch();
   const { openDialog, dialogInfo } = useSelector((state) => state.ui.dialog);
   const [isLocked, setIsLocked] = useState(false);
-
 
   useEffect(() => {
     const handler = (e) => setIsLocked(e.detail);
@@ -25,54 +36,56 @@ export default function AppDialog() {
   }, []);
 
   const handleClose = () => {
-    if (isLocked) return; 
+    if (isLocked) return;
     dispatch(closeDialog());
   };
 
+  const check = dialogInfo?.check;
+
+  const modalMaxWidth =
+    check === "edit_instrument"
+      ? "max-w-6xl"
+      : check === "edit_lecture"
+        ? "max-w-4xl"
+        : "max-w-3xl";
+  const modalMaxHeight =
+    check === "edit_instrument" || check === "edit_lecture"
+      ? "max-h-[calc(100dvh-0.75rem)] sm:max-h-[min(95vh,960px)]"
+      : undefined;
+
+  const isFullscreenImage = check === "view_img_video";
+
+  const renderBody = () => {
+    if (!check) return null;
+    if (["delete_instrument", "edit_instrument"].includes(check)) {
+      return <InstrumentDialog />;
+    }
+    if (isFullscreenImage) return <FilePreviewDialog />;
+    if (check === "view_video") return <VideoPreviewDialog />;
+    if (["edit_lecture", "delete_lecture"].includes(check)) return <LectureDialog />;
+    if (["edit_course", "delete_course"].includes(check)) return <CourseDialog />;
+    if (check === "delete_user") return <UserDialog />;
+    if (check === "guest_login_required") return <LoginRequiredDialog />;
+    return null;
+  };
+
+  if (isFullscreenImage) {
+    return openDialog ? (
+      <Suspense fallback={null}>
+        <FilePreviewDialog />
+      </Suspense>
+    ) : null;
+  }
+
   return (
-    <Dialog
+    <Modal
       open={openDialog}
       onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-      disableEscapeKeyDown={isLocked}
-      PaperProps={{
-        sx: {
-          pointerEvents: isLocked ? "none" : "auto",
-          width: "100%",
-          m: { xs: 1, sm: 2 },   
-          maxHeight: "90vh",
-        },
-      }}
-      BackdropProps={{
-        sx: {
-          backgroundColor: isLocked
-            ? "rgba(0,0,0,0.35)" 
-            : "rgba(0,0,0,0.25)",
-          pointerEvents: isLocked ? "none" : "auto",  
-        },
-      }}
+      lockClose={isLocked}
+      maxWidth={modalMaxWidth}
+      maxHeight={modalMaxHeight}
     >
-      {dialogInfo.check === "view_instrument" && <InstrumentDialog />}
-      {dialogInfo.check === "delete_instrument" && <InstrumentDialog />}
-      {dialogInfo.check === "edit_instrument" && <InstrumentDialog />}
-
-      {dialogInfo.check === "view_img_video" && <FilePreviewDialog />}
-
-      {dialogInfo.check === "view_video" && <VideoPreviewDialog />}
-      
-      {dialogInfo.check === "edit_lecture" && <LectureDialog />}
-      {dialogInfo.check === "delete_lecture" && <LectureDialog />}
-
-      {dialogInfo.check === "edit_course" && <CourseDialog />}
-      {dialogInfo.check === "delete_course" && <CourseDialog />}
-
-      {dialogInfo.check === "view_user" && <UserDialog />}
-      {dialogInfo.check === "delete_user" && <UserDialog />}
-
-      {dialogInfo.check === "view_order" && <OrderDialog />}
-
-      {dialogInfo.check === "guest_login_required" && <LoginRequiredDialog />}
-    </Dialog>
+      <Suspense fallback={<DialogFallback />}>{renderBody()}</Suspense>
+    </Modal>
   );
 }

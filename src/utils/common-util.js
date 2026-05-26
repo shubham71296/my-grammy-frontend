@@ -85,26 +85,24 @@ export const resetInputs = (inputs) => {
 
 
 export const filterData = (data, headCells) => {
-  let response = { header: [], rows: [] };
-
-  if (data.length > 0) {
-    const header = headCells.map(h => h._label);
-    const keys = headCells.map(h => h._col);
-
-    const rows = data.map(rowObj =>
-      keys.map(key => {
-        if (key === "instrument") {
-          return rowObj.instrument?.instrument_title || "";
-        }
-        if (key === "temp_action") return rowObj; 
-        return rowObj[key] ?? "";
-      })
-    );
-
-    response = { header, rows };
+  if (!data?.length) {
+    return { header: [], rows: [] };
   }
 
-  return response;
+  const header = headCells.map((h) => h._label);
+  const keys = headCells.map((h) => h._col);
+
+  const rows = data.map((rowObj) =>
+    keys.map((key) => {
+      if (key === "instrument") {
+        return rowObj.instrument?.instrument_title || "";
+      }
+      if (key === "temp_action") return rowObj;
+      return rowObj[key] ?? "";
+    })
+  );
+
+  return { header, rows };
 };
 
 export const truncate = (text, limit) => {

@@ -1,47 +1,21 @@
-import React from "react";
-import Chip from "@mui/material/Chip";
+import { Badge } from "../tw/Badge";
+
+const statusMap = {
+  pending: { label: "Pending", color: "warning" },
+  paid: { label: "Paid", color: "success" },
+  failed: { label: "Failed", color: "error" },
+  cancelled: { label: "Cancelled", color: "default" },
+};
 
 const DynamicChip = ({ val }) => {
   const status = val?.toString().toLowerCase() || "";
-
-  const defaultStatusMap = {
-    pending: {
-      label: "Pending",
-      color: "warning",
-      variant: "filled",
-    },
-    paid: {
-      label: "Paid",
-      color: "success",
-      variant: "filled",
-    },
-    failed: {
-      label: "Failed",
-      color: "error",
-      variant: "filled",
-    },
-  };
-
-  const chipProps =
-    defaultStatusMap[status] || {
-      label: val || "N/A",
-      color: "default",
-      variant: "outlined",
-    };
+  const props =
+    statusMap[status] || { label: val || "N/A", color: "default" };
 
   return (
-    <Chip
-      {...chipProps}
-      size="small"
-      sx={{
-        fontSize: "0.7rem",
-        height: 20,
-        textTransform: "capitalize",
-        "& .MuiChip-label": {
-          padding: "0 6px",
-        },
-      }}
-    />
+    <Badge color={props.color} className="text-[0.7rem] font-bold normal-case shadow-sm">
+      {props.label}
+    </Badge>
   );
 };
 

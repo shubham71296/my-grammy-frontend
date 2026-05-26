@@ -1,151 +1,47 @@
-import { Typography, Stack, Paper, Box, Divider, Container } from "@mui/material";
+import { Mail } from "lucide-react";
+import { PageShell, PagePanel } from "../../components/ui/tw/PageShell";
 
 export default function ContactUs() {
   return (
-    <Container
-      maxWidth="md"
-      sx={{
-        py: { xs: 3, sm: 4, md: 6 },
-        px: { xs: 1.5, sm: 2 },
-      }}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          p: { xs: 2, sm: 3, md: 5 },
-          borderRadius: 3,
-          background: "linear-gradient(135deg, #ffffff, #f5f7fa)",
-        }}
-      >
-        {/* Page Title */}
-        <Typography
-          variant="h4"
-          fontWeight={700}
-          sx={{
-            textAlign: "center",
-            color: "primary.main",
-            mb: 2,
-            fontSize: { xs: "1.5rem", sm: "2.2rem" },
-          }}
-        >
-          Contact Us
-        </Typography>
+    <PageShell narrow>
+      <PagePanel title="Contact Us" icon={Mail}>
+        <p className="-mt-2 mb-6 text-center text-sm text-slate-600">
+          We&apos;d love to hear from you. Contact us anytime!
+        </p>
 
-        {/* Subtitle */}
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            textAlign: "center",
-            mb: 4,
-            fontSize: { xs: "0.85rem", sm: "0.9rem" },
-          }}
-        >
-          We’d love to hear from you. Contact us anytime!
-        </Typography>
-
-        <Divider sx={{ mb: 4 }} />
-
-        <Stack spacing={4}>
-          {/* Business Name */}
-          <Box>
-            <Typography
-              variant="h6"
-              fontWeight={600}
-              gutterBottom
-              sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-            >
+        <div className="space-y-6">
+          <section>
+            <h2 className="text-base font-semibold text-slate-800 sm:text-lg">
               🏢 Business Name
-            </Typography>
+            </h2>
+            <p className="ml-1 text-sm text-slate-600 sm:text-base">Maestro Music Classes</p>
+          </section>
 
-            <Typography
-              color="text.secondary"
-              sx={{
-                ml: 1,
-                fontSize: { xs: "0.9rem", sm: "1rem" },
-              }}
+          <section>
+            <h2 className="text-base font-semibold text-slate-800 sm:text-lg">📧 Email</h2>
+            <a
+              href="mailto:grammymusicindia@gmail.com"
+              className="ml-1 break-all text-sm text-brand-600 hover:underline sm:text-base"
             >
-              Maestro Music Classes
-            </Typography>
-          </Box>
+              grammymusicindia@gmail.com
+            </a>
+          </section>
 
-          {/* Email */}
-          <Box>
-            <Typography
-              variant="h6"
-              fontWeight={600}
-              gutterBottom
-              sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-            >
-              📧 Email
-            </Typography>
+          <section>
+            <h2 className="text-base font-semibold text-slate-800 sm:text-lg">☎️ Phone</h2>
+            <p className="ml-1 text-sm text-slate-600 sm:text-base">+91 78802 22377</p>
+          </section>
 
-            <Typography
-              color="text.secondary"
-              sx={{
-                ml: 1,
-                fontSize: { xs: "0.9rem", sm: "1rem" },
-                wordBreak: "break-word",
-              }}
-            >
-              <a
-                href="mailto:grammymusicindia@gmail.com"
-                style={{ color: "#1976d2", textDecoration: "none" }}
-              >
-                grammymusicindia@gmail.com
-              </a>
-            </Typography>
-          </Box>
-
-          {/* Phone */}
-          <Box>
-            <Typography
-              variant="h6"
-              fontWeight={600}
-              gutterBottom
-              sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-            >
-              ☎️ Phone
-            </Typography>
-
-            <Typography
-              color="text.secondary"
-              sx={{
-                ml: 1,
-                fontSize: { xs: "0.9rem", sm: "1rem" },
-              }}
-            >
-              +91 78802 22377
-            </Typography>
-          </Box>
-
-          {/* Address */}
-          <Box>
-            <Typography
-              variant="h6"
-              fontWeight={600}
-              gutterBottom
-              sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-            >
-              📍 Address
-            </Typography>
-
-            <Typography
-              color="text.secondary"
-              sx={{
-                ml: 1,
-                fontSize: { xs: "0.9rem", sm: "1rem" },
-                lineHeight: 1.6,
-                wordBreak: "break-word",
-              }}
-            >
+          <section>
+            <h2 className="text-base font-semibold text-slate-800 sm:text-lg">📍 Address</h2>
+            <p className="ml-1 text-sm leading-relaxed text-slate-600 sm:text-base">
               H16, Keshar Bagh Rd, Near Charming Kidz School,
               <br />
               Nalanda Parisar, Indore, Madhya Pradesh – 452009
-            </Typography>
-          </Box>
-        </Stack>
-      </Paper>
-    </Container>
+            </p>
+          </section>
+        </div>
+      </PagePanel>
+    </PageShell>
   );
 }

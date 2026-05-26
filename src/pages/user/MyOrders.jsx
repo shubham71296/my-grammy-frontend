@@ -1,408 +1,184 @@
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  Divider,
-  Chip,
-  TextField,
-  InputAdornment,
-  Button,
-} from "@mui/material";
-import {
-  ArrowBack,
-  LibraryMusic,
-  ReceiptLong,
-  SearchOutlined,
-  ShoppingBag,
-} from "@mui/icons-material";
-import SearchIcon from "@mui/icons-material/Search";
-import { useSelector } from "react-redux";
-import axios from "axios";
-import api from "../../api/axios";
-import { useNavigate } from "react-router-dom";
+import { Receipt, ShoppingBag, Package, Calendar } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { formatDateTime } from "../../utils/common-util";
+import { useOrderListQuery } from "../../hooks/useOrderListQuery";
+import { PageShell } from "../../components/ui/tw/PageShell";
+import { PageBannerWithSearch, PageContentCard, EmptyState } from "../../components/ui/tw/PageHeader";
+import { Button } from "../../components/ui/tw/Button";
+import { Badge } from "../../components/ui/tw/Badge";
+import { Spinner } from "../../components/ui/tw/Spinner";
+import { BackButton } from "../../components/ui/tw/BackButton";
+import { cn } from "../../lib/cn";
+
+const statusColor = (status) => {
+  switch (status) {
+    case "paid":
+      return "success";
+    case "pending":
+      return "warning";
+    case "failed":
+      return "error";
+    default:
+      return "default";
+  }
+};
+
+const statusBorder = (status) => {
+  switch (status) {
+    case "paid":
+      return "border-l-emerald-500";
+    case "pending":
+      return "border-l-amber-500";
+    case "failed":
+      return "border-l-red-500";
+    default:
+      return "border-l-slate-300";
+  }
+};
 
 const MyOrders = () => {
-  const { token } = useSelector((state) => state.auth);
-  const [orderList, setOrderList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    getAllOrdersData();
-  }, []);
-
-  const getAllOrdersData = async (queryVal = {}) => {
-    try {
-      const body = {
-        query: queryVal,
-        projection: {},
-        options: {
-          skip: 0,
-          limit: 0,
-          sort: { createdAt: -1 },
-        },
-      };
-
-      const response = await api.post("/user/getmyorders", body);
-
-      setOrderList(response.data.data || []);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "paid":
-        return "success";
-      case "pending":
-        return "warning";
-      case "failed":
-        return "error";
-      default:
-        return "default";
-    }
-  };
-
-  useEffect(() => {
-    const q = search.trim();
-    if (q === "") {
-      getAllOrdersData({});
-      return;
-    }
-    const queryObj = {};
-
-    if (!isNaN(q)) {
-      queryObj.amount = Number(q);
-    } else {
-      queryObj["items.title"] = { $regex: q, $options: "i" };
-    }
-
-    getAllOrdersData(queryObj);
-  }, [search]);
+  const {
+    search,
+    setSearch,
+    data: orderList,
+    isLoading: loading,
+    isError,
+  } = useOrderListQuery();
 
   return (
-    <Box sx={{ backgroundColor: "#eef2f7", minHeight: "100vh", py: 4 }}>
-      <Container maxWidth="lg">
-        <Paper elevation={4} sx={{ p: 3, borderRadius: 3 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 600,
-              color: "#1976d2",
-              display: "flex",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: { xs: 0.8, sm: 1 },
-              fontSize: {
-                xs: "1rem",
-                sm: "1.2rem",
-                md: "1.5rem",
-              },
-              lineHeight: 1.2,
-              letterSpacing: { xs: "0.2px", sm: "0.5px" },
-            }}
-          >
-            <ShoppingBag
-              sx={{
-                fontSize: {
-                  xs: "1.1rem",
-                  sm: "1.4rem",
-                  md: "1.6rem",
-                },
-                flexShrink: 0,
-              }}
-            />
-            My Orders
-          </Typography>
+    <PageShell>
+      <PageBannerWithSearch
+        icon={ShoppingBag}
+        title="My Orders"
+        subtitle="Track purchases, payment status, and your full order history."
+        variant="orders"
+        searchLabel="Search orders"
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Order ID or product name…"
+        itemCount={orderList.length}
+        loading={loading}
+        error={isError}
+        showCount={!loading && !isError}
+      />
 
-          <Divider
-            sx={{
-              mt: 1.5,
-              mb: 1.5,
-              borderColor: "#1976d2",
-              borderWidth: "1px",
-              borderRadius: 1,
-            }}
-          />
+      <div className="mt-5 space-y-5">
+        <PageContentCard>
+          <div className="mb-5 flex items-center gap-2 border-b border-slate-100 pb-4">
+            <Package className="h-5 w-5 text-slate-600" />
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900 sm:text-lg">
+                Order history
+              </h2>
+              <p className="text-xs text-muted">Most recent orders appear first</p>
+            </div>
+          </div>
 
-          <Paper
-            elevation={2}
-            sx={{
-              p: { xs: 1.5, sm: 2 },
-              borderRadius: { xs: 1.5, sm: 2 },
-              mb: { xs: 2, sm: 3 },
-              background: "white",
-            }}
-          >
-            <Typography
-              variant="subtitle1"
-              sx={{
-                fontWeight: 700,
-                mb: { xs: 0.8, sm: 1 },
-                color: "primary.main",
-                fontSize: {
-                  xs: "0.9rem",
-                  sm: "1.05rem",
-                  md: "1.1rem",
-                },
-              }}
-            >
-              Search Orders
-            </Typography>
-            <TextField
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search order"
-              size="small"
-              fullWidth
-              sx={{
-                width: "100%",
-                maxWidth: { sm: 420, md: 500 },
-                mx: "auto",
-                "& .MuiInputBase-input::placeholder": {
-                  fontSize: { xs: "0.75rem", sm: "0.9rem" },  
-                  //opacity: 0.8,
-                },
-                "& .MuiInputBase-input": {
-                  fontSize: { xs: "0.8rem", sm: "0.95rem" },
-                  py: { xs: 1, sm: 1.2 },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon
-                      sx={{
-                        fontSize: { xs: 18, sm: 20 },
-                        color: "action.active",
-                      }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Paper>
-
-          <Box sx={{ mt: 2 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 700,
-                letterSpacing: { xs: "0.2px", sm: "0.5px" },
-                color: "#1976d2",
-                borderLeft: {
-                  xs: "3px solid #1976d2",
-                  sm: "5px solid #1976d2",
-                },
-                pl: { xs: 1.2, sm: 2 },
-                fontSize: {
-                  xs: "0.9rem",
-                  sm: "1.15rem",
-                  md: "1.25rem",
-                },
-
-                display: "flex",
-                alignItems: "center",
-                minHeight: { xs: 36, sm: 44 },
-              }}
-            >
-              List of Orders
-            </Typography>
-            <Divider />
-          </Box>
-
-          {loading ? (
-            <Typography
-              variant="h6"
-              align="center"
-              sx={{ color: "#777", py: 5 }}
-            >
-              Loading orders...
-            </Typography>
+          {isError ? (
+            <p className="rounded-xl border border-red-100 bg-red-50/80 py-10 text-center text-sm font-semibold text-danger">
+              Could not load orders. Please try again later.
+            </p>
+          ) : loading ? (
+            <div className="flex justify-center py-16">
+              <Spinner size="lg" />
+            </div>
           ) : orderList.length === 0 ? (
-            <Typography
-              textAlign="center"
-              width="100%"
-              py={10}
-              color="gray"
-              fontSize="18px"
-            >
-              No orders found.
-            </Typography>
+            <EmptyState
+              icon={ShoppingBag}
+              title="No orders yet"
+              description={
+                search
+                  ? "No orders match your search. Try another keyword."
+                  : "When you purchase instruments or courses, they will show up here."
+              }
+              action={
+                <Link to="/user/instruments" className="btn-primary">
+                  Start shopping
+                </Link>
+              }
+            />
           ) : (
-            orderList.map((order) => (
-              <Paper
-                key={order._id}
-                elevation={3}
-                sx={{
-                  p: 2,
-                  mb: 3,
-                  mt: 3,
-                  borderRadius: 3,
-                  transition: "0.3s",
-                  cursor: "pointer",
-                  "&:hover": {
-                    transform: "scale(1.01)",
-                    boxShadow: "0px 10px 22px rgba(0,0,0,0.15)",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 1,
-                  }}
+            <div className="space-y-4">
+              {orderList.map((order) => (
+                <article
+                  key={order._id}
+                  className={cn(
+                    "overflow-hidden rounded-xl border border-slate-200/90 bg-white transition hover:shadow-md",
+                    "border-l-4",
+                    statusBorder(order.paymentStatus)
+                  )}
                 >
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      display: "flex",
-                      fontWeight: 700,
-                      color: "#333",
-                      fontSize: { xs: "0.7rem", sm: "1rem" },
-                    }}
-                  >
-                    <ReceiptLong sx={{ mr: 1 }} />
-                    Order ID: {order._id}
-                  </Typography>
+                  <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                    <div className="flex min-w-0 items-start gap-2">
+                      <Receipt className="mt-0.5 h-5 w-5 shrink-0 text-slate-600" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+                          Order ID
+                        </p>
+                        <p className="break-all text-sm font-bold text-navy">{order._id}</p>
+                      </div>
+                    </div>
+                    <Badge color={statusColor(order.paymentStatus)}>
+                      {order.paymentStatus}
+                    </Badge>
+                  </div>
 
-                  <Chip
-                    label={order.paymentStatus.toUpperCase()}
-                    color={getStatusColor(order.paymentStatus)}
-                    size="small"
-                    sx={{ fontWeight: 600, mt: 1 }}
-                  />
-                </Box>
+                  <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
+                    <div>
+                      <p className="text-xs text-muted">Order total</p>
+                      <p className="text-xl font-extrabold text-brand-600">
+                        ₹{Number(order.amount).toLocaleString("en-IN")}{" "}
+                        <span className="text-sm font-semibold text-muted">
+                          {order.currency}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-muted">
+                      <Calendar className="h-3.5 w-3.5" />
+                      {formatDateTime(order.createdAt)}
+                    </div>
+                  </div>
 
-                <Typography
-                  variant="body1"
-                  sx={{
-                    mb: 2,
-                    fontWeight: 600,
-                    color: "#444",
-                    fontSize: { xs: "0.9rem", sm: "1rem" },
-                  }}
-                >
-                  Total Amount:{" "}
-                  <span style={{ color: "#1976d2" }}>
-                    ₹{order.amount} {order.currency}
-                  </span>
-                </Typography>
-
-                <Divider sx={{ my: 2 }} />
-
-                {order.items.map((item, idx) => (
-                  <Box
-                    key={idx}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                      mb: 2,
-                      p: 1.2,
-                      borderRadius: 2,
-                      border: "1px solid #e0e0e0",
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    <img
-                      src={item.thumbnail?.[0]?.url}
-                      alt={item.title}
-                      style={{
-                        width: "65px",
-                        height: "65px",
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                        boxShadow: "0 3px 6px rgba(0,0,0,0.12)",
-                      }}
-                    />
-
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: { xs: "0.9rem", sm: "1rem" },
-                        }}
+                  <ul className="space-y-2 border-t border-slate-100 px-4 py-3 sm:px-5">
+                    {order.items?.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="flex gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3"
                       >
-                        {item.title}
-                      </Typography>
-
-                      {item.price !== 0 && (
-                        <Typography variant="body2" sx={{ color: "#555" }}>
-                          Qty: {item.qty}
-                        </Typography>
-                      )}
-
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: 700,
-                          color: "#1976d2",
-                          fontSize: { xs: "0.8rem", sm: "1rem" },
-                        }}
-                      >
-                        {item.price === 0
-                          ? "Free Course With this Instrument"
-                          : `₹${item.price}`}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
-
-                <Divider sx={{ mt: 2 }} />
-
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: "#666",
-                    fontSize: { xs: "0.65rem", sm: "1rem" },
-                  }}
-                >
-                  {/* Ordered on: {new Date(order.createdAt).toLocaleString()} */}
-                  Ordered on: {formatDateTime(order.createdAt)}
-                </Typography>
-              </Paper>
-            ))
+                        <img
+                          src={item.thumbnail?.[0]?.url}
+                          alt={item.title}
+                          className="product-card__img h-14 w-14 shrink-0 rounded-lg bg-white object-cover ring-1 ring-slate-200"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="line-clamp-1 text-sm font-bold text-navy">
+                            {item.title}
+                          </p>
+                          {item.price !== 0 && (
+                            <p className="text-xs text-muted">Qty: {item.qty}</p>
+                          )}
+                          <p className="text-sm font-semibold text-brand-600">
+                            {item.price === 0
+                              ? "Free course with instrument"
+                              : `₹${Number(item.price).toLocaleString("en-IN")}`}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
           )}
-          <Box display="flex" mt={5}>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<ArrowBack />}
-              onClick={() => navigate("/user")}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                //px: { xs: 2, sm: 3 },
-                //py: { xs: 0.8, sm: 1 },
-                borderRadius: 2,
-                fontSize: {
-                  xs: "0.75rem",
-                  sm: "0.9rem",
-                  md: "1rem",
-                },
-                "& .MuiButton-startIcon": {
-                  "& svg": {
-                    fontSize: { xs: "1rem", sm: "1.2rem" },
-                  },
-                },
-              }}
-            >
-              Back
-            </Button>
-          </Box>
-        </Paper>
-      </Container>
-    </Box>
+        </PageContentCard>
+
+        <BackButton to="/user" label="Back to home" />
+      </div>
+    </PageShell>
   );
 };
 

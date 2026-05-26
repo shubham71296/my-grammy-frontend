@@ -1,130 +1,47 @@
-import {
-  Typography,
-  Stack,
-  List,
-  ListItem,
-  ListItemText,
-  Container,
-  Paper,
-  Divider,
-  Box,
-} from "@mui/material";
+import { Truck } from "lucide-react";
+import { PageShell, PagePanel } from "../../components/ui/tw/PageShell";
 
 export default function ShippingPolicy() {
   return (
-    <Container
-      maxWidth="md"
-      sx={{
-        py: { xs: 3, sm: 4, md: 6 },
-        px: { xs: 1.5, sm: 2 },
-      }}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          p: { xs: 2, sm: 3, md: 5 },
-          borderRadius: 3,
-          background: "linear-gradient(135deg, #ffffff, #f5f7fa)",
-        }}
-      >
-        {/* Title */}
-        <Typography
-          variant="h4"
-          fontWeight={700}
-          sx={{
-            textAlign: "center",
-            color: "primary.main",
-            mb: 2,
-            fontSize: { xs: "1.5rem", sm: "2.2rem" },
-          }}
-        >
-          Shipping Policy
-        </Typography>
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            textAlign: "center",
-            mb: 4,
-            fontSize: { xs: "0.85rem", sm: "0.9rem" },
-          }}
-        >
+    <PageShell narrow>
+      <PagePanel title="Shipping Policy" icon={Truck}>
+        <p className="-mt-2 mb-6 text-center text-sm text-slate-500">
           Last updated: {new Date().toLocaleDateString()}
-        </Typography>
+        </p>
 
-        <Divider sx={{ mb: 4 }} />
+        <div className="space-y-6 text-sm text-slate-600 sm:text-base">
+          <section>
+            <h2 className="mb-2 text-base font-semibold text-slate-800 sm:text-lg">
+              🚚 No Physical Shipping
+            </h2>
+            <p>
+              Maestro Music Classes does not ship any physical products. All our offerings
+              are service-based.
+            </p>
+          </section>
 
-        {/* SECTION 1 */}
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-          >
-            🚚 No Physical Shipping
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
-          >
-            Maestro Music Classes does not ship any physical products. All our
-            offerings are service-based.
-          </Typography>
-        </Box>
+          <section>
+            <h2 className="mb-2 text-base font-semibold text-slate-800 sm:text-lg">
+              📌 How Services Are Delivered
+            </h2>
+            <p className="mb-2">Our services are provided through one of the following modes:</p>
+            <ul className="list-disc space-y-1 pl-6">
+              <li>In-person at our academy</li>
+              <li>Digitally (online classes or digital content)</li>
+            </ul>
+          </section>
 
-        {/* SECTION 2 */}
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-          >
-            📌 How Services Are Delivered
-          </Typography>
-
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ mb: 1, fontSize: { xs: "0.9rem", sm: "1rem" } }}
-          >
-            Our services are provided through one of the following modes:
-          </Typography>
-
-          <List sx={{ listStyleType: "disc", pl: 3 }}>
-            <ListItem sx={{ display: "list-item", pl: 0 }}>
-              <ListItemText primary="In-person at our academy" />
-            </ListItem>
-
-            <ListItem sx={{ display: "list-item", pl: 0 }}>
-              <ListItemText primary="Digitally (online classes or digital content)" />
-            </ListItem>
-          </List>
-        </Box>
-
-        {/* SECTION 3 */}
-        <Box sx={{ mb: 0 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-          >
-            📦 No Shipping Required
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
-          >
-            Since no tangible items are sold, shipping or physical delivery is
-            not applicable for any of our services.
-          </Typography>
-        </Box>
-      </Paper>
-    </Container>
+          <section>
+            <h2 className="mb-2 text-base font-semibold text-slate-800 sm:text-lg">
+              📦 No Shipping Required
+            </h2>
+            <p>
+              Since no tangible items are sold, shipping or physical delivery is not
+              applicable for any of our services.
+            </p>
+          </section>
+        </div>
+      </PagePanel>
+    </PageShell>
   );
 }

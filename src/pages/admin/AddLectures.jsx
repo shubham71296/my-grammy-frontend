@@ -1,38 +1,36 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Grid,
-  Box,
-  Button,
-  Paper,
-  Typography,
-  Divider,
-  CircularProgress,
-  LinearProgress,
-  useTheme,
-  useMediaQuery,
-  Backdrop,
-} from "@mui/material";
-
+  ArrowLeft,
+  CirclePlus,
+  Film,
+  GraduationCap,
+  ListVideo,
+  PlayCircle,
+  RefreshCw,
+  Sparkles,
+  Video,
+  X,
+} from "lucide-react";
 import lecturesInputs from "../../utils/add-lectures-inputs";
 import InputText from "../../components/ui/inputs/InputText";
 import InputFile from "../../components/ui/inputs/InputFile";
 import FilePreview from "../../components/ui/inputs/FilePreview";
-import { AddCircleRounded, ArrowBack, MenuBook, Visibility } from "@mui/icons-material";
-import axios from "axios";
-import {
-  extractJsonObject,
-  resetInputs,
-  validateInputs,
-} from "../../utils/common-util";
-import {
-  presignSmallUploads,
-  uploadToPresignedUrl,
-  uploadInBatches,
-  uploadLargeFileMultipart,
-} from "../../utils/s3-helpers";
+import { resetInputs, validateInputs } from "../../utils/common-util";
+import { useS3UploadPipeline } from "../../hooks/useS3UploadPipeline";
 import toast from "react-hot-toast";
-import api from "../../api/axios";
+import { useAddLectureMutation } from "../../features/api/adminApi";
+import { rollbackUploadedKeys } from "../../utils/s3-rollback";
+import {
+  DialogNotice,
+  DialogSection,
+  UploadProgressBar,
+} from "../../components/ui/dialog/dialogLayout";
+import { PageShell } from "../../components/ui/tw/PageShell";
+import { Button } from "../../components/ui/tw/Button";
+import { Spinner } from "../../components/ui/tw/Spinner";
+import { Modal, ModalBody } from "../../components/ui/tw/Modal";
+import { cn } from "../../lib/cn";
 
 export default function AddLectures() {
   const location = useLocation();
@@ -40,19 +38,25 @@ export default function AddLectures() {
   const [inputs, setInputs] = useState(lecturesInputs);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [progressMap, setProgressMap] = useState({});
-  const [uploadedImagesMeta, setUploadedImagesMeta] = useState([]);
-  const [uploadedVideosMeta, setUploadedVideosMeta] = useState([]);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const { progressMap, uploadVideos } = useS3UploadPipeline();
+  const [addLecture] = useAddLectureMutation();
   const navigate = useNavigate();
 
-  const setProgress = (fileKey, percent) =>
-    setProgressMap((p) => ({ ...p, [fileKey]: percent }));
+  const titleField = inputs.find((f) => f._key === "lecture_title");
+  const videoField = inputs.find((f) => f._key === "lecture_video");
+  const titleIndex = inputs.findIndex((f) => f._key === "lecture_title");
+  const videoIndex = inputs.findIndex((f) => f._key === "lecture_video");
+
+  const uploading = Array.isArray(videoField?._value)
+    ? videoField._value.filter((f) => {
+        const key = f.name || f.originalName;
+        const pct = progressMap[key];
+        return pct > 0 && pct < 100;
+      })
+    : [];
 
   const handleChange = async (e, p1, i1, updatedFiles = null) => {
-    let tempInputs = [...inputs];
+    const tempInputs = [...inputs];
     if (p1._type === "file") {
       if (updatedFiles !== null) {
         tempInputs[i1]._value = updatedFiles;
@@ -61,8 +65,12 @@ export default function AddLectures() {
       }
       const files = e?.target?.files;
       if (files && files.length > 0) {
-        // const allowedVideoTypes = ["video/mp4", "video/mkv", "video/mov"];
-        const allowedVideoTypes = ["video/mp4", "video/quicktime", "video/webm", "video/ogg"];
+        const allowedVideoTypes = [
+          "video/mp4",
+          "video/quicktime",
+          "video/webm",
+          "video/ogg",
+        ];
         const maxVideoSize = 500 * 1024 * 1024;
         const validFiles = Array.from(files).filter((file) => {
           if (!allowedVideoTypes.includes(file.type)) {
@@ -81,12 +89,9 @@ export default function AddLectures() {
           return;
         }
 
-        const firstValid = validFiles[0];
-        tempInputs[i1]._value = [firstValid];
-
+        tempInputs[i1]._value = [validFiles[0]];
         tempInputs[i1]._errorMsg = "";
         setInputs([...tempInputs]);
-
         if (e?.target) e.target.value = "";
       }
     } else {
@@ -98,354 +103,290 @@ export default function AddLectures() {
 
   const handleSubmit = async () => {
     if (loading) return;
-    let obj1 = validateInputs(inputs);
+    if (!course_id) {
+      toast.error("Open this page from a course to add lectures.");
+      return;
+    }
+    const obj1 = validateInputs(inputs);
     if (obj1.hasError) {
       setInputs(obj1.inputs);
-    } else {
-      try {
-        setLoading(true);
-        const payload = {};
-        let videoFiles = [];
-        inputs.forEach((item) => {
-          if (item._type === "file") {
-            if (item._key === "lecture_video" && Array.isArray(item._value))
-              videoFiles = item._value;
-          } else {
-            payload[item._key] = item._value;
-          }
-        });
-
-        let uploadedVideos = [];
-        if (videoFiles.length > 0) {
-          const smallFiles = videoFiles.filter(
-            (f) => f.size <= 50 * 1024 * 1024
-          );
-          const largeFiles = videoFiles.filter(
-            (f) => f.size > 50 * 1024 * 1024
-          );
-
-          if (smallFiles.length > 0) {
-            const presigned = await presignSmallUploads(
-              smallFiles,
-              "private-course-videos"
-            );
-
-            const tasks = presigned.map((meta, idx) => async () => {
-              const file = smallFiles[idx];
-              const uploaded = await uploadToPresignedUrl(meta, file, (pct) =>
-                setProgress(file.name, pct)
-              );
-              return uploaded;
-            });
-
-            uploadedVideos = await uploadInBatches(tasks, 4);
-            setUploadedVideosMeta(uploadedVideos);
-          }
-
-          if (largeFiles.length > 0) {
-            const largeUploadTasks = largeFiles.map((file) => async () => {
-              return await uploadLargeFileMultipart(
-                file,
-                {
-                  partSize: 5 * 1024 * 1024,
-                  batchSize: 5,
-                  onProgress: (pct) => setProgress(file.name, pct),
-                },
-                "private-course-videos"
-              );
-            });
-            const largeResults = await uploadInBatches(largeUploadTasks, 3);
-            uploadedVideos.push(...largeResults);
-          }
+      return;
+    }
+    try {
+      setLoading(true);
+      const payload = {};
+      let videoFiles = [];
+      inputs.forEach((item) => {
+        if (item._type === "file") {
+          if (item._key === "lecture_video" && Array.isArray(item._value))
+            videoFiles = item._value;
+        } else {
+          payload[item._key] = item._value;
         }
-        payload.lecture_video = uploadedVideos;
-        payload.course_id = course_id;
+      });
 
-        const response = await api.post("/admin/addlecture", payload);
-        toast.success(response.data.msg);
-        setMessage(response.data.msg);
+      payload.lecture_video = await uploadVideos(
+        videoFiles,
+        "private-course-videos"
+      );
+      payload.course_id = course_id;
+
+      try {
+        const res = await addLecture(payload).unwrap();
+        toast.success(res?.msg || "Lecture added");
+        setMessage(res?.msg || "Lecture added successfully.");
         setInputs(resetInputs(inputs));
-        return response;
-      } catch (err) {
-        console.log("error", err);
-        const errorMsg = err?.response?.data?.msg || "Something went wrong!";
-        toast.error(errorMsg);
-      } finally {
-        setLoading(false);
+      } catch (apiErr) {
+        await rollbackUploadedKeys(
+          payload.lecture_video.map((f) => f.key).filter(Boolean)
+        );
+        throw apiErr;
       }
+    } catch (err) {
+      const errorMsg =
+        err?.data?.msg || err?.message || "Something went wrong!";
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    setInputs(resetInputs(inputs));
+    setInputs(resetInputs(lecturesInputs));
     setMessage("");
   }, []);
 
+  const backTo = course_id
+    ? `/admin/mycoursedetail/${course_id}`
+    : "/admin/mycourseslist";
+
   return (
-    <>
-      <Backdrop
-        sx={{
-          color: "#fff",
-          zIndex: (theme) => theme.zIndex.drawer + 999,
-          flexDirection: "column",
-          gap: 2,
-        }}
-        open={loading}
+    <PageShell className="pb-12">
+      <Modal open={loading} lockClose maxWidth="max-w-sm">
+        <ModalBody className="flex flex-col items-center gap-4 bg-gradient-to-b from-violet-50/50 to-white py-10">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/30">
+            <RefreshCw className="h-7 w-7 animate-spin" />
+          </span>
+          <div className="text-center">
+            <p className="text-base font-extrabold text-navy">Uploading lesson</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Please keep this tab open until the video finishes uploading.
+            </p>
+          </div>
+        </ModalBody>
+      </Modal>
+
+      <Link
+        to={backTo}
+        className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-brand-700"
       >
-        <CircularProgress color="inherit" />
-        <Typography sx={{ fontSize: "0.9rem", mt: 1 }}>
-          Uploading & Processing…
-        </Typography>
-      </Backdrop>
+        <ArrowLeft className="h-4 w-4" />
+        {course_title ? "Back to course" : "All courses"}
+      </Link>
 
-      <Paper
-        elevation={4}
-        sx={{
-          p: 3,
-          borderRadius: 2,
-        }}
-      >
-        <Box mb={3}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 600,
-              fontSize: {
-                xs: "1rem",
-                sm: "1.2rem",
-                md: "1.5rem",
-              },
-              letterSpacing: "0.5px",
-              color: "#1976d2",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
+      <header className="relative mb-6 overflow-hidden rounded-[1.75rem] border border-violet-100/80 bg-gradient-to-br from-white via-violet-50/40 to-indigo-50/50 shadow-[0_18px_45px_-30px_rgba(76,29,149,0.35)]">
+        <div
+          className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-violet-500/10 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="absolute -bottom-14 left-6 h-32 w-32 rounded-full bg-indigo-500/10 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative flex flex-col gap-4 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:p-7">
+          <div className="flex flex-col items-center gap-3 text-center min-[520px]:flex-row min-[520px]:items-start min-[520px]:gap-4 min-[520px]:text-left">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-500/25 sm:h-14 sm:w-14">
+              <ListVideo className="h-6 w-6 sm:h-7 sm:w-7" />
+            </span>
+            <div className="min-w-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-violet-800 shadow-sm ring-1 ring-violet-100 sm:text-[11px]">
+                <Sparkles className="h-3.5 w-3.5" />
+                New lesson
+              </span>
+              <h2 className="mt-2 text-xl font-extrabold tracking-tight text-navy sm:mt-3 sm:text-3xl">
+                Add lecture
+              </h2>
+              {course_title ? (
+                <p className="mt-2 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600 min-[520px]:justify-start sm:text-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 font-semibold text-slate-800">
+                    <GraduationCap className="h-3.5 w-3.5 text-violet-600" />
+                    {course_title}
+                  </span>
+                </p>
+              ) : (
+                <p className="mx-auto mt-1.5 max-w-xl text-xs leading-relaxed text-amber-700 min-[520px]:mx-0 sm:mt-2 sm:text-sm">
+                  Select a course from your library first, then add lectures from its
+                  detail page.
+                </p>
+              )}
+            </div>
+          </div>
+          {course_id ? (
+            <Link
+              to={`/admin/mycoursedetail/${course_id}`}
+              className="inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-4 text-sm font-bold text-white shadow-md shadow-violet-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-lg active:translate-y-0 min-[520px]:w-auto"
+            >
+              <PlayCircle className="h-4 w-4" />
+              View playlist
+            </Link>
+          ) : null}
+        </div>
+      </header>
+
+      {!course_id ? (
+        <div className="mb-6 rounded-2xl border border-amber-200/90 bg-gradient-to-r from-amber-50 to-orange-50/50 p-5 shadow-sm">
+          <p className="font-bold text-amber-900">No course selected</p>
+          <p className="mt-1 text-sm text-amber-800/90">
+            Go to My courses, open a course, and use &quot;Add lectures&quot; from the
+            lecture playlist.
+          </p>
+          <Link
+            to="/admin/mycourseslist"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand-700 hover:underline"
           >
-            <MenuBook
-              sx={{
-                fontSize: {
-                  xs: "1.1rem",
-                  sm: "1.4rem",
-                  md: "1.6rem",
-                },
-                flexShrink: 0,
-              }}
-            />
-            Add Lecture videos for course - {course_title}
-          </Typography>
+            <GraduationCap className="h-4 w-4" />
+            Browse courses
+          </Link>
+        </div>
+      ) : null}
 
-          <Divider
-            sx={{
-              mt: 1.5,
-              mb: 1.5,
-              borderColor: "#1976d2",
-              borderWidth: "1px",
-              borderRadius: 1,
-            }}
-          />
-        </Box>
+      {message ? (
+        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200/90 bg-gradient-to-r from-emerald-50 to-teal-50/40 p-4 shadow-sm ring-1 ring-emerald-100/80">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+            <CirclePlus className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="font-bold text-emerald-900">Lecture saved</p>
+            <p className="mt-0.5 text-sm text-emerald-800/90">{message}</p>
+            <p className="mt-1 text-xs text-emerald-700/80">
+              Add another lesson below or view the course playlist.
+            </p>
+          </div>
+        </div>
+      ) : null}
 
-        {message ? (
-          <Box
-            sx={{
-              mb: 3,
-              p: 2,
-              borderRadius: "12px",
-              backgroundColor: "#e6f4ea",
-              border: "1px solid #a5d6a7",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-              color: "#2e7d32",
-              fontWeight: 500,
-              transition: "0.3s ease",
-              "&:hover": {
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                backgroundColor: "#dcedc8",
-              },
-            }}
-          >
-            <Typography>{message}</Typography>
-          </Box>
-        ) : null}
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_12px_rgba(15,23,42,0.05)]">
+        <div className="border-b border-slate-100 bg-gradient-to-r from-violet-50/80 to-indigo-50/40 px-5 py-4 sm:px-6">
+          <h2 className="flex items-center gap-2 text-base font-extrabold text-navy">
+            <Film className="h-5 w-5 text-violet-600" />
+            Lesson content
+          </h2>
+          <p className="mt-0.5 text-xs text-muted">
+            Title and video file for this lesson
+          </p>
+        </div>
 
-        <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-          {inputs.map((p1, i1) => {
-            if (["text", "number", "password"].includes(p1._type)) {
-              return (
-                <Grid size={{ xs: 12, md: 12, lg: 6 }} key={i1}>
-                  <InputText
-                    {...p1}
-                    onChange={(event) => handleChange(event, p1, i1)}
-                  />
-                </Grid>
-              );
-            }
+        <div className="space-y-5 bg-gradient-to-b from-violet-50/15 via-white to-slate-50/20 p-5 sm:p-6">
+          <DialogNotice icon={Video} title="Before you upload" variant="brand">
+            <ul className="list-inside list-disc space-y-0.5 text-sm">
+              <li>One video per lecture — MP4, MOV, WEBM, or OGG.</li>
+              <li>Maximum file size: 500 MB.</li>
+              <li>Use a clear title so students know what they will learn.</li>
+            </ul>
+          </DialogNotice>
 
-            if (p1._type === "file") {
-              return (
-                <Grid size={{ xs: 12, md: 12, lg: 6 }} key={i1}>
-                  <InputFile
-                    {...p1}
-                    onChange={(event) => handleChange(event, p1, i1)}
-                  />
+          {titleField && titleIndex >= 0 ? (
+            <DialogSection title="Lesson title">
+              <InputText
+                {...titleField}
+                onChange={(event) => handleChange(event, titleField, titleIndex)}
+              />
+            </DialogSection>
+          ) : null}
 
+          {videoField && videoIndex >= 0 ? (
+            <DialogSection
+              title="Lesson video"
+              className="border-violet-100/90 ring-violet-100/40"
+            >
+              <div className="space-y-4">
+                <InputFile
+                  {...videoField}
+                  onChange={(event) => handleChange(event, videoField, videoIndex)}
+                />
+
+                {Array.isArray(videoField._value) && videoField._value.length > 0 ? (
                   <FilePreview
-                    files={p1._value}
+                    files={videoField._value}
                     onRemove={(fileIndex) => {
-                      const updatedFiles = p1._value.filter(
+                      const updated = videoField._value.filter(
                         (_, idx) => idx !== fileIndex
                       );
-                      handleChange(null, p1, i1, updatedFiles);
+                      handleChange(null, videoField, videoIndex, updated);
                     }}
                   />
-                  {Array.isArray(p1._value) &&
-                    p1._value.map((f, idx) => (
-                      <Box key={f.name + idx} sx={{ mt: 1 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            gap: 8,
-                          }}
-                        >
-                          <div style={{ fontSize: 12 }}>{f.name}</div>
-                          <div style={{ fontSize: 12 }}>
-                            {progressMap[f.name]
-                              ? `${progressMap[f.name]}%`
-                              : ""}
-                          </div>
-                        </div>
-                        <LinearProgress
-                          variant="determinate"
-                          value={progressMap[f.name] || 0}
-                          sx={{ mt: 0.5 }}
-                        />
-                      </Box>
+                ) : null}
+
+                {uploading.length > 0 ? (
+                  <div className="space-y-2 rounded-xl border border-violet-100/90 bg-violet-50/40 p-3 ring-1 ring-violet-100/50">
+                    <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-violet-700">
+                      <RefreshCw className="h-3 w-3 animate-spin" aria-hidden />
+                      Uploading…
+                    </p>
+                    {uploading.map((f, idx) => (
+                      <UploadProgressBar
+                        key={`${f.name || f.originalName}-${idx}`}
+                        label={f.name || f.originalName}
+                        percent={progressMap[f.name || f.originalName] || 0}
+                      />
                     ))}
-                </Grid>
-              );
-            }
+                  </div>
+                ) : null}
 
-            return null;
-          })}
+                {videoField._errorMsg ? (
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 ring-1 ring-red-100">
+                    {videoField._errorMsg}
+                  </p>
+                ) : null}
+              </div>
+            </DialogSection>
+          ) : null}
+        </div>
 
-          <Grid size={{ xs: 12, md: 12, lg: 6 }}>
-            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                disabled={loading}
-                startIcon={
-                  loading ? (
-                    <CircularProgress size={isMobile ? 16 : 20} />
-                  ) : (
-                    <AddCircleRounded />
-                  )
-                }
-                sx={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  minHeight: 32,
-                  fontSize: { xs: "0.65rem", sm: "0.72rem" },
-                  "& .MuiButton-startIcon > *": {
-                    fontSize: { xs: 18, sm: 20, md: 22 },
-                  },
-                  transition: "0.3s",
-                  backgroundColor: "#1976d2",
-                  "&:hover": {
-                    backgroundColor: "#125aa0",
-                    transform: loading ? "none" : "scale(1.03)",
-                    boxShadow: loading
-                      ? "none"
-                      : "0px 4px 12px rgba(0,0,0,0.2)",
-                    opacity: loading ? 0.8 : 1,
-                    cursor: loading ? "not-allowed" : "pointer",
-                  },
-                }}
-                onClick={handleSubmit}
-              >
-                {loading ? "Adding..." : message ? "Add More" : "Add Lecture"}
-              </Button>
-
-              {message ? (
-                <Button
-                  variant="outlined"
-                  size="large"
-                  fullWidth
-                  startIcon={<Visibility />}
-                  sx={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    minHeight: 32,
-                    fontSize: { xs: "0.65rem", sm: "0.72rem" },
-                    "& .MuiButton-startIcon > *": {
-                      fontSize: { xs: 18, sm: 20, md: 22 },
-                    },
-                    transition: "0.3s",
-                    "&:hover": {
-                      transform: "scale(1.03)",
-                      boxShadow: "0px 4px 12px rgba(0,0,0,0.2)",
-                      opacity: 1,
-                      cursor: "pointer",
-                    },
-                  }}
-                  onClick={() => navigate(`/admin/mycoursedetail/${course_id}`)}
-                >
-                  {"View Lectures"}
-                </Button>
-              ) : null}
-            </Box>
-          </Grid>
-        </Grid>
-        <Box sx={{ mt: 2, ml: 2 }}>
-          <Box
-            component={Link}
-            to="/admin/createcourse"
-            sx={{
-              fontSize: { xs: "0.8rem", sm: "1rem" },
-              fontWeight: 600,
-              color: "#6993edff",
-              textDecoration: "none",
-              cursor: "pointer",
-              transition: "0.2s",
-              "&:hover": {
-                color: "#464bf0ff",
-                textDecoration: "underline",
-              },
-            }}
+        <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-gradient-to-r from-violet-50/40 via-white to-indigo-50/30 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate(backTo)}
+            disabled={loading}
+            className="min-h-11 sm:min-w-[120px]"
           >
-            + Create New Course
-          </Box>
-        </Box>
-        <Box display="flex" mt={5}>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<ArrowBack />}
-                    onClick={() => navigate(-1)}
-                    sx={{
-                      textTransform: "none",
-                      fontWeight: 600,
-                      //px: { xs: 2, sm: 3 },
-                      //py: { xs: 0.8, sm: 1 },
-                      borderRadius: 2,
-                      fontSize: {
-                        xs: "0.75rem",
-                        sm: "0.9rem",
-                        md: "1rem",
-                      },
-                      "& .MuiButton-startIcon": {
-                        "& svg": {
-                          fontSize: { xs: "1rem", sm: "1.2rem" },
-                        },
-                      },
-                    }}
-                  >
-                    Back
-                  </Button>
-                </Box>
-      </Paper>
-    </>
+            <X className="h-4 w-4" />
+            Cancel
+          </Button>
+
+          {message && course_id ? (
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/admin/mycoursedetail/${course_id}`)}
+              className="inline-flex min-h-11 items-center gap-2 border-violet-200 text-violet-800 hover:bg-violet-50"
+            >
+              <PlayCircle className="h-4 w-4" />
+              View playlist
+            </Button>
+          ) : null}
+
+          <Button
+            disabled={loading || !course_id}
+            onClick={handleSubmit}
+            className={cn(
+              "inline-flex min-h-11 items-center justify-center gap-2 px-6 shadow-md shadow-violet-600/20 sm:min-w-[180px]",
+              "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+            )}
+          >
+            {loading ? (
+              <>
+                <Spinner size="sm" className="border-white/30 border-t-white" />
+                Adding…
+              </>
+            ) : (
+              <>
+                <CirclePlus className="h-4 w-4" aria-hidden />
+                {message ? "Add another lecture" : "Add lecture"}
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </PageShell>
   );
 }

@@ -1,68 +1,55 @@
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-  InputAdornment,
-  Grid,
-  CircularProgress,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
-import { Email, Lock, LoginOutlined } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { Compass, Eye, EyeOff, LogIn } from "lucide-react";
+import toast from "react-hot-toast";
 import userLoginInputs from "../../utils/user-login-inputs";
 import {
   extractJsonObject,
   resetInputs,
   validateInputs,
 } from "../../utils/common-util";
-import toast from "react-hot-toast";
-import InputText from "../../components/ui/inputs/InputText";
-import { useEffect, useState } from "react";
 import { getUserProfile, signIn } from "../../features/auth/authSlice";
-import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import AuthShell from "../../components/auth/AuthShell";
+import { Button } from "../../components/ui/tw/Button";
+import { Spinner } from "../../components/ui/tw/Spinner";
+import { TextInput } from "../../components/ui/tw/Field";
+import { cn } from "../../lib/cn";
 
 export default function Login() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [inputs, setInputs] = useState(userLoginInputs);
   const [loading, setLoading] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleChange = async (e, p1, i1) => {
-    let tempInputs = [...inputs];
-    tempInputs[i1]._value = e.target.value;
-    tempInputs[i1]._errorMsg = "";
-    setInputs(tempInputs);
+  const handleChange = (key, value) => {
+    setInputs((prev) =>
+      prev.map((inp) =>
+        inp._key === key ? { ...inp, _value: value, _errorMsg: "" } : inp
+      )
+    );
   };
 
   const handleSubmit = async () => {
     if (loading) return;
-    let obj1 = validateInputs(inputs);
+    const obj1 = validateInputs(inputs);
     if (obj1.hasError) {
       setInputs(obj1.inputs);
-    } else {
-      let body = extractJsonObject(inputs);
-      try {
-        setLoading(true);
-        const response = await dispatch(signIn(body)).unwrap();
-        toast.success(response.msg);
-
-        const token = response.data;
-        await dispatch(getUserProfile(token));
-
-        setInputs(resetInputs(inputs));
-        navigate("/");
-        return response;
-      } catch (err) {
-        console.log("error", err);
-        toast.error(err || "Signup failed!");
-      } finally {
-        setLoading(false);
-      }
+      return;
+    }
+    const body = extractJsonObject(inputs);
+    try {
+      setLoading(true);
+      const response = await dispatch(signIn(body)).unwrap();
+      toast.success(response.msg);
+      await dispatch(getUserProfile(response.data));
+      setInputs(resetInputs(inputs));
+      navigate("/");
+    } catch (err) {
+      toast.error(err || "Login failed!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,174 +57,114 @@ export default function Login() {
     setInputs(resetInputs(inputs));
   }, []);
 
+  const emailField = inputs.find((i) => i._key === "em");
+  const pwdField = inputs.find((i) => i._key === "pwd");
+
   return (
-    <>
-      <Box
-        sx={{
-          height: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          bgcolor: "#8f9afaff",
-          p: { xs: 1.5, sm: 2 },
-        }}
-      >
-        <Paper
-          elevation={4}
-          sx={{
-            p: { xs: 2, sm: 3 },
-            borderRadius: 2,
-            width: "100%",
-            maxWidth: { xs: "100%", sm: 420 },
+    <AuthShell
+      eyebrow="Secure access"
+      title="Sign in"
+      subtitle="Use your email and password to continue shopping, learning, and managing your orders."
+      footer={
+        <Link
+          to="/guest"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-brand-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-50"
+        >
+          <Compass className="h-4 w-4" />
+          Browse as guest
+        </Link>
+      }
+    >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
           }}
         >
-          <Typography
-            variant="h5"
-            fontWeight={700}
-            gutterBottom
-            sx={{
-              color: "#1976d2",
-              textAlign: "center",
-              fontSize: { xs: "1.3rem", sm: "1.6rem" },
-            }}
-          >
-            Welcome to Grammy
-          </Typography>
+          <TextInput
+            label={emailField?._name}
+            required={emailField?._mandatory}
+            type="email"
+            placeholder={emailField?._placeholder}
+            value={emailField?._value ?? ""}
+            error={emailField?._errorMsg}
+            hint={!emailField?._errorMsg ? emailField?._helperText : undefined}
+            onChange={(e) => handleChange("em", e.target.value)}
+          />
 
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              textAlign: "center",
-              fontSize: { xs: "0.8rem", sm: "0.9rem" },
-              mb: { xs: 2, sm: 3 },
-            }}
-          >
-            Please login to continue
-          </Typography>
-
-          <>
-            {inputs.map((p1, i1) => {
-              if (["text", "number", "password"].includes(p1._type)) {
-                return (
-                  <InputText
-                    {...p1}
-                    onChange={(event) => handleChange(event, p1, i1)}
-                  />
-                );
-              }
-
-              return null;
-            })}
-
-            <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                disabled={loading}
-                startIcon={
-                  loading ? (
-                    <CircularProgress size={isMobile ? 16 : 20} />
-                  ) : (
-                    <LoginOutlined />
-                  )
-                }
-                sx={{
-                  fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
-                  "& .MuiButton-startIcon > *": {
-                    fontSize: { xs: 18, sm: 20, md: 22 },
-                  },
-                  transition: "0.3s",
-                  backgroundColor: "#1976d2",
-                  "&:hover": {
-                    backgroundColor: "#125aa0",
-                    transform: loading ? "none" : "scale(1.03)",
-                    boxShadow: loading
-                      ? "none"
-                      : "0px 4px 12px rgba(0,0,0,0.2)",
-                    opacity: loading ? 0.8 : 1,
-                    cursor: loading ? "not-allowed" : "pointer",
-                  },
-                }}
-                onClick={handleSubmit}
+          <div className="mb-4">
+            <label className="mb-1.5 block text-xs font-semibold text-slate-600 sm:text-sm">
+              {pwdField?._name}
+              {pwdField?._mandatory && <span className="text-danger"> *</span>}
+            </label>
+            <div className="relative">
+              <input
+                type={showPwd ? "text" : "password"}
+                className={cn(
+                  "input-field pr-20",
+                  pwdField?._errorMsg && "border-danger"
+                )}
+                placeholder={pwdField?._placeholder}
+                value={pwdField?._value ?? ""}
+                onChange={(e) => handleChange("pwd", e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center gap-1 rounded-lg p-1.5 text-muted hover:bg-slate-100"
+                onClick={() => setShowPwd((s) => !s)}
+                aria-label={showPwd ? "Hide password" : "Show password"}
               >
-                {loading ? "logging..." : "Login"}
-              </Button>
-            </Box>
-          </>
+                {showPwd ? (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5" />
+                    Hide
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    Show
+                  </>
+                )}
+              </button>
+            </div>
+            {(pwdField?._errorMsg || pwdField?._helperText) && (
+              <p
+                className={cn(
+                  "mt-1 text-xs",
+                  pwdField?._errorMsg ? "text-danger" : "text-muted"
+                )}
+              >
+                {pwdField?._errorMsg || pwdField?._helperText}
+              </p>
+            )}
+          </div>
 
-          <Box sx={{ mt: 2, textAlign: "center" }}>
-            <Typography
-              mt={3}
-              variant="body2"
-              color="primary"
-              component={Link}
-              to="/forgotpassword"
-              sx={{
-                fontSize: { xs: "0.8rem", sm: "0.9rem" },
-                cursor: "pointer",
-                textDecoration: "none",
-                "&:hover": {
-                  textDecoration: "underline !important",
-                },
-              }}
-            >
-              Forgot password?
-            </Typography>
-          </Box>
-
-          <Typography
-            mt={1}
-            variant="body2"
-            color="text.secondary"
-            align="center"
-            sx={{
-              fontSize: { xs: "0.8rem", sm: "0.9rem" },
-            }}
-          >
-            Don’t have an account?{" "}
-            <Typography
-              component="span"
-              sx={{
-                fontSize: { xs: "0.8rem", sm: "0.9rem" },
-                color: "#1976d2",
-                fontWeight: 600,
-                cursor: "pointer",
-                "&:hover": {
-                  textDecoration: "underline",
-                },
-              }}
-              onClick={() => navigate("/signup")}
-            >
-              Sign up
-            </Typography>
-          </Typography>
-         
-         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Button
-            variant="contained"
-            onClick={() => navigate("/guest")}
-            sx={{
-              mt:2,
-              backgroundColor: "#2e7d32", // green
-              color: "#fff",
-              fontSize: { xs: "0.75rem", sm: "0.85rem" },
-              fontWeight: 600,
-              textTransform: "none",
-              borderRadius: "8px",
-              px: 2.5,
-              py: 0.8,
-              "&:hover": {
-                backgroundColor: "#1b5e20",
-              },
-            }}
+            type="submit"
+            disabled={loading}
+            fullWidth
+            className="mt-2 py-3"
           >
-            {"<< "}Go to Home Page
+            {loading ? <Spinner size="sm" className="border-white/30 border-t-white" /> : <LogIn size={18} />}
+            {loading ? "Signing in…" : "Login"}
           </Button>
-          </Box>
-        </Paper>
-      </Box>
-    </>
+        </form>
+
+        <p className="mt-4 text-center text-sm text-muted">
+          <Link
+            to="/forgotpassword"
+            className="font-semibold text-brand-600 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </p>
+
+        <p className="mt-3 text-center text-sm text-muted">
+          Don&apos;t have an account?{" "}
+          <Link to="/signup" className="font-semibold text-brand-600 hover:underline">
+            Sign up
+          </Link>
+        </p>
+    </AuthShell>
   );
 }

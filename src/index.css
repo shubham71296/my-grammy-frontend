@@ -1,12 +1,307 @@
-/* Remove default spacing from browser */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-500: #4f46e5;
+  --color-brand-600: #4338ca;
+  --color-brand-700: #3730a3;
+  --color-brand-900: #02025e;
+
+  --color-navy: #0f172a;
+  --color-muted: #64748b;
+  --color-surface: #fafbff;
+  --color-page: #f4f6fc;
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+
+  --shadow-soft: 0 8px 32px rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 12px 40px rgba(79, 70, 229, 0.12);
+
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
 }
 
-/* Ensure body takes full height */
-html, body, #root {
-  height: 100%;
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
   width: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-page);
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.product-card__img {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Gallery thumbnails — contain inside frame (no stretch) */
+.gallery-thumb-frame {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+}
+
+.gallery-thumb-frame .gallery-thumb-img {
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center;
+}
+
+.file-preview-img,
+.detail-thumb-img {
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center;
+}
+
+@layer utilities {
+  .page-gradient {
+    background:
+      radial-gradient(ellipse 120% 80% at 50% -20%, rgba(99, 102, 241, 0.12), transparent 55%),
+      linear-gradient(180deg, #f8f9ff 0%, #eef2fb 100%);
+  }
+  .app-bar-gradient {
+    background: linear-gradient(135deg, #02025e 0%, #1e3a8a 42%, #0e7490 100%);
+  }
+  .nav-shell {
+    background: linear-gradient(
+      180deg,
+      rgba(2, 2, 94, 0.94) 0%,
+      rgba(15, 23, 42, 0.9) 100%
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+      0 4px 30px rgba(2, 2, 94, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  .footer-gradient {
+    background: linear-gradient(160deg, #02025e 0%, #0f172a 50%, #1e1b4b 100%);
+  }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+    border: 1px solid #e2e8f0;
+    box-shadow: var(--shadow-soft);
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:from-brand-600 hover:to-brand-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border-2 border-brand-500 px-4 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50;
+  }
+  .input-field {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-navy outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:bg-slate-50;
+  }
+  /* Search inputs — pl must not be overridden by input-field px */
+  .input-search {
+    @apply w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-11 pr-3.5 text-sm text-navy outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:bg-slate-50;
+  }
+  .input-search-elevated {
+    @apply w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm text-navy shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 disabled:bg-slate-50;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-gradient h1 {
+    font-size: clamp(1.35rem, 6vw, 1.75rem);
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+  }
+
+  .page-gradient h2 {
+    font-size: clamp(1.05rem, 4.75vw, 1.25rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .page-gradient h3 {
+    font-size: clamp(0.95rem, 4.25vw, 1.075rem);
+    line-height: 1.25;
+  }
+
+  .page-gradient .text-4xl {
+    font-size: 1.9rem;
+    line-height: 1.1;
+  }
+
+  .page-gradient .text-3xl {
+    font-size: 1.65rem;
+    line-height: 1.12;
+  }
+
+  .page-gradient .text-2xl {
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+
+  .page-gradient .text-xl {
+    font-size: 1.125rem;
+    line-height: 1.25;
+  }
+
+  .page-gradient .text-lg {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .page-gradient :where(.h-24.w-24) {
+    width: 4.75rem;
+    height: 4.75rem;
+  }
+
+  .page-gradient :where(.h-20.w-20) {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+
+  .page-gradient :where(.h-16.w-16) {
+    width: 3.75rem;
+    height: 3.75rem;
+  }
+
+  .page-gradient :where(.h-14.w-14) {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .page-gradient :where(.h-12.w-12) {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .page-gradient :where(.h-11.w-11) {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .page-gradient :where(svg.h-8.w-8) {
+    width: 1.65rem;
+    height: 1.65rem;
+  }
+
+  .page-gradient :where(svg.h-7.w-7) {
+    width: 1.45rem;
+    height: 1.45rem;
+  }
+
+  .page-gradient :where(svg.h-6.w-6) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .page-gradient :where(svg.h-5.w-5) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .page-gradient :where(.tracking-wider, .tracking-wide) {
+    letter-spacing: 0.045em;
+  }
+
+  .page-gradient p,
+  .page-gradient dd,
+  .page-gradient dt,
+  .page-gradient figcaption {
+    overflow-wrap: break-word;
+  }
+
+  .page-gradient .btn-primary,
+  .page-gradient .btn-outline {
+    min-height: 2.5rem;
+    padding-inline: 0.875rem;
+    font-size: 0.8125rem;
+    line-height: 1.15;
+    gap: 0.375rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .page-gradient :where(button, a)[class*="rounded"] {
+    max-width: 100%;
+  }
+
+  .page-gradient :where(button, a) svg {
+    flex-shrink: 0;
+  }
+
+  .page-gradient .input-field,
+  .page-gradient .input-search,
+  .page-gradient .input-search-elevated {
+    font-size: 0.875rem;
+  }
+}
+
+@keyframes routeProgress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+@keyframes drawerFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drawerSlideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-1.5rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes drawerSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(1.5rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }

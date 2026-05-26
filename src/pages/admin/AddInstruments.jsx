@@ -1,53 +1,61 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Grid,
-  Box,
-  Button,
-  Paper,
-  Typography,
-  Divider,
-  CircularProgress,
-  LinearProgress,
-  useMediaQuery,
-  useTheme,
-  Backdrop,
-} from "@mui/material";
+  ArrowLeft,
+  CirclePlus,
+  ImageIcon,
+  Library,
+  RefreshCw,
+  Sparkles,
+  Store,
+  X,
+} from "lucide-react";
 import instrumentsInputs from "../../utils/add-instruments-inputs";
 import InputText from "../../components/ui/inputs/InputText";
 import InputFile from "../../components/ui/inputs/InputFile";
 import FilePreview from "../../components/ui/inputs/FilePreview";
-import { AddCircleRounded, LibraryMusic } from "@mui/icons-material";
-import axios from "axios";
-import {
-  presignSmallUploads,
-  uploadToPresignedUrl,
-  uploadInBatches,
-  uploadLargeFileMultipart,
-} from "../../utils/s3-helpers";
-import {
-  extractJsonObject,
-  resetInputs,
-  validateInputs,
-} from "../../utils/common-util";
+import { useS3UploadPipeline } from "../../hooks/useS3UploadPipeline";
+import { rollbackUploadedKeys } from "../../utils/s3-rollback";
+import { resetInputs, validateInputs } from "../../utils/common-util";
 import toast from "react-hot-toast";
-import api from "../../api/axios";
+import {
+  useCheckInstrumentTitleMutation,
+  useCreateInstrumentMutation,
+} from "../../features/api/adminApi";
+import {
+  DialogNotice,
+  DialogSection,
+  UploadProgressBar,
+} from "../../components/ui/dialog/dialogLayout";
+import { PageShell } from "../../components/ui/tw/PageShell";
+import { Button } from "../../components/ui/tw/Button";
+import { Spinner } from "../../components/ui/tw/Spinner";
+import { Modal, ModalBody } from "../../components/ui/tw/Modal";
+import { cn } from "../../lib/cn";
+
+function getUploadingFiles(files, progressMap) {
+  if (!Array.isArray(files)) return [];
+  return files.filter((f) => {
+    const key = f.name || f.originalName;
+    const pct = progressMap[key];
+    return pct > 0 && pct < 100;
+  });
+}
 
 export default function AddInstruments() {
   const [inputs, setInputs] = useState(instrumentsInputs);
   const [loading, setLoading] = useState(false);
-  const [progressMap, setProgressMap] = useState({});
-  const [uploadedImagesMeta, setUploadedImagesMeta] = useState([]);
-  const [uploadedVideosMeta, setUploadedVideosMeta] = useState([]);
+  const { progressMap, uploadImages, clearProgress } = useS3UploadPipeline();
+  const [checkTitle] = useCheckInstrumentTitleMutation();
+  const [createInstrument] = useCreateInstrumentMutation();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const setProgress = (fileKey, percent) =>
-    setProgressMap((p) => ({ ...p, [fileKey]: percent }));
+  const imageField = inputs.find((f) => f._key === "instrument_images");
+  const imageIndex = inputs.findIndex((f) => f._key === "instrument_images");
+  const uploading = getUploadingFiles(imageField?._value, progressMap);
 
   const handleChange = async (e, p1, i1, updatedFiles = null) => {
-    let tempInputs = [...inputs];
+    const tempInputs = [...inputs];
     if (p1._type === "file") {
       if (updatedFiles !== null) {
         tempInputs[i1]._value = updatedFiles;
@@ -92,254 +100,261 @@ export default function AddInstruments() {
     setInputs(tempInputs);
   };
 
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
   const handleSubmit = async () => {
     if (loading) return;
-    let obj1 = validateInputs(inputs);
+    const obj1 = validateInputs(inputs);
     if (obj1.hasError) {
       setInputs(obj1.inputs);
-    } else {
-      try {
-        let check = null;
-        setLoading(true);
-        const titleField = inputs.find((f) => f._key === "instrument_title");
-        const title = titleField?._value?.trim();
-        try {
-          check = await api.post("/admin/checkinstrumenttitle", {
-            instrument_title: title,
-          });
-        } catch (err) {
-          const msg = err?.response?.data?.msg || "Title error";
-          toast.error(msg);
-          setLoading(false);
-          return;
-        }
-
-        if (!check.data.success) {
-          toast.error(check.data.msg || "Title error");
-          setLoading(false);
-          return;
-        }
-
-        const payload = {};
-        let imageFiles = [];
-        inputs.forEach((item) => {
-          if (item._type === "file") {
-            if (item._key === "instrument_images" && Array.isArray(item._value))
-              imageFiles = item._value;
-          } else {
-            payload[item._key] = item._value;
-          }
-        });
-
-        let uploadedImages = [];
-
-        if (imageFiles.length > 0) {
-          const presigned = await presignSmallUploads(
-            imageFiles,
-            "public-instruments"
-          );
-
-          const tasks = presigned.map((meta, idx) => async () => {
-            const file = imageFiles[idx];
-            const uploaded = await uploadToPresignedUrl(meta, file, (pct) =>
-              setProgress(file.name, pct)
-            );
-            return uploaded;
-          });
-
-          uploadedImages = await uploadInBatches(tasks, 4);
-          setUploadedImagesMeta(uploadedImages);
-        }
-        payload.instrument_images = uploadedImages;
-
-        const response = await api.post("/admin/addinstrument", payload);
-        toast.success(response.data.msg);
-        setInputs(resetInputs(inputs));
-        navigate("/admin/myinstrumentslist");
-        setProgressMap({});
-        setUploadedImagesMeta([]);
-        return response;
-      } catch (err) {
-        console.log("error", err);
-        const errorMsg = err?.response?.data?.msg || "Something went wrong!";
-        toast.error(errorMsg);
-      } finally {
+      return;
+    }
+    try {
+      setLoading(true);
+      const titleField = inputs.find((f) => f._key === "instrument_title");
+      const title = titleField?._value?.trim();
+      const check = await checkTitle({ instrument_title: title }).unwrap();
+      if (!check?.success) {
+        toast.error(check?.msg || "Title error");
         setLoading(false);
+        return;
       }
+
+      const payload = {};
+      let imageFiles = [];
+      inputs.forEach((item) => {
+        if (item._type === "file") {
+          if (item._key === "instrument_images" && Array.isArray(item._value))
+            imageFiles = item._value;
+        } else {
+          payload[item._key] = item._value;
+        }
+      });
+
+      payload.instrument_images = await uploadImages(
+        imageFiles,
+        "public-instruments"
+      );
+
+      try {
+        const res = await createInstrument(payload).unwrap();
+        toast.success(res?.msg || "Instrument added");
+        setInputs(resetInputs(instrumentsInputs));
+        clearProgress();
+        navigate("/admin/myinstrumentslist");
+      } catch (apiErr) {
+        await rollbackUploadedKeys(
+          payload.instrument_images.map((f) => f.key).filter(Boolean)
+        );
+        throw apiErr;
+      }
+    } catch (err) {
+      const errorMsg =
+        err?.data?.msg || err?.message || "Something went wrong!";
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    setInputs(resetInputs(inputs));
+    setInputs(resetInputs(instrumentsInputs));
   }, []);
 
+  const textFields = inputs.filter(
+    (f) =>
+      ["text", "number", "password"].includes(f._type) &&
+      f._key !== "instrurment_description"
+  );
+  const descriptionField = inputs.find((f) => f._key === "instrurment_description");
+  const descriptionIndex = inputs.findIndex((f) => f._key === "instrurment_description");
+
   return (
-    <>
-      <Backdrop
-        sx={{
-          color: "#fff",
-          zIndex: (theme) => theme.zIndex.drawer + 999,
-          flexDirection: "column",
-          gap: 2,
-        }}
-        open={loading}
-      >
-        <CircularProgress color="inherit" />
-        <Typography sx={{ fontSize: "0.9rem", mt: 1 }}>
-          Uploading & Processing…
-        </Typography>
-      </Backdrop>
+    <PageShell className="pb-12">
+      <Modal open={loading} lockClose maxWidth="max-w-sm">
+        <ModalBody className="flex flex-col items-center gap-4 bg-gradient-to-b from-brand-50/50 to-white py-10">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-indigo-600 text-white shadow-lg shadow-brand-500/30">
+            <RefreshCw className="h-7 w-7 animate-spin" />
+          </span>
+          <div className="text-center">
+            <p className="text-base font-extrabold text-navy">Publishing instrument</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Uploading photos and saving your listing…
+            </p>
+          </div>
+        </ModalBody>
+      </Modal>
 
-      <Paper
-        elevation={4}
-        sx={{
-          p: 3,
-          borderRadius: 2,
-        }}
+      <Link
+        to="/admin/myinstrumentslist"
+        className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-brand-700"
       >
-        <Box mb={3}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 600,
-              fontSize: {
-                xs: "1rem",
-                sm: "1.2rem",
-                md: "1.5rem",
-              },
-              letterSpacing: "0.5px",
-              color: "#1976d2",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
+        <ArrowLeft className="h-4 w-4" />
+        My instruments
+      </Link>
+
+      <header className="relative mb-6 overflow-hidden rounded-[1.75rem] border border-brand-100/80 bg-gradient-to-br from-white via-brand-50/40 to-indigo-50/50 shadow-[0_18px_45px_-30px_rgba(2,2,94,0.35)]">
+        <div
+          className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-brand-500/10 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="absolute -bottom-14 left-6 h-32 w-32 rounded-full bg-indigo-500/10 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative flex flex-col gap-4 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:p-7">
+          <div className="flex flex-col items-center gap-3 text-center min-[520px]:flex-row min-[520px]:items-start min-[520px]:gap-4 min-[520px]:text-left">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-lg shadow-brand-500/25 sm:h-14 sm:w-14">
+              <Library className="h-6 w-6 sm:h-7 sm:w-7" />
+            </span>
+            <div className="min-w-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-800 shadow-sm ring-1 ring-brand-100 sm:text-[11px]">
+                <Sparkles className="h-3.5 w-3.5" />
+                Store catalog
+              </span>
+              <h2 className="mt-2 text-xl font-extrabold tracking-tight text-navy sm:mt-3 sm:text-3xl">
+                Add instrument
+              </h2>
+              <p className="mx-auto mt-1.5 max-w-xl text-xs leading-relaxed text-slate-600 min-[520px]:mx-0 sm:mt-2 sm:text-sm">
+                List a new instrument for sale with photos, price, and description.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/admin/myinstrumentslist"
+            className="inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-brand-600 px-4 text-sm font-bold text-white shadow-md shadow-brand-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg active:translate-y-0 min-[520px]:w-auto"
           >
-            <LibraryMusic
-              sx={{
-                fontSize: {
-                  xs: "1.1rem",
-                  sm: "1.4rem",
-                  md: "1.6rem",
-                },
-                flexShrink: 0,
-              }}
-            />
-            Add Instrument
-          </Typography>
+            <Store className="h-4 w-4" />
+            View catalog
+          </Link>
+        </div>
+      </header>
 
-          <Divider
-            sx={{
-              mt: 1.5,
-              mb: 1.5,
-              borderColor: "#1976d2",
-              borderWidth: "1px",
-              borderRadius: 1,
-            }}
-          />
-        </Box>
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_12px_rgba(15,23,42,0.05)]">
+        <div className="border-b border-slate-100 bg-gradient-to-r from-brand-50/80 to-indigo-50/40 px-5 py-4 sm:px-6">
+          <h2 className="flex items-center gap-2 text-base font-extrabold text-navy">
+            <Library className="h-5 w-5 text-brand-600" />
+            Instrument listing
+          </h2>
+          <p className="mt-0.5 text-xs text-muted">
+            Details shown on the storefront instrument page
+          </p>
+        </div>
 
-        <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-          {inputs.map((p1, i1) => {
-            if (["text", "number", "password"].includes(p1._type)) {
-              return (
-                <Grid size={{ xs: 12, md: 12, lg: 6 }} key={i1}>
+        <div className="space-y-5 bg-gradient-to-b from-brand-50/15 via-white to-slate-50/20 p-5 sm:p-6">
+          <DialogNotice icon={ImageIcon} title="Photo tips" variant="brand">
+            <ul className="list-inside list-disc space-y-0.5 text-sm">
+              <li>Upload multiple JPG or PNG images (max 100 MB each).</li>
+              <li>Use clear, well-lit photos from different angles.</li>
+              <li>The first image is used as the main thumbnail in listings.</li>
+            </ul>
+          </DialogNotice>
+
+          <DialogSection title="Basic details">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {textFields.map((field) => {
+                const i1 = inputs.findIndex((f) => f._key === field._key);
+                return (
                   <InputText
-                    {...p1}
-                    onChange={(event) => handleChange(event, p1, i1)}
+                    key={field._key}
+                    {...field}
+                    onChange={(event) => handleChange(event, field, i1)}
                   />
-                </Grid>
-              );
-            }
+                );
+              })}
+            </div>
+          </DialogSection>
 
-            if (p1._type === "file") {
-              return (
-                <Grid size={{ xs: 12, md: 12, lg: 6 }} key={i1}>
-                  <InputFile
-                    {...p1}
-                    onChange={(event) => handleChange(event, p1, i1)}
-                  />
+          {descriptionField && descriptionIndex >= 0 ? (
+            <DialogSection title="Description">
+              <InputText
+                {...descriptionField}
+                onChange={(event) =>
+                  handleChange(event, descriptionField, descriptionIndex)
+                }
+              />
+            </DialogSection>
+          ) : null}
 
+          {imageField && imageIndex >= 0 ? (
+            <DialogSection
+              title="Product photos"
+              className="border-brand-100/90 ring-brand-100/40"
+            >
+              <div className="space-y-4">
+                <InputFile
+                  {...imageField}
+                  onChange={(event) => handleChange(event, imageField, imageIndex)}
+                />
+
+                {Array.isArray(imageField._value) && imageField._value.length > 0 ? (
                   <FilePreview
-                    files={p1._value}
+                    files={imageField._value}
                     onRemove={(fileIndex) => {
-                      const updatedFiles = p1._value.filter(
+                      const updated = imageField._value.filter(
                         (_, idx) => idx !== fileIndex
                       );
-                      handleChange(null, p1, i1, updatedFiles);
+                      handleChange(null, imageField, imageIndex, updated);
                     }}
                   />
-                  {Array.isArray(p1._value) &&
-                    p1._value.map((f, idx) => (
-                      <Box key={f.name + idx} sx={{ mt: 1 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            gap: 8,
-                          }}
-                        >
-                          <div style={{ fontSize: 12 }}>{f.name}</div>
-                          <div style={{ fontSize: 12 }}>
-                            {progressMap[f.name]
-                              ? `${progressMap[f.name]}%`
-                              : ""}
-                          </div>
-                        </div>
-                        <LinearProgress
-                          variant="determinate"
-                          value={progressMap[f.name] || 0}
-                          sx={{ mt: 0.5 }}
-                        />
-                      </Box>
+                ) : null}
+
+                {uploading.length > 0 ? (
+                  <div className="space-y-2 rounded-xl border border-brand-100/90 bg-brand-50/40 p-3 ring-1 ring-brand-100/50">
+                    <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-700">
+                      <RefreshCw className="h-3 w-3 animate-spin" aria-hidden />
+                      Uploading photos…
+                    </p>
+                    {uploading.map((f, idx) => (
+                      <UploadProgressBar
+                        key={`${f.name || f.originalName}-${idx}`}
+                        label={f.name || f.originalName}
+                        percent={progressMap[f.name || f.originalName] || 0}
+                      />
                     ))}
-                </Grid>
-              );
-            }
+                  </div>
+                ) : null}
 
-            return null;
-          })}
+                {imageField._errorMsg ? (
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 ring-1 ring-red-100">
+                    {imageField._errorMsg}
+                  </p>
+                ) : null}
+              </div>
+            </DialogSection>
+          ) : null}
+        </div>
 
-          <Grid size={{ xs: 12, md: 12, lg: 6 }}>
-            <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                disabled={loading}
-                startIcon={
-                  loading ? (
-                    <CircularProgress size={isMobile ? 16 : 20} />
-                  ) : (
-                    <AddCircleRounded />
-                  )
-                }
-                sx={{
-                  fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
-                  "& .MuiButton-startIcon > *": {
-                    fontSize: { xs: 18, sm: 20, md: 22 },
-                  },
-                  transition: "0.3s",
-                  backgroundColor: "#1976d2",
-                  "&:hover": {
-                    backgroundColor: "#125aa0",
-                    transform: loading ? "none" : "scale(1.03)",
-                    boxShadow: loading
-                      ? "none"
-                      : "0px 4px 12px rgba(0,0,0,0.2)",
-                    opacity: loading ? 0.8 : 1,
-                    cursor: loading ? "not-allowed" : "pointer",
-                  },
-                }}
-                onClick={handleSubmit}
-              >
-                {loading ? "Adding..." : "Add Instrument"}
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-    </>
+        <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-gradient-to-r from-brand-50/40 via-white to-indigo-50/30 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/admin/myinstrumentslist")}
+            disabled={loading}
+            className="min-h-11 sm:min-w-[120px]"
+          >
+            <X className="h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            disabled={loading}
+            onClick={handleSubmit}
+            className={cn(
+              "inline-flex min-h-11 items-center justify-center gap-2 px-6 shadow-md shadow-brand-600/20 sm:min-w-[200px]",
+              "bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700"
+            )}
+          >
+            {loading ? (
+              <>
+                <Spinner size="sm" className="border-white/30 border-t-white" />
+                Publishing…
+              </>
+            ) : (
+              <>
+                <CirclePlus className="h-4 w-4" aria-hidden />
+                Add instrument
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </PageShell>
   );
 }

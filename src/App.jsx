@@ -1,42 +1,45 @@
 import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
 import AppRoutes from "./routes/AppRoutes";
 import { getUserProfile } from "./features/auth/authSlice";
-import { useEffect } from "react";
-import axios from "axios";
 import { setCartCount } from "./features/cartSlice";
-import api from "./api/axios";
+import { getCartBadgeCount } from "./utils/cart";
+import { useGetCartItemsQuery } from "./features/api/catalogApi";
 import RouteProgressBar from "./components/ui/loader/RouteProgressBar";
 import ScrollToTop from "./components/ui/ScrollToTop";
 import ScrollToTopButton from "./components/ui/ScrollToTopButton";
 
-
 function App() {
   const { token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
- 
+
+  const { data: cartData } = useGetCartItemsQuery(undefined, {
+    skip: !token,
+    refetchOnMountOrArgChange: true,
+  });
+
   useEffect(() => {
     if (token) {
       dispatch(getUserProfile(token));
-      loadCartCount();
     }
   }, [token, dispatch]);
 
-  const loadCartCount = async () => {
-    try {
-      const res = await api.get("/user/getcartitems");
-      const count = res.data?.data?.items?.length || 0;
-      dispatch(setCartCount(count));
-    } catch (err) {
-      console.log("Error loading cart count:", err);
+  useEffect(() => {
+    if (cartData?.items) {
+      dispatch(setCartCount(getCartBadgeCount(cartData.items)));
+    } else if (!token) {
+      dispatch(setCartCount(0));
     }
-  };
-  return <>
-    <RouteProgressBar />
-    <ScrollToTop /> 
-    <AppRoutes />
-    <ScrollToTopButton />
-  </>
+  }, [cartData, token, dispatch]);
+
+  return (
+    <>
+      <RouteProgressBar />
+      <ScrollToTop />
+      <AppRoutes />
+      <ScrollToTopButton />
+    </>
+  );
 }
 
-export default App
-
+export default App;

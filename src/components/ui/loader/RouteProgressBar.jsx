@@ -1,40 +1,26 @@
-import { useEffect, useState } from "react";
-import { Box } from "@mui/material";
-import { useLocation } from "react-router-dom";
+import { cn } from "../../../lib/cn";
+import { useNavProgress } from "../../../context/NavProgressContext";
 
 const RouteProgressBar = () => {
-  const location = useLocation();
-  const [loading, setLoading] = useState(false);
+  const { pending } = useNavProgress();
 
-  useEffect(() => {
-    // Start loading when route changes
-    setLoading(true);
+  if (!pending) return null;
 
-    // Stop after small delay
-    const timer = setTimeout(() => setLoading(false), 400);
-
-    return () => clearTimeout(timer);
-  }, [location.pathname]);
-
-  return loading ? (
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        height: "3px",
-        width: "100%",
-        zIndex: 9999,
-        pointerEvents: "none", 
-        background: "linear-gradient(90deg, #1976d2, #42a5f5)",
-        animation: "progressAnim 1s infinite",
-        "@keyframes progressAnim": {
-          "0%": { width: "0%" },
-          "100%": { width: "100%" },
-        },
-      }}
-    />
-  ) : null;
+  return (
+    <div
+      className={cn(
+        "pointer-events-none fixed left-0 top-0 z-[9999] h-[3px] w-full overflow-hidden bg-brand-900/20"
+      )}
+      aria-hidden
+    >
+      <div
+        className={cn(
+          "h-full w-1/3 bg-gradient-to-r from-brand-500 via-sky-400 to-brand-500",
+          "animate-[routeProgress_0.8s_ease-in-out_infinite]"
+        )}
+      />
+    </div>
+  );
 };
 
 export default RouteProgressBar;

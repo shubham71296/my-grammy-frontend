@@ -1,21 +1,10 @@
-import React from "react";
-import moment from "moment";
+import { formatDateDMY } from "../../../utils/formatDate";
 
 const DynamicDate = ({ val }) => {
-  const formattedDate = val
-    ? moment(val).format("DD/MM/YYYY")
-    : "Invalid Date";
+  const formattedDate = formatDateDMY(val);
 
   return (
-    <span
-      style={{
-        fontWeight: 500,
-        fontSize: "0.9rem",
-        color: "#1e293b",
-      }}
-    >
-      {formattedDate}
-    </span>
+    <span className="text-sm font-medium text-slate-600">{formattedDate}</span>
   );
 };
 

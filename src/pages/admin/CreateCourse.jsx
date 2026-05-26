@@ -1,354 +1,75 @@
-// import { useEffect, useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import {
-//   Grid,
-//   Box,
-//   Button,
-//   Paper,
-//   Typography,
-//   Divider,
-//   CircularProgress,
-// } from "@mui/material";
-
-// import createCoursesInputs from "../../utils/create-courses-inputs";
-// import InputText from "../../components/ui/inputs/InputText";
-// import InputFile from "../../components/ui/inputs/InputFile";
-// import FilePreview from "../../components/ui/inputs/FilePreview";
-// import { AddCircleRounded, MenuBook } from "@mui/icons-material";
-// import axios from "axios";
-// import {
-//   extractJsonObject,
-//   resetInputs,
-//   validateInputs,
-// } from "../../utils/common-util";
-// import toast from "react-hot-toast";
-// import DropDown from "../../components/ui/inputs/DropDown";
-
-// export default function CreateCourse() {
-//   const [limit] = useState(0);
-//   const [offset] = useState(0);
-//   const [query] = useState({});
-//   const [inputs, setInputs] = useState(createCoursesInputs);
-//   const [loading, setLoading] = useState(false);
-//   const navigate = useNavigate();
-
-//   // const handleChange = async (e, p1, i1) => {
-//   //   let tempInputs = [...inputs];
-//   //   tempInputs[i1]._value = e.target.value;
-//   //   tempInputs[i1]._errorMsg = "";
-//   //   setInputs(tempInputs);
-//   // };
-
-//    const handleChange = async (e, p1, i1, updatedFiles = null) => {
-//     let tempInputs = [...inputs];
-//     if (p1._type === "file") {
-//       if (updatedFiles !== null) {
-//         tempInputs[i1]._value = updatedFiles;
-//         setInputs([...tempInputs]);
-//         return;
-//       }
-//       const files = e.target.files;
-//       if (files && files.length > 0) {
-//         const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-//         const maxSize = 2 * 1024 * 1024;
-//         const validFiles = Array.from(files).filter((file) => {
-//           if (!allowedTypes.includes(file.type)) {
-//             tempInputs[i1]._errorMsg = "Only JPG and PNG files are allowed";
-//             return false;
-//           }
-//           if (file.size > maxSize) {
-//             tempInputs[i1]._errorMsg = "File size must be less than 2 MB";
-//             return false;
-//           }
-//           return true;
-//         });
-//         if (validFiles.length === 0) {
-//           setInputs([...tempInputs]);
-//           return;
-//         }
-
-//         // const oldFiles = Array.isArray(tempInputs[i1]._value)
-//         // ? tempInputs[i1]._value
-//         // : [];
-//         // const allowsMultiple = !!p1._multiple;
-//         // tempInputs[i1]._value = allowsMultiple
-//         // ? [...oldFiles, ...validFiles]
-//         // : [...validFiles];
-//         // tempInputs[i1]._errorMsg = "";
-//         // setInputs([...tempInputs]);
-//         // if (e?.target) e.target.value = "";
-//         const firstValid = validFiles[0];
-//         tempInputs[i1]._value = [firstValid];
-
-//         tempInputs[i1]._errorMsg = "";
-//         setInputs([...tempInputs]);
-
-//         if (e?.target) e.target.value = "";
-//       }
-//     } else {
-//       tempInputs[i1]._value = e.target.value;
-//       tempInputs[i1]._errorMsg = "";
-//     }
-//     setInputs(tempInputs);
-//   };
-
-//   const handleSubmit = async () => {
-//     if (loading) return;
-//     let obj1 = validateInputs(inputs);
-//     if (obj1.hasError) {
-//       setInputs(obj1.inputs);
-//     } else {
-//       // let body = { ...extractJsonObject(inputs) };
-//       try {
-//         setLoading(true);
-//         const formData = new FormData();
-//         inputs.forEach((item) => {
-//           if (item._type === "file") {
-//             if (Array.isArray(item._value)) {
-//               item._value.forEach((file) => {
-//                 formData.append(item._key, file);
-//               });
-//             }
-//           }
-//           else {
-//             formData.append(item._key, item._value);
-//           }
-//         });
-//         const response = await axios.post("/api/admin/createcourse", formData, {
-//           headers: {
-//             "Content-Type": "multipart/form-data",
-//           },
-//         });
-
-//         const dataobj = response.data.data;
-//         toast.success(response.data.msg);
-//         setInputs(resetInputs(inputs));
-//         navigate("/admin/addlectures", {
-//           state: {
-//             course_id: dataobj._id,
-//             course_title: dataobj.course_title,
-//           }
-//         });
-//         return response;
-//       } catch (err) {
-//         console.log("error", err);
-//         const errorMsg = err?.response?.data?.msg || "Something went wrong!";
-//         toast.error(errorMsg);
-//       } finally {
-//         setLoading(false);
-//       }
-//     }
-//   };
-
-//   useEffect(() => {
-//     getAllInstrumentsData(limit, offset, {}); // get all
-//   }, []);
-
-//   const getAllInstrumentsData = async (limitVal, offsetVal, queryVal = {}) => {
-//     try {
-//       const body = {
-//         query: queryVal,
-//         projection: {},
-//         options: {
-//           skip: offsetVal,
-//           limit: limitVal,
-//           sort: { createdAt: -1 },
-//         },
-//       };
-
-//       const response = await axios.post("/api/admin/allinstumnts", body);
-//       const instrumentOptions = response.data.data.map((item) => ({
-//         label: item.instrument_title,
-//         value: item._id
-//       }));
-
-//       setInputs((prevInputs) =>
-//         prevInputs.map((p) =>
-//           p._key === "instrument"
-//             ? { ...p, _options: instrumentOptions }
-//             : p
-//         )
-//       );
-//     } catch (error) {
-//       console.error("Error fetching instruments:", error);
-//     }
-//   };
-
-//   useEffect(() => {
-//       setInputs(resetInputs(inputs));
-//   }, []);
-
-//   return (
-//     <Paper
-//       elevation={4}
-//       sx={{
-//         p: 3,
-//         borderRadius: 2,
-//       }}
-//     >
-//       <Box mb={3}>
-//         <Typography
-//           variant="h5"
-//           sx={{
-//             fontWeight: 600,
-//             letterSpacing: "0.5px",
-//             color: "#1976d2",
-//             display: "flex",
-//             alignItems: "center",
-//             gap: 1,
-//           }}
-//         >
-//           <MenuBook />
-//           Create Courses
-//         </Typography>
-
-//         <Divider
-//           sx={{
-//             mt: 1,
-//             mb: 5,
-//             borderColor: "#1976d2",
-//             borderWidth: "1px",
-//             borderRadius: 1,
-//           }}
-//         />
-//       </Box>
-
-//       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-//         {inputs.map((p1, i1) => {
-//           if (p1._type === "dropdown") {
-//             return (
-//               <Grid item size={{ lg: 6, md: 12, sm: 12 }} key={i1}>
-//                 <DropDown
-//                   {...p1}
-//                   onChange={(event) => handleChange(event, p1, i1)}
-//                 />
-//               </Grid>
-//             );
-//           }
-//           if (["text", "number", "password"].includes(p1._type)) {
-//             return (
-//               <Grid item size={{ lg: 6, md: 12, sm: 12 }} key={i1}>
-//                 <InputText
-//                   {...p1}
-//                   onChange={(event) => handleChange(event, p1, i1)}
-//                 />
-//               </Grid>
-//             );
-//           }
-
-//           if (p1._type === "file") {
-//             return (
-//               <Grid item size={{ lg: 6, md: 12, sm: 12 }} key={i1}>
-//                 <InputFile
-//                   {...p1}
-//                   onChange={(event) => handleChange(event, p1, i1)}
-//                 />
-
-//                 <FilePreview
-//                   files={p1._value}
-//                   onRemove={(fileIndex) => {
-//                     const updatedFiles = p1._value.filter(
-//                       (_, idx) => idx !== fileIndex
-//                     );
-//                     handleChange(null, p1, i1, updatedFiles);
-//                   }}
-//                 />
-//               </Grid>
-//             );
-//           }
-
-//           return null;
-//         })}
-
-//         {/* Submit */}
-//         <Grid item size={{ lg: 6, md: 12, sm: 12 }}>
-//           <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-//             <Button
-//               variant="contained"
-//               size="large"
-//               fullWidth
-//               //startIcon={<AddCircleRounded />}
-//               disabled={loading}
-//               startIcon={
-//                 loading ? <CircularProgress size={20} /> : <AddCircleRounded />
-//               }
-//               sx={{
-//                 transition: "0.3s",
-//                 backgroundColor: "#1976d2",
-//                 "&:hover": {
-//                   backgroundColor: "#125aa0",
-//                   transform: loading ? "none" : "scale(1.03)",
-//                   boxShadow: loading ? "none" : "0px 4px 12px rgba(0,0,0,0.2)",
-//                   opacity: loading ? 0.8 : 1,
-//                   cursor: loading ? "not-allowed" : "pointer",
-//                 },
-//               }}
-//               onClick={handleSubmit}
-//             >
-//               {loading ? "Creating..." : "Create Courses"}
-//             </Button>
-//           </Box>
-//         </Grid>
-//       </Grid>
-//     </Paper>
-//   );
-// }
-
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Grid,
-  Box,
-  Button,
-  Paper,
-  Typography,
-  Divider,
-  CircularProgress,
-  LinearProgress,
-  useTheme,
-  useMediaQuery,
-  Backdrop,
-} from "@mui/material";
-
+  ArrowLeft,
+  BookOpen,
+  CirclePlus,
+  GraduationCap,
+  ImageIcon,
+  Layers,
+  ListVideo,
+  RefreshCw,
+  Sparkles,
+  X,
+} from "lucide-react";
 import createCoursesInputs from "../../utils/create-courses-inputs";
 import InputText from "../../components/ui/inputs/InputText";
 import InputFile from "../../components/ui/inputs/InputFile";
 import FilePreview from "../../components/ui/inputs/FilePreview";
-import { AddCircleRounded, MenuBook } from "@mui/icons-material";
-import axios from "axios";
-import {
-  extractJsonObject,
-  resetInputs,
-  validateInputs,
-} from "../../utils/common-util";
-import {
-  presignSmallUploads,
-  uploadToPresignedUrl,
-  uploadInBatches,
-  uploadLargeFileMultipart,
-} from "../../utils/s3-helpers";
+import { resetInputs, validateInputs } from "../../utils/common-util";
+import { useS3UploadPipeline } from "../../hooks/useS3UploadPipeline";
+import { rollbackUploadedKeys } from "../../utils/s3-rollback";
 import toast from "react-hot-toast";
 import DropDown from "../../components/ui/inputs/DropDown";
 import api from "../../api/axios";
+import {
+  useCheckCourseTitleMutation,
+  useCreateCourseMutation,
+} from "../../features/api/adminApi";
+import {
+  DialogNotice,
+  DialogSection,
+  UploadProgressBar,
+} from "../../components/ui/dialog/dialogLayout";
+import { PageShell } from "../../components/ui/tw/PageShell";
+import { Button } from "../../components/ui/tw/Button";
+import { Spinner } from "../../components/ui/tw/Spinner";
+import { Modal, ModalBody } from "../../components/ui/tw/Modal";
+import { cn } from "../../lib/cn";
+
+function getUploadingFiles(files, progressMap) {
+  if (!Array.isArray(files)) return [];
+  return files.filter((f) => {
+    const key = f.name || f.originalName;
+    const pct = progressMap[key];
+    return pct > 0 && pct < 100;
+  });
+}
 
 export default function CreateCourse() {
-  const [limit] = useState(0);
-  const [offset] = useState(0);
-  const [query] = useState({});
   const [inputs, setInputs] = useState(createCoursesInputs);
   const [loading, setLoading] = useState(false);
-  const [progressMap, setProgressMap] = useState({});
-  const [uploadedImagesMeta, setUploadedImagesMeta] = useState([]);
-  const [uploadedVideosMeta, setUploadedVideosMeta] = useState([]);
+  const { progressMap, uploadImages } = useS3UploadPipeline();
+  const [checkTitle] = useCheckCourseTitleMutation();
+  const [createCourse] = useCreateCourseMutation();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const setProgress = (fileKey, percent) =>
-    setProgressMap((p) => ({ ...p, [fileKey]: percent }));
+  const instrumentField = inputs.find((f) => f._key === "instrument");
+  const instrumentIndex = inputs.findIndex((f) => f._key === "instrument");
+  const thumbnailField = inputs.find((f) => f._key === "thumbnail_image");
+  const thumbnailIndex = inputs.findIndex((f) => f._key === "thumbnail_image");
+  const uploading = getUploadingFiles(thumbnailField?._value, progressMap);
+
+  const textFields = inputs.filter(
+    (f) =>
+      ["text", "number", "password"].includes(f._type) &&
+      f._key !== "course_description"
+  );
+  const descriptionField = inputs.find((f) => f._key === "course_description");
+  const descriptionIndex = inputs.findIndex((f) => f._key === "course_description");
 
   const handleChange = async (e, p1, i1, updatedFiles = null) => {
-    let tempInputs = [...inputs];
+    const tempInputs = [...inputs];
     if (p1._type === "file") {
       if (updatedFiles !== null) {
         tempInputs[i1]._value = updatedFiles;
@@ -375,12 +96,9 @@ export default function CreateCourse() {
           return;
         }
 
-        const firstValid = validFiles[0];
-        tempInputs[i1]._value = [firstValid];
-
+        tempInputs[i1]._value = [validFiles[0]];
         tempInputs[i1]._errorMsg = "";
         setInputs([...tempInputs]);
-
         if (e?.target) e.target.value = "";
       }
     } else {
@@ -392,108 +110,75 @@ export default function CreateCourse() {
 
   const handleSubmit = async () => {
     if (loading) return;
-    let obj1 = validateInputs(inputs);
+    const obj1 = validateInputs(inputs);
     if (obj1.hasError) {
       setInputs(obj1.inputs);
-    } else {
+      return;
+    }
+    try {
+      setLoading(true);
+      const titleField = inputs.find((f) => f._key === "course_title");
+      const title = titleField?._value?.trim();
+      const check = await checkTitle({ course_title: title }).unwrap();
+      if (!check?.success) {
+        toast.error(check?.msg || "Title error");
+        setLoading(false);
+        return;
+      }
+
+      const payload = {};
+      let imageFiles = [];
+      inputs.forEach((item) => {
+        if (item._type === "file") {
+          if (item._key === "thumbnail_image" && Array.isArray(item._value))
+            imageFiles = item._value;
+        } else {
+          payload[item._key] = item._value;
+        }
+      });
+      payload.thumbnail_image = await uploadImages(
+        imageFiles,
+        "public-course-thumbnails"
+      );
+
       try {
-        let check = null;
-        setLoading(true);
-        const titleField = inputs.find((f) => f._key === "course_title");
-        const title = titleField?._value?.trim();
-
-        try {
-          check = await api.post("/admin/checkcoursetitle", {
-            course_title: title,
-          });
-        } catch (err) {
-          const msg = err?.response?.data?.msg || "Title error";
-          toast.error(msg);
-          setLoading(false);
-          return;
-        }
-
-        if (!check.data.success) {
-          toast.error(check.data.msg || "Title error");
-          setLoading(false);
-          return;
-        }
-
-        const payload = {};
-        let imageFiles = [];
-        inputs.forEach((item) => {
-          if (item._type === "file") {
-            if (item._key === "thumbnail_image" && Array.isArray(item._value))
-              imageFiles = item._value;
-          } else {
-            payload[item._key] = item._value;
-          }
-        });
-        let uploadedImages = [];
-
-        if (imageFiles.length > 0) {
-          const presigned = await presignSmallUploads(
-            imageFiles,
-            "public-course-thumbnails"
-          );
-
-          const tasks = presigned.map((meta, idx) => async () => {
-            const file = imageFiles[idx];
-
-            const uploaded = await uploadToPresignedUrl(meta, file, (pct) =>
-              setProgress(file.name, pct)
-            );
-            return uploaded;
-          });
-
-          uploadedImages = await uploadInBatches(tasks, 4);
-          setUploadedImagesMeta(uploadedImages);
-        }
-        payload.thumbnail_image = uploadedImages;
-
-        const response = await api.post("/admin/createcourse", payload);
-        const dataobj = response.data.data;
-        toast.success(response.data.msg);
-        setInputs(resetInputs(inputs));
+        const res = await createCourse(payload).unwrap();
+        const dataobj = res?.data;
+        toast.success(res?.msg || "Course created");
+        setInputs(resetInputs(createCoursesInputs));
         navigate("/admin/addlectures", {
           state: {
             course_id: dataobj._id,
             course_title: dataobj.course_title,
           },
         });
-        return response;
-      } catch (err) {
-        console.log("error", err);
-        const errorMsg = err?.response?.data?.msg || "Something went wrong!";
-        toast.error(errorMsg);
-      } finally {
-        setLoading(false);
+      } catch (apiErr) {
+        await rollbackUploadedKeys(
+          payload.thumbnail_image.map((f) => f.key).filter(Boolean)
+        );
+        throw apiErr;
       }
+    } catch (err) {
+      const errorMsg =
+        err?.data?.msg || err?.message || "Something went wrong!";
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    getAllInstrumentsData(limit, offset, {});
-  }, []);
-
-  const getAllInstrumentsData = async (limitVal, offsetVal, queryVal = {}) => {
+  const getAllInstrumentsData = async () => {
     try {
       const body = {
-        query: queryVal,
+        query: {},
         projection: {},
-        options: {
-          skip: offsetVal,
-          limit: limitVal,
-          sort: { createdAt: -1 },
-        },
+        options: { skip: 0, limit: 0, sort: { createdAt: -1 } },
       };
-
       const response = await api.post("/admin/allinstumnts", body);
       const instrumentOptions = response.data.data.map((item) => ({
         label: item.instrument_title,
         value: item._id,
       }));
-
       setInputs((prevInputs) =>
         prevInputs.map((p) =>
           p._key === "instrument" ? { ...p, _options: instrumentOptions } : p
@@ -501,188 +186,225 @@ export default function CreateCourse() {
       );
     } catch (error) {
       console.error("Error fetching instruments:", error);
+      toast.error("Could not load instruments. Try refreshing the page.");
     }
   };
 
   useEffect(() => {
-    setInputs(resetInputs(inputs));
+    setInputs(resetInputs(createCoursesInputs));
+    getAllInstrumentsData();
   }, []);
 
   return (
-    <>
-      <Backdrop
-        sx={{
-          color: "#fff",
-          zIndex: (theme) => theme.zIndex.drawer + 999,
-          flexDirection: "column",
-          gap: 2,
-        }}
-        open={loading}
-      >
-        <CircularProgress color="inherit" />
-        <Typography sx={{ fontSize: "0.9rem", mt: 1 }}>
-          Uploading & Processing…
-        </Typography>
-      </Backdrop>
+    <PageShell className="pb-12">
+      <Modal open={loading} lockClose maxWidth="max-w-sm">
+        <ModalBody className="flex flex-col items-center gap-4 bg-gradient-to-b from-violet-50/50 to-white py-10">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/30">
+            <RefreshCw className="h-7 w-7 animate-spin" />
+          </span>
+          <div className="text-center">
+            <p className="text-base font-extrabold text-navy">Creating course</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Saving details and uploading thumbnail…
+            </p>
+          </div>
+        </ModalBody>
+      </Modal>
 
-      <Paper
-        elevation={4}
-        sx={{
-          p: 3,
-          borderRadius: 2,
-        }}
+      <Link
+        to="/admin/mycourseslist"
+        className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-violet-700"
       >
-        <Box mb={3}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 600,
-              fontSize: {
-                xs: "1rem",
-                sm: "1.2rem",
-                md: "1.5rem",
-              },
-              letterSpacing: "0.5px",
-              color: "#1976d2",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
+        <ArrowLeft className="h-4 w-4" />
+        My courses
+      </Link>
+
+      <header className="relative mb-6 overflow-hidden rounded-[1.75rem] border border-violet-100/80 bg-gradient-to-br from-white via-violet-50/40 to-indigo-50/50 shadow-[0_18px_45px_-30px_rgba(76,29,149,0.35)]">
+        <div
+          className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-violet-500/10 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="absolute -bottom-14 left-6 h-32 w-32 rounded-full bg-indigo-500/10 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative flex flex-col gap-4 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:p-7">
+          <div className="flex flex-col items-center gap-3 text-center min-[520px]:flex-row min-[520px]:items-start min-[520px]:gap-4 min-[520px]:text-left">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-500/25 sm:h-14 sm:w-14">
+              <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7" />
+            </span>
+            <div className="min-w-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-violet-800 shadow-sm ring-1 ring-violet-100 sm:text-[11px]">
+                <Sparkles className="h-3.5 w-3.5" />
+                Learning catalog
+              </span>
+              <h2 className="mt-2 text-xl font-extrabold tracking-tight text-navy sm:mt-3 sm:text-3xl">
+                Create course
+              </h2>
+              <p className="mx-auto mt-1.5 max-w-xl text-xs leading-relaxed text-slate-600 min-[520px]:mx-0 sm:mt-2 sm:text-sm">
+                Link a course to an instrument, then add lecture videos on the next
+                step.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/admin/mycourseslist"
+            className="inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-4 text-sm font-bold text-white shadow-md shadow-violet-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-lg active:translate-y-0 min-[520px]:w-auto"
           >
-            <MenuBook
-              sx={{
-                fontSize: {
-                  xs: "1.1rem",
-                  sm: "1.4rem",
-                  md: "1.6rem",
-                },
-                flexShrink: 0,
-              }}
-            />
-            Create Courses
-          </Typography>
+            <BookOpen className="h-4 w-4" />
+            Course library
+          </Link>
+        </div>
+      </header>
 
-          <Divider
-            sx={{
-              mt: 1.5,
-              mb: 1.5,
-              borderColor: "#1976d2",
-              borderWidth: "1px",
-              borderRadius: 1,
-            }}
-          />
-        </Box>
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_12px_rgba(15,23,42,0.05)]">
+        <div className="border-b border-slate-100 bg-gradient-to-r from-violet-50/80 to-indigo-50/40 px-5 py-4 sm:px-6">
+          <h2 className="flex items-center gap-2 text-base font-extrabold text-navy">
+            <BookOpen className="h-5 w-5 text-violet-600" />
+            Course details
+          </h2>
+          <p className="mt-0.5 text-xs text-muted">
+            Shown on the storefront and grouped under the linked instrument
+          </p>
+        </div>
 
-        <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-          {inputs.map((p1, i1) => {
-            if (p1._type === "dropdown") {
-              return (
-                <Grid size={{ xs: 12, md: 12, lg: 6 }} sx={{ mb: 1 }} key={i1}>
+        <div className="space-y-5 bg-gradient-to-b from-violet-50/15 via-white to-slate-50/20 p-5 sm:p-6">
+          <DialogNotice icon={ListVideo} title="What happens next?" variant="brand">
+            <ul className="list-inside list-disc space-y-0.5 text-sm">
+              <li>Pick the instrument this course belongs to.</li>
+              <li>After creating the course, you&apos;ll go straight to add lectures.</li>
+              <li>Course thumbnail: one JPG or PNG image (max 100 MB).</li>
+            </ul>
+          </DialogNotice>
+
+          {instrumentField && instrumentIndex >= 0 ? (
+            <DialogSection title="Linked instrument">
+              <div className="grid gap-3 rounded-2xl border border-violet-100/90 bg-gradient-to-br from-white via-violet-50/60 to-indigo-50/40 p-3 shadow-sm ring-1 ring-violet-100/70 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start sm:p-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-500/25 sm:h-11 sm:w-11">
+                  <Layers className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 [&_select]:min-h-11 [&_select]:rounded-2xl [&_select]:bg-white">
                   <DropDown
-                    {...p1}
-                    onChange={(event) => handleChange(event, p1, i1)}
+                    {...instrumentField}
+                    onChange={(event) =>
+                      handleChange(event, instrumentField, instrumentIndex)
+                    }
                   />
-                </Grid>
-              );
-            }
-            if (["text", "number", "password"].includes(p1._type)) {
-              return (
-                <Grid size={{ xs: 12, md: 12, lg: 6 }} key={i1}>
+                </div>
+              </div>
+            </DialogSection>
+          ) : null}
+
+          <DialogSection title="Course info">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {textFields.map((field) => {
+                const i1 = inputs.findIndex((f) => f._key === field._key);
+                return (
                   <InputText
-                    {...p1}
-                    onChange={(event) => handleChange(event, p1, i1)}
+                    key={field._key}
+                    {...field}
+                    onChange={(event) => handleChange(event, field, i1)}
                   />
-                </Grid>
-              );
-            }
+                );
+              })}
+            </div>
+          </DialogSection>
 
-            if (p1._type === "file") {
-              return (
-                <Grid size={{ xs: 12, md: 12, lg: 6 }} key={i1}>
-                  <InputFile
-                    {...p1}
-                    onChange={(event) => handleChange(event, p1, i1)}
-                  />
+          {descriptionField && descriptionIndex >= 0 ? (
+            <DialogSection title="Description">
+              <InputText
+                {...descriptionField}
+                onChange={(event) =>
+                  handleChange(event, descriptionField, descriptionIndex)
+                }
+              />
+            </DialogSection>
+          ) : null}
 
+          {thumbnailField && thumbnailIndex >= 0 ? (
+            <DialogSection
+              title="Course thumbnail"
+              className="border-violet-100/90 ring-violet-100/40"
+            >
+              <div className="space-y-4">
+                <InputFile
+                  {...thumbnailField}
+                  onChange={(event) =>
+                    handleChange(event, thumbnailField, thumbnailIndex)
+                  }
+                />
+
+                {Array.isArray(thumbnailField._value) &&
+                thumbnailField._value.length > 0 ? (
                   <FilePreview
-                    files={p1._value}
+                    files={thumbnailField._value}
                     onRemove={(fileIndex) => {
-                      const updatedFiles = p1._value.filter(
+                      const updated = thumbnailField._value.filter(
                         (_, idx) => idx !== fileIndex
                       );
-                      handleChange(null, p1, i1, updatedFiles);
+                      handleChange(null, thumbnailField, thumbnailIndex, updated);
                     }}
                   />
-                  {Array.isArray(p1._value) &&
-                    p1._value.map((f, idx) => (
-                      <Box key={f.name + idx} sx={{ mt: 1 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            gap: 8,
-                          }}
-                        >
-                          <div style={{ fontSize: 12 }}>{f.name}</div>
-                          <div style={{ fontSize: 12 }}>
-                            {progressMap[f.name]
-                              ? `${progressMap[f.name]}%`
-                              : ""}
-                          </div>
-                        </div>
-                        <LinearProgress
-                          variant="determinate"
-                          value={progressMap[f.name] || 0}
-                          sx={{ mt: 0.5 }}
-                        />
-                      </Box>
+                ) : null}
+
+                {uploading.length > 0 ? (
+                  <div className="space-y-2 rounded-xl border border-violet-100/90 bg-violet-50/40 p-3 ring-1 ring-violet-100/50">
+                    <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-violet-700">
+                      <RefreshCw className="h-3 w-3 animate-spin" aria-hidden />
+                      Uploading thumbnail…
+                    </p>
+                    {uploading.map((f, idx) => (
+                      <UploadProgressBar
+                        key={`${f.name || f.originalName}-${idx}`}
+                        label={f.name || f.originalName}
+                        percent={progressMap[f.name || f.originalName] || 0}
+                      />
                     ))}
-                </Grid>
-              );
-            }
+                  </div>
+                ) : null}
 
-            return null;
-          })}
+                {thumbnailField._errorMsg ? (
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 ring-1 ring-red-100">
+                    {thumbnailField._errorMsg}
+                  </p>
+                ) : null}
+              </div>
+            </DialogSection>
+          ) : null}
+        </div>
 
-          <Grid size={{ xs: 12, md: 12, lg: 6 }}>
-            <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                disabled={loading}
-                startIcon={
-                  loading ? (
-                    <CircularProgress size={isMobile ? 16 : 20} />
-                  ) : (
-                    <AddCircleRounded />
-                  )
-                }
-                sx={{
-                  fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1rem" },
-                  "& .MuiButton-startIcon > *": {
-                    fontSize: { xs: 18, sm: 20, md: 22 },
-                  },
-                  transition: "0.3s",
-                  backgroundColor: "#1976d2",
-                  "&:hover": {
-                    backgroundColor: "#125aa0",
-                    transform: loading ? "none" : "scale(1.03)",
-                    boxShadow: loading
-                      ? "none"
-                      : "0px 4px 12px rgba(0,0,0,0.2)",
-                    opacity: loading ? 0.8 : 1,
-                    cursor: loading ? "not-allowed" : "pointer",
-                  },
-                }}
-                onClick={handleSubmit}
-              >
-                {loading ? "Creating..." : "Create Courses"}
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-    </>
+        <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-gradient-to-r from-violet-50/40 via-white to-indigo-50/30 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/admin/mycourseslist")}
+            disabled={loading}
+            className="min-h-11 sm:min-w-[120px]"
+          >
+            <X className="h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            disabled={loading}
+            onClick={handleSubmit}
+            className={cn(
+              "inline-flex min-h-11 items-center justify-center gap-2 px-6 shadow-md shadow-violet-600/20 sm:min-w-[200px]",
+              "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+            )}
+          >
+            {loading ? (
+              <>
+                <Spinner size="sm" className="border-white/30 border-t-white" />
+                Creating…
+              </>
+            ) : (
+              <>
+                <CirclePlus className="h-4 w-4" aria-hidden />
+                Create course
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </PageShell>
   );
 }

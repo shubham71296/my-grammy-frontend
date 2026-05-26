@@ -1,211 +1,98 @@
-// LectureCard.jsx
-import React from "react";
-import {
-  Box,
-  Paper,
-  Typography,
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Tooltip,
-} from "@mui/material";
-import {
-  VideoLibrary,
-  MoreVert,
-  Edit,
-  Delete,
-  Close,
-} from "@mui/icons-material";
+import { Play, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Dropdown, DropdownItem } from "../tw/Dropdown";
+import { cn } from "../../../lib/cn";
+
+/** Compact lecture tile — thumb + 2-line title (no overlap with next row) */
+const CARD_WIDTH = "w-[128px]";
 
 const CourseVideoCard = ({ lec, idx, openFullScreen, onEdit, onDelete }) => {
-  const vidUrl = lec?.lecture_video?.[0]?.url || "";
+  const title = lec.lecture_title || "Untitled lecture";
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const menuOpen = Boolean(anchorEl);
-
-  const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
-
-  const handleEdit = () => {
-    handleMenuClose();
-    if (onEdit) onEdit(lec);
-  };
-
-  const handleDelete = () => {
-    handleMenuClose();
-    if (onDelete) onDelete(lec);
-  };
+  const handleEdit = () => onEdit?.(lec);
+  const handleDelete = () => onDelete?.(lec);
 
   return (
-    <Paper
-      elevation={4}
-      sx={{
-        p: 1,
-        borderRadius: 1,
-        width: {
-          xs: 140,   
-          //sm: 160,   
-          //md: 180,   
-        },
-        transition: "all 0.35s ease",
-        "&:hover": {
-          transform: "translateY(-6px)",
-          boxShadow: "0 16px 32px rgba(0,0,0,0.25)",
-        },
-      }}
-    >
-      <Box
-        sx={{
-          position: "relative",
-          borderRadius: 2,
-          overflow: "hidden",
-          boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
-          height: {
-            xs: 120,   
-            //sm: 150,   
-            //md: 180,   
-          },
-          backgroundColor:'black'
-        }}
+    <article className={cn(CARD_WIDTH, "group relative isolate shrink-0")}>
+      <div
+        className={cn(
+          "relative aspect-square w-full overflow-hidden rounded-xl",
+          "bg-gradient-to-br from-brand-900 via-brand-700 to-indigo-600",
+          "shadow-sm ring-1 ring-slate-200/80 transition duration-300",
+          "group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:ring-brand-300"
+        )}
       >
-       
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            bgcolor: "rgba(0,0,0,0.4)",
-            opacity: 1,
-            transition: "0.3s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            "&:hover": {
-              bgcolor: "rgba(107, 171, 240, 0.4)", 
-            },
-          }}
+        <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.12),transparent_55%)]" />
+
+        <span className="absolute left-1.5 top-1.5 z-10 rounded-md bg-black/45 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-sm">
+          {String(idx + 1).padStart(2, "0")}
+        </span>
+
+        <div
+          className="absolute right-1.5 top-1.5 z-20"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
         >
-          <IconButton
-            sx={{
-              bgcolor: "white",
-              width: { 
-                xs: 44, 
-                // sm: 55, 
-                // md: 60 
-              },
-              height: { 
-                xs: 44, 
-                // sm: 55, 
-                // md: 60 
-              },
-              borderRadius: "50%",
-              transition: "transform 0.3s ease", 
-              "&:hover": {
-                transform: "scale(1.15)", 
-                bgcolor: "white", 
-              },
-            }}
-            onClick={() => openFullScreen(lec)}
+          <Dropdown
+            align="right"
+            trigger={
+              <button
+                type="button"
+                className="rounded-md border border-white/30 bg-white/95 p-1 text-slate-600 shadow-sm transition hover:bg-white"
+                aria-label="Lecture options"
+              >
+                <MoreVertical className="h-3 w-3" />
+              </button>
+            }
           >
-            <VideoLibrary fontSize="large" sx={{ color: "#FF0000",fontSize: { xs: 28 } }}/>
-          </IconButton>
-        </Box>
-      </Box>
+            {(close) => (
+              <>
+                <DropdownItem
+                  onClick={() => {
+                    close();
+                    handleEdit();
+                  }}
+                  className="gap-2"
+                >
+                  <Pencil className="h-4 w-4" />
+                  Edit
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() => {
+                    close();
+                    handleDelete();
+                  }}
+                  danger
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </DropdownItem>
+              </>
+            )}
+          </Dropdown>
+        </div>
 
-      <Box
-        mt={1}
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography
-          mt={1}
-          fontWeight={700}
-          sx={{
-           fontSize: {
-              xs: "0.70rem",
-              //sm: "0.75rem",
-              //md: "0.85rem",
-            },
-            mr: 1,
-          }}
+        <button
+          type="button"
+          onClick={() => openFullScreen(lec)}
+          className="absolute inset-0 z-[1] flex items-center justify-center bg-black/20 transition hover:bg-black/35"
+          aria-label={`Play ${title}`}
         >
-          {idx + 1}. {lec.lecture_title}
-        </Typography>
-        <IconButton
-          onClick={handleMenuOpen}
-          size="small"
-          sx={{
-            width: { xs: 24, sm: 28 },
-            height: { xs: 24, sm: 28 },
-            bgcolor: "#f1f1f1",
-            "&:hover": {
-              bgcolor: "#e0e0e0",
-            },
-          }}
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand-600 shadow-md transition group-hover:scale-105">
+            <Play className="h-4 w-4 fill-brand-600 pl-0.5" />
+          </span>
+        </button>
+      </div>
+
+      <div className="relative z-10 mt-2 bg-white pt-0.5">
+        <p
+          className="line-clamp-2 break-words text-[11px] font-semibold leading-[1.35rem] text-navy"
+          title={title}
         >
-          <MoreVert fontSize="small" sx={{ fontSize: { xs: 18, sm: 20 } }} />
-        </IconButton>
-
-        <Menu
-          id={`lec-menu-${idx}`}
-          anchorEl={anchorEl}
-          open={menuOpen}
-          onClose={handleMenuClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
-          PaperProps={{
-            sx: { minWidth: 150, p: 0 },
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              px: 1,
-              py: 0.5,
-              borderBottom: "1px solid rgba(0,0,0,0.08)",
-              borderTopLeftRadius: "8px",
-              borderTopRightRadius: "8px",
-            }}
-          >
-            <IconButton
-              size="small"
-              onClick={handleMenuClose}
-              sx={{
-                color: "#555555ff",
-                transition: "0.25s ease",
-                "&:hover": {
-                  color: "#2f71d3ff",
-                  transform: "scale(1.15)",
-                  backgroundColor: "rgba(211,47,47,0.08)",
-                },
-              }}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-          </Box>
-
-          <MenuItem onClick={handleEdit}>
-            <ListItemIcon>
-              <Edit fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Edit" />
-          </MenuItem>
-
-          <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
-            <ListItemIcon>
-              <Delete fontSize="small" sx={{ color: "error.main" }} />
-            </ListItemIcon>
-            <ListItemText primary="Delete" />
-          </MenuItem>
-        </Menu>
-      </Box>
-    </Paper>
+          {title}
+        </p>
+      </div>
+    </article>
   );
 };
 

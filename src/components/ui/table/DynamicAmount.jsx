@@ -1,22 +1,14 @@
-import React from "react";
-import { Box } from "@mui/material";
+import { cn } from "../../../lib/cn";
 
 function DynamicAmount({ val }) {
-  
   return (
-    <Box
-      sx={{
-        fontWeight: 600,
-        fontSize: "0.95rem",
-        color: "#0f766e",
-        backgroundColor: "rgba(16, 185, 129, 0.12)",
-        padding: "4px 10px",
-        borderRadius: "6px",
-        display: "inline-block",
-      }}
+    <span
+      className={cn(
+        "inline-block rounded-md bg-emerald-500/10 px-2.5 py-1 text-sm font-semibold text-emerald-800"
+      )}
     >
-     ₹ {val}
-    </Box>
+      ₹ {val}
+    </span>
   );
 }
 

@@ -1,158 +1,73 @@
-import { Container, Typography, Box, Paper, Divider } from "@mui/material";
+import { FileText } from "lucide-react";
+import { PageShell, PagePanel } from "../../components/ui/tw/PageShell";
 
 export default function TermsConditions() {
   return (
-    <Container
-      maxWidth="md"
-      sx={{
-        py: { xs: 3, sm: 4, md: 6 },
-        px: { xs: 1.5, sm: 2 },
-      }}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          p: { xs: 2, sm: 3, md: 5 },
-          borderRadius: 3,
-          background: "linear-gradient(135deg, #ffffff, #f5f7fa)",
-        }}
-      >
-        <Typography
-          variant="h4"
-          fontWeight={700}
-          gutterBottom
-          sx={{
-            textAlign: "center",
-            color: "primary.main",
-            mb: 2,
-            fontSize: { xs: "1.5rem", sm: "2.2rem" },
-          }}
-        >
-          Terms & Conditions
-        </Typography>
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            textAlign: "center",
-            mb: 4,
-            fontSize: { xs: "0.85rem", sm: "0.9rem" },
-          }}
-        >
+    <PageShell narrow>
+      <PagePanel title="Terms & Conditions" icon={FileText}>
+        <p className="-mt-2 mb-6 text-center text-sm text-slate-500">
           Last updated: {new Date().toLocaleDateString()}
-        </Typography>
+        </p>
 
-        <Divider sx={{ mb: 4 }} />
+        <div className="space-y-6 text-sm text-slate-600 sm:text-base">
+          <section>
+            <h2 className="mb-2 text-base font-semibold text-slate-800 sm:text-lg">
+              📘 Agreement to Terms
+            </h2>
+            <p>
+              By accessing and using Grammy Music India, you agree to comply with and be
+              bound by these Terms & Conditions.
+            </p>
+          </section>
 
-        {/* Sections */}
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-          >
-            📘 Agreement to Terms
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
-          >
-            By accessing and using Grammy Music India, you agree to comply with
-            and be bound by these Terms & Conditions.
-          </Typography>
-        </Box>
+          <section>
+            <h2 className="mb-2 text-base font-semibold text-slate-800 sm:text-lg">
+              🛒 Product & Service Availability
+            </h2>
+            <p>
+              All products and services offered are subject to availability. Prices may
+              change at any time without prior notice.
+            </p>
+          </section>
 
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-          >
-            🛒 Product & Service Availability
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
-          >
-            All products and services offered are subject to availability. Prices
-            may change at any time without prior notice.
-          </Typography>
-        </Box>
+          <section>
+            <h2 className="mb-2 text-base font-semibold text-slate-800 sm:text-lg">
+              ⚠️ Unauthorized Use
+            </h2>
+            <p>
+              Unauthorized use of this website may give rise to claims for damages and/or
+              may be a criminal offense.
+            </p>
+          </section>
 
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-          >
-            ⚠️ Unauthorized Use
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
-          >
-            Unauthorized use of this website may give rise to claims for damages
-            and/or may be a criminal offense.
-          </Typography>
-        </Box>
+          <section>
+            <h2 className="mb-2 text-base font-semibold text-slate-800 sm:text-lg">
+              🚫 Right to Refuse Service
+            </h2>
+            <p>
+              We reserve the right to refuse service to anyone for any reason at any time.
+            </p>
+          </section>
 
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-          >
-            🚫 Right to Refuse Service
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
-          >
-            We reserve the right to refuse service to anyone for any reason at
-            any time.
-          </Typography>
-        </Box>
-
-        <Box sx={{ mb: 2 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-          >
-            📞 Contact Us
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
-          >
-            For any questions or concerns regarding these Terms & Conditions,
-            reach out to us:
-            <br />
-            <strong>Email:</strong>{" "}
-            <a
-              href="mailto:grammymusicindia@gmail.com"
-              style={{
-                color: "#1976d2",
-                textDecoration: "none",
-                wordBreak: "break-word",
-              }}
-            >
-              grammymusicindia@gmail.com
-            </a>
-          </Typography>
-        </Box>
-      </Paper>
-    </Container>
+          <section>
+            <h2 className="mb-2 text-base font-semibold text-slate-800 sm:text-lg">
+              📞 Contact Us
+            </h2>
+            <p>
+              For any questions or concerns regarding these Terms & Conditions, reach out
+              to us:
+              <br />
+              <strong>Email:</strong>{" "}
+              <a
+                href="mailto:grammymusicindia@gmail.com"
+                className="break-all text-brand-600 hover:underline"
+              >
+                grammymusicindia@gmail.com
+              </a>
+            </p>
+          </section>
+        </div>
+      </PagePanel>
+    </PageShell>
   );
 }

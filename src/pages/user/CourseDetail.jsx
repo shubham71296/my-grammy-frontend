@@ -1,70 +1,74 @@
-import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Button,
-  Card,
-  CardMedia,
-  Chip,
-  Dialog,
-  DialogContent,
-  Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Avatar,
-  Grid,
-  Paper,
-  Typography,
-  CircularProgress,
-  Container,
-} from "@mui/material";
-import {
-  MenuBook,
-  VideoLibraryOutlined,
-  ArrowBack,
-  CloseRounded,
-  VideoLibrary,
-  MoreVert,
-} from "@mui/icons-material";
-import axios from "axios";
+  ArrowLeft,
+  BookOpen,
+  ChevronRight,
+  GraduationCap,
+  Guitar,
+  PlayCircle,
+  Sparkles,
+  Video,
+  ZoomIn,
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import CourseVideoCard from "../../components/ui/card/CourseVideoCard";
-import { useDispatch, useSelector } from "react-redux";
-import { openDialogAction } from "../../features/ui/uiSlice";
-import AppDialog from "../../components/ui/dialog/AppDialog";
-import AddMoreCard from "../../components/ui/card/AddMoreCard";
+import { useDispatch } from "react-redux";
 import LectureCard from "../../components/ui/card/LectureCard";
-import api from "../../api/axios";
+import { useGuestLoginDialog } from "../../hooks/useGuestLoginDialog";
+import { formatCurrency } from "../../utils/format";
+import { useGetCourseByIdQuery } from "../../features/api/catalogApi";
+import { openDialogAction } from "../../features/ui/uiSlice";
+import { IMAGE_PLACEHOLDER } from "../../utils/image-constants";
+import { PageShell } from "../../components/ui/tw/PageShell";
+import { BackButton } from "../../components/ui/tw/BackButton";
+import { Badge } from "../../components/ui/tw/Badge";
+import { Button } from "../../components/ui/tw/Button";
+import { Spinner } from "../../components/ui/tw/Spinner";
+import { cn } from "../../lib/cn";
 
-const formatCurrency = (value) => {
-  const n = Number(value);
-  if (Number.isFinite(n)) {
-    return n.toLocaleString("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    });
-  }
-  return value;
-};
+const HIGHLIGHTS = [
+  { icon: Video, label: "HD video lessons" },
+  { icon: GraduationCap, label: "Step-by-step path" },
+  { icon: Sparkles, label: "Practice-ready content" },
+];
 
-const CourseDetail = () => {
+const CourseDetail = ({ mode = "user" }) => {
+  const isGuest = mode === "guest";
+  const catalogPath = isGuest ? "/guest/guestcourses" : "/user/courses";
+  const homePath = isGuest ? "/guest" : "/user";
+
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const openGuestLoginDialog = useGuestLoginDialog();
 
-  const [course, setCourse] = useState(null);
-  const [lectures, setLectures] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [previewTitle, setPreviewTitle] = useState("");
+  const { data, isLoading: loading, isError } = useGetCourseByIdQuery(
+    { id, guest: isGuest },
+    { skip: !id }
+  );
+  const course = data?.course ?? null;
+  const lectures = data?.lectures ?? [];
 
-  const [activeVideo, setActiveVideo] = useState(null);
+  const thumbnailUrl = course?.thumbnail_image?.[0]?.url || IMAGE_PLACEHOLDER;
+  const instrumentTitle =
+    course?.instrument?.instrument_title || course?.instrument || null;
+
+  const openPreview = () => {
+    dispatch(
+      openDialogAction({
+        openDialog: true,
+        selectedData: {
+          previewUrl: course?.thumbnail_image?.[0]?.url,
+          title: course?.course_title,
+        },
+        dialogInfo: { check: "view_img_video" },
+      })
+    );
+  };
 
   const openFullScreen = (lec) => {
+    if (isGuest) {
+      openGuestLoginDialog();
+      return;
+    }
     dispatch(
       openDialogAction({
         openDialog: true,
@@ -73,401 +77,238 @@ const CourseDetail = () => {
           videoKey: lec.lecture_video?.[0]?.key,
           title: lec.lecture_title,
         },
-        dialogInfo: {
-          check: "view_video",
-        },
+        dialogInfo: { check: "view_video" },
       })
     );
-  };
-
-  const handleEditLecture = (lec) => {
-    dispatch(
-      openDialogAction({
-        openDialog: true,
-        selectedData: lec,
-        dialogInfo: {
-          check: "edit_lecture",
-        },
-      })
-    );
-  };
-
-  const handleDeleteLecture = (lec) => {
-    dispatch(
-      openDialogAction({
-        openDialog: true,
-        selectedData: lec,
-        dialogInfo: {
-          check: "delete_lecture",
-        },
-      })
-    );
-  };
-
-  const closeFullScreen = () => {
-    setActiveVideo(null);
-  };
-
-  useEffect(() => {
-    if (!id) return;
-    getCourseDetails(id);
-  }, [id]);
-
-  const getCourseDetails = async (courseId) => {
-    setLoading(true);
-    try {
-      const response = await api.get(`/admin/coursebyid/${courseId}`);
-      console.log("response?.data?.data", response?.data?.data);
-      const payload = response?.data?.data || response?.data;
-      const courseData = payload?.course_data;
-      const lecturesData = payload?.lectures_data || [];
-
-      if (!courseData) {
-        setCourse(null);
-        setLectures([]);
-      } else {
-        setCourse(courseData);
-        setLectures(Array.isArray(lecturesData) ? lecturesData : []);
-      }
-    } catch (err) {
-      console.log("Error fetching course details:", err);
-      setCourse(null);
-      setLectures([]);
-    } finally {
-      setLoading(false);
-    }
   };
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" py={8}>
-        <CircularProgress />
-      </Box>
+      <PageShell>
+        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
+          <Spinner size="lg" />
+          <p className="text-sm font-medium text-muted">Loading course…</p>
+        </div>
+      </PageShell>
     );
   }
 
-  if (!course) {
+  if (isError || !course) {
     return (
-      <Typography variant="h6" textAlign="center" mt={5}>
-        Course not found.
-      </Typography>
+      <PageShell narrow>
+        <div className="rounded-3xl border border-slate-200/80 bg-white p-10 text-center shadow-soft">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-danger">
+            <BookOpen className="h-8 w-8" />
+          </div>
+          <h2 className="text-xl font-extrabold text-navy">Course not found</h2>
+          <p className="mt-2 text-sm text-muted">
+            This course may have been removed or the link is incorrect.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <BackButton to={catalogPath} label="Browse courses" />
+            <Button variant="outline" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+              Go back
+            </Button>
+          </div>
+        </div>
+      </PageShell>
     );
   }
 
-  const openPreview = (lecture) => {
-    const firstVideoUrl = lecture?.lecture_video?.[0]?.url;
-    if (!firstVideoUrl) return;
-    setPreviewTitle(lecture.lecture_title || "Preview");
-    setPreviewUrl(firstVideoUrl);
-  };
-
-  const closePreview = () => {
-    setPreviewUrl(null);
-    setPreviewTitle("");
-  };
+  const description =
+    course.course_description ||
+    "Structured lessons designed to help you learn at your own pace with clear guidance from start to finish.";
 
   return (
-    <Box sx={{ backgroundColor: "#f8f9fc", minHeight: "100vh", py: 4 }}>
-      <Container maxWidth="lg">
-        <Paper elevation={4} sx={{ p: 3, borderRadius: 2 }}>
-          <Box mb={3}>
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 600,
-                color: "#1976d2",
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: { xs: 0.8, sm: 1 },
-                fontSize: {
-                  xs: "1rem",
-                  sm: "1.2rem",
-                  md: "1.5rem",
-                },
-                lineHeight: 1.2,
-                letterSpacing: { xs: "0.2px", sm: "0.5px" },
-              }}
+    <PageShell className="pb-10">
+      <div className="mb-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:mb-5 sm:flex sm:flex-wrap sm:gap-3">
+        <BackButton
+          to={catalogPath}
+          label={
+            <>
+              <span className="hidden min-[390px]:inline">All courses</span>
+              <span className="min-[390px]:hidden">All</span>
+            </>
+          }
+          className="shrink-0 gap-1.5 px-2 py-1.5 text-xs sm:gap-2.5 sm:px-3 sm:py-2 sm:text-sm"
+        />
+        <nav
+          className="flex min-w-0 items-center gap-1 text-xs text-muted sm:flex-1 sm:gap-1.5 sm:text-sm"
+          aria-label="Breadcrumb"
+        >
+          <span className="hidden min-[360px]:inline">Courses</span>
+          <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 min-[360px]:block" aria-hidden />
+          <span className="line-clamp-1 font-semibold text-brand-800">
+            {course.course_title}
+          </span>
+        </nav>
+      </div>
+
+      {/* Hero */}
+      <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-[0_20px_50px_-24px_rgba(15,23,42,0.18)]">
+        <div className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:divide-x lg:divide-slate-100">
+          <section className="bg-slate-50/80 p-4 sm:p-6 lg:p-8">
+            <button
+              type="button"
+              onClick={openPreview}
+              className="group relative mx-auto block w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm outline-none transition duration-200 hover:shadow-md focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2"
             >
-              <MenuBook
-                sx={{
-                  fontSize: {
-                    xs: "1.1rem",
-                    sm: "1.4rem",
-                    md: "1.6rem",
-                  },
-                  flexShrink: 0,
-                }}
-              />
-              My Course Detail
-            </Typography>
+              <div className="relative flex min-h-[200px] w-full items-center justify-center bg-gradient-to-b from-slate-50 to-white p-4 sm:min-h-[260px] lg:min-h-[300px]">
+                <img
+                  src={thumbnailUrl}
+                  alt={course.course_title}
+                  className="product-card__img max-h-[200px] w-full max-w-full object-contain transition duration-300 group-hover:scale-[1.02] sm:max-h-[240px] lg:max-h-[280px]"
+                  onError={(e) => {
+                    e.currentTarget.src = IMAGE_PLACEHOLDER;
+                  }}
+                />
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-900/0 transition group-hover:bg-slate-900/25">
+                  <span className="flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-slate-800 opacity-0 shadow-lg transition group-hover:opacity-100">
+                    <ZoomIn className="h-4 w-4" />
+                    Preview
+                  </span>
+                </span>
+              </div>
+            </button>
+            <p className="mt-3 text-center text-xs text-muted">
+              Tap thumbnail to enlarge
+            </p>
+          </section>
 
-            <Divider
-              sx={{
-                mt: 1,
-                mb: 5,
-                borderColor: "#1976d2",
-                borderWidth: "1px",
-                borderRadius: 1,
-              }}
-            />
-          </Box>
-          <Box sx={{}}>
-            <Typography sx={{ fontSize: "18px", color: "warning.main" }}>
-              Instrument:{" "}
-              <strong>
-                {course.instrument?.instrument_title ||
-                  course.instrument ||
-                  "—"}
-              </strong>
-            </Typography>
-          </Box>
+          <section className="flex flex-col p-5 sm:p-7 lg:p-8">
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-brand-700">
+              <GraduationCap className="h-3.5 w-3.5" />
+              Online course
+            </span>
 
-          <Card
-            sx={{
-              mt: 2,
-              width: "220px",
-              borderRadius: 3,
-              overflow: "hidden",
-              mb: 3,
-              cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
-              transition: "transform 0.2s ease",
-              position: "relative",
-              "&:hover": {
-                transform: "scale(1.03)",
-              },
-              "&:hover .overlay": {
-                opacity: 1,
-              },
-            }}
-            onClick={() => {
-              dispatch(
-                openDialogAction({
-                  openDialog: true,
-                  selectedData: {
-                    previewUrl: course.thumbnail_image?.[0]?.url,
-                    title: course.instrument.instrument_title,
-                  },
-                  dialogInfo: {
-                    check: "view_img_video",
-                  },
-                })
-              );
-            }}
-          >
-            <Box sx={{ position: "relative" }}>
-              <CardMedia
-                component="img"
-                height="140"
-                image={course.thumbnail_image?.[0]?.url || ""}
-                alt={course.course_title}
-                sx={{ objectFit: "cover" }}
-              />
+            <h2 className="mt-4 text-2xl font-extrabold leading-tight tracking-tight text-navy sm:text-3xl">
+              {course.course_title}
+            </h2>
 
-              <Box
-                className="overlay"
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  bgcolor: "rgba(0,0,0,0.55)",
-                  color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: 0,
-                  transition: "opacity 0.3s ease",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  letterSpacing: "1px",
-                }}
-              >
-                View
-              </Box>
-            </Box>
-          </Card>
-
-          <Box mb={3}>
-            <Typography
-              variant="h6"
-              color="primary"
-              //fontWeight={800}
-              sx={{
-                fontSize: {
-                  xs: "0.8rem",
-                  sm: "1rem",
-                  md: "1.2rem",
-                },
-              }}
-            >
-              Course Name: <strong>{course.course_title}</strong>
-            </Typography>
-
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 2, sm: 3 },
-                mt:1,
-                mb: 4,
-                borderRadius: 3,
-                background: "rgba(2, 2, 94, 0.04)",
-                //border: "1px solid rgba(2, 2, 94, 0.1)",
-                  borderLeft: "4px solid #02025e",
-              }}
-            >
-              <Typography
-                color="text.secondary"
-                 sx={{
-                  fontSize: { xs: "14px", sm: "16px", md: "18px" },
-                  lineHeight: 1.8,
-                  color: "#1b085c",
-                  //textAlign: "center",
-                  maxWidth: 900,
-                }}
-              >
-                {course.course_description}
-              </Typography>
-            </Paper>
-
-            <Box display="flex" gap={2} mt={2} alignItems="center">
-              {/* <Chip
-                label={formatCurrency(course.course_price)}
-                color="primary"
-                sx={{
-                  fontSize: {
-                    xs: "0.8rem",
-                    sm: "0.9rem",
-                    md: "1rem",
-                  },
-                }}
-              /> */}
-              <Chip
-                label={
-                  course.isPurchased
-                    ? "✓ Purchased"
-                    : formatCurrency(course.course_price)
-                }
-                color={course.isPurchased ? "success" : "primary"}
-                sx={{
-                  fontSize: {
-                    xs: "0.8rem",
-                    sm: "0.9rem",
-                    md: "1rem",
-                  },
-                }}
-              />
-              {/* <Typography variant="body2" color="text.secondary">
-                Instrument:{" "}
-                <strong>
-                  {course.instrument?.instrument_title ||
-                    course.instrument ||
-                    "—"}
-                </strong>
-              </Typography> */}
-            </Box>
-          </Box>
-
-          <Divider sx={{ my: 2 }} />
-
-          <Box>
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              mb={2}
-              sx={{
-                fontSize: {
-                  xs: "0.8rem",
-                  sm: "1rem",
-                  md: "1.2rem",
-                },
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              Lectures ({lectures.length})
-              <Chip
-                label={course.isPurchased ? "FREE" : "PAID"}
-                variant="outlined"
-                color={course.isPurchased ? "success" : "error"}
-                sx={{
-                  fontWeight: 700,
-                  //borderWidth: "1px",
-                  //px: 1.5,
-                  //py: 0.5,
-                  fontSize: {
-                    xs: "0.6rem",
-                    sm: "0.75rem",
-                    md: "0.85rem",
-                  },
-                }}
-              />
-            </Typography>
-
-            {lectures.length === 0 ? (
-              <Typography
-                color="text.secondary"
-                sx={{
-                  fontSize: {
-                    xs: "0.8rem",
-                    sm: "0.9rem",
-                    md: "1rem",
-                  },
-                }}
-              >
-                No lectures available for this course.
-              </Typography>
-            ) : (
-              <Grid container spacing={2}>
-                {lectures.map((lec, idx) => {
-                  const vidUrl = lec.lecture_video?.[0]?.url || "";
-
-                  return (
-                    <LectureCard
-                      key={lec._id}
-                      lec={lec}
-                      index={idx}
-                      onPlay={openFullScreen}
-                    />
-                  );
-                })}
-              </Grid>
+            {instrumentTitle && (
+              <p className="mt-3 inline-flex w-fit items-center gap-2 rounded-xl border border-amber-100 bg-amber-50/80 px-3 py-2 text-sm text-amber-900">
+                <Guitar className="h-4 w-4 shrink-0 text-amber-700" />
+                <span>
+                  Bundled with{" "}
+                  <strong className="font-bold">{instrumentTitle}</strong>
+                </span>
+              </p>
             )}
-          </Box>
-          <Box display="flex" mt={5}>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<ArrowBack />}
-              onClick={() => navigate(-1)}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                //px: { xs: 2, sm: 3 },
-                //py: { xs: 0.8, sm: 1 },
-                borderRadius: 2,
-                fontSize: {
-                  xs: "0.75rem",
-                  sm: "0.9rem",
-                  md: "1rem",
-                },
-                "& .MuiButton-startIcon": {
-                  "& svg": {
-                    fontSize: { xs: "1rem", sm: "1.2rem" },
-                  },
-                },
-              }}
-            >
-              Back
-            </Button>
-          </Box>
-        </Paper>
-      </Container>
-      <AppDialog />
-    </Box>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Badge
+                color={course.isPurchased ? "success" : "primary"}
+                className="normal-case text-sm"
+              >
+                {course.isPurchased ? "✓ Purchased" : formatCurrency(course.course_price)}
+              </Badge>
+              <Badge
+                color={course.isPurchased ? "success" : "default"}
+                className="normal-case"
+              >
+                {course.isPurchased ? "Full access" : `${lectures.length} lectures`}
+              </Badge>
+            </div>
+
+            <ul className="mt-6 grid gap-2 sm:grid-cols-3">
+              {HIGHLIGHTS.map(({ icon: Icon, label }) => (
+                <li
+                  key={label}
+                  className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5 text-xs font-semibold text-slate-700"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-brand-600 shadow-sm">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  {label}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6 flex-1">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+                About this course
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
+                {description}
+              </p>
+            </div>
+
+            <div className="mt-8 hidden sm:block">
+              <BackButton to={catalogPath} label="More courses" />
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {/* Lectures */}
+      <section className="mt-6 overflow-hidden rounded-3xl border border-slate-200/70 bg-white p-5 shadow-sm sm:p-7">
+        <div className="mb-6 flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="flex items-center gap-2 text-lg font-extrabold text-navy sm:text-xl">
+                <PlayCircle className="h-5 w-5 text-brand-600" />
+                Course lectures
+              </h2>
+              <Badge color="default" className="normal-case">
+                {lectures.length} {lectures.length === 1 ? "lesson" : "lessons"}
+              </Badge>
+            </div>
+            <p className="mt-1 text-sm text-muted">
+              {isGuest
+                ? "Sign in to watch full lesson videos."
+                : course.isPurchased
+                  ? "You have access to all lessons below."
+                  : "Preview the curriculum — purchase to unlock playback."}
+            </p>
+          </div>
+          <Badge
+            color={course.isPurchased ? "success" : "warning"}
+            className="w-fit normal-case"
+          >
+            {course.isPurchased ? "Unlocked" : "Preview mode"}
+          </Badge>
+        </div>
+
+        {lectures.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-14 text-center">
+            <Video className="mx-auto h-10 w-10 text-slate-300" />
+            <p className="mt-3 text-sm font-semibold text-slate-600">
+              No lectures available yet
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              Check back soon — new lessons may be added.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {lectures.map((lec, idx) => (
+              <LectureCard
+                key={lec._id}
+                lec={lec}
+                index={idx}
+                variant="light"
+                onPlay={openFullScreen}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <p className="mt-6 text-center text-xs text-muted sm:text-left">
+        <button
+          type="button"
+          onClick={() => navigate(homePath)}
+          className="font-semibold text-brand-600 underline-offset-2 hover:underline"
+        >
+          Return to home
+        </button>
+      </p>
+
+      <div className="mt-6 sm:hidden">
+        <BackButton to={catalogPath} label="All courses" className="w-full justify-center" />
+      </div>
+    </PageShell>
   );
 };
 

@@ -1,137 +1,142 @@
-import React, { useEffect, useState } from "react";
+import {
+  IndianRupee,
+  Mail,
+  ShoppingBag,
+  CircleDot,
+  Sparkles,
+} from "lucide-react";
 import CommonTable from "../../components/ui/table/CommonTable";
-import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
-import { filterData } from "../../utils/common-util";
 import { headCells, menuOptions } from "../../utils/all-orders-columns";
-import { useSearchParams } from "react-router-dom";
-import { Box, Divider, Paper, Typography } from "@mui/material";
-import { LibraryMusic, ShoppingBag } from "@mui/icons-material";
-import { setTotalCount } from "../../features/dataCountSlice";
-import AppDialog from "../../components/ui/dialog/AppDialog";
-import api from "../../api/axios";
+import { PageShell } from "../../components/ui/tw/PageShell";
+import {
+  AdminFilterField,
+  AdminFiltersPanel,
+} from "../../components/ui/tw/AdminFiltersPanel";
+import { useAdminTableData } from "../../hooks/useAdminTableData";
+import { useDebouncedAdminFilter } from "../../hooks/useDebouncedAdminFilter";
+import {
+  buildOrdersAdminFilterQuery,
+  filterTextMinLen,
+} from "../../utils/api-query";
+
+const ORDER_FILTER_INITIAL = { email: "", status: "", amount: "" };
+
+const STATUS_OPTIONS = [
+  { value: "", label: "All statuses" },
+  { value: "pending", label: "Pending" },
+  { value: "paid", label: "Paid" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "failed", label: "Failed" },
+];
 
 function AllOrders() {
-  const { token } = useSelector((state) => state.auth);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const { countTotalData } = useSelector((state) => state.dataCount);
-  const dispatch = useDispatch();
-  const [searchParams] = useSearchParams();
-  const [activeQuery, setActiveQuery] = useState({});
-
-  const [state, setState] = useState({
-    limit: 5,
-    limitDropdown: [5, 10, 20, 50],
-    header: [],
-    data: [],
-    totalDataCount: 0,
-    query: {},
+  const { tableConfig, applyQuery, totalDataCount } = useAdminTableData({
+    table: "orders",
+    headCells,
+    menuOptions,
+    textLabel: "Order",
   });
 
-  const getCurrentLimitFromUrl = () => {
-    const l = searchParams.get("limit");
-    const parsed = parseInt(l, 10);
-    return !isNaN(parsed) && parsed > 0 ? parsed : state.limit;
-  };
+  const { values, setField, reset, hasInput, hasAppliedFilter } =
+    useDebouncedAdminFilter({
+      applyQuery,
+      enabled: true,
+      buildQuery: buildOrdersAdminFilterQuery,
+      initialValues: ORDER_FILTER_INITIAL,
+    });
 
-  const getData = async (limit, offset, query = activeQuery) => {
-    const body = {
-      query,
-      projection: { pwd: 0 },
-      options: { skip: offset, limit, sort: { createdAt: -1 } },
-    };
+  const showFilterPanel =
+    totalDataCount > 0 || hasInput || hasAppliedFilter;
 
-    const response = await api.post("/admin/allusersorders", body);
-    const res = response.data;
-    if (res.success) {
-      let fd = filterData(res.data, headCells);
-      setState((prev) => ({
-        ...prev,
-        header: fd.header,
-        totalDataCount: res.totalDataCount,
-        data: fd.rows,
-        rawData: res.data,
-      }));
-      if (isInitialLoad) {
-        dispatch(setTotalCount({ countTotalData: res.totalDataCount }));
-        setIsInitialLoad(false);
-      }
-    }
-  };
-
-  const config = {
-    getData,
-    data: state.data,
-    totalDataCount: state.totalDataCount,
-    limit: state.limit,
-    limitDropdown: state.limitDropdown,
-    headCells: headCells,
-    header: state.header,
-    menuOptions,
-    query: activeQuery,
-    style: {
-      paginateStyle: {
-        sx: { float: "right" },
-      },
-      limitDropdownStyle: {
-        sx: { float: "right" },
-      },
-    },
-    baseRoute: "/admin/allorders",
-    textLabel: "Order",
-  };
+  const emailTrim = String(values.email).trim();
+  const emailPending = emailTrim.length > 0 && emailTrim.length < filterTextMinLen;
 
   return (
-    <Paper
-      elevation={4}
-      sx={{
-        p: 3,
-        borderRadius: 2,
-      }}
-    >
-      <Box>
-        <Typography
-          variant="h5"
-          sx={{
-            fontSize: {
-              xs: "1rem",
-              sm: "1.2rem",
-              md: "1.5rem",
-            },
-            fontWeight: 600,
-            letterSpacing: "0.5px",
-            color: "#1976d2",
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <ShoppingBag
-            sx={{
-              fontSize: {
-                xs: "1.1rem",
-                sm: "1.4rem",
-                md: "1.6rem",
-              },
-              flexShrink: 0,
-            }}
-          />
-          All Orders
-        </Typography>
-
-        <Divider
-          sx={{
-            mt: 1,
-            mb: 5,
-            borderColor: "#1976d2",
-            borderWidth: "1px",
-            borderRadius: 1,
-          }}
+    <PageShell className="pb-10">
+      <header className="relative mb-6 overflow-hidden rounded-[1.75rem] border border-emerald-100/80 bg-gradient-to-br from-white via-emerald-50/40 to-brand-50/50 shadow-[0_18px_45px_-30px_rgba(5,150,105,0.35)]">
+        <div
+          className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-emerald-500/10 blur-3xl"
+          aria-hidden
         />
-      </Box>
-      <CommonTable {...config} />
-      <AppDialog />
-    </Paper>
+        <div
+          className="absolute -bottom-14 left-6 h-32 w-32 rounded-full bg-brand-500/10 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative p-4 sm:p-6 lg:p-7">
+          <div className="flex flex-col items-center gap-3 text-center min-[520px]:flex-row min-[520px]:items-start min-[520px]:gap-4 min-[520px]:text-left">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-brand-700 shadow-sm ring-1 ring-emerald-200/70 sm:h-14 sm:w-14">
+              <ShoppingBag className="h-6 w-6 sm:h-7 sm:w-7" />
+            </span>
+            <div className="min-w-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-800 shadow-sm ring-1 ring-emerald-100 sm:text-[11px]">
+                <Sparkles className="h-3.5 w-3.5" />
+                Sales & payments
+              </span>
+              <h2 className="mt-2 text-xl font-extrabold tracking-tight text-navy sm:mt-3 sm:text-3xl">
+                All orders
+              </h2>
+              <p className="mx-auto mt-1.5 max-w-xl text-xs leading-relaxed text-slate-600 min-[520px]:mx-0 sm:mt-2 sm:text-sm">
+                Track customer purchases, payment status, and order amounts.
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {showFilterPanel && (
+        <AdminFiltersPanel
+          title="Find orders"
+          subtitle={`Email needs ${filterTextMinLen}+ letters · amount is exact match`}
+          hasInput={hasInput}
+          hasAppliedFilter={hasAppliedFilter}
+          matchCount={totalDataCount}
+          matchLabel="order"
+          onClear={reset}
+        >
+          <AdminFilterField
+            icon={Mail}
+            label="Customer email"
+            value={values.email}
+            onChange={(e) => setField("email", e.target.value)}
+            placeholder="user@example.com"
+            hint={
+              emailPending
+                ? `Type ${filterTextMinLen - emailTrim.length} more character(s)`
+                : undefined
+            }
+          />
+          <AdminFilterField
+            icon={CircleDot}
+            label="Payment status"
+            type="select"
+            value={values.status}
+            onChange={(e) => setField("status", e.target.value)}
+            options={STATUS_OPTIONS}
+          />
+          <AdminFilterField
+            icon={IndianRupee}
+            label="Amount (exact)"
+            type="number"
+            value={values.amount}
+            onChange={(e) => setField("amount", e.target.value)}
+            placeholder="e.g. 4999"
+          />
+        </AdminFiltersPanel>
+      )}
+
+      <CommonTable
+        {...tableConfig}
+        tableTitle="Order history"
+        tableSubtitle="Newest orders first"
+        filterBadge={
+          hasAppliedFilter ? (
+            <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800 ring-1 ring-brand-100">
+              Filter applied
+            </span>
+          ) : null
+        }
+      />
+    </PageShell>
   );
 }
 

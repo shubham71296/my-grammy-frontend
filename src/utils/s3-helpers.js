@@ -1,4 +1,3 @@
-// src/utils/s3-helpers.js
 import axios from "axios";
 
 /**
@@ -15,24 +14,6 @@ export async function presignSmallUploads(files = [], folder) {
   return res.data.uploads || [];
 }
 
-/**
- * Upload a file to a presigned PUT URL (no progress)
- */
-// export async function uploadToPresignedUrl(uploadMeta, file) {
-//   const res = await fetch(uploadMeta.uploadUrl, {
-//     method: "PUT",
-//     headers: { "Content-Type": uploadMeta.mimeType || file.type || "application/octet-stream" },
-//     body: file,
-//   });
-//   if (!res.ok) throw new Error(`Upload failed for ${file.name}`);
-//   return {
-//     key: uploadMeta.key,
-//     url: uploadMeta.url,
-//     originalName: uploadMeta.originalName || file.name,
-//     mimeType: uploadMeta.mimeType || file.type,
-//     size: file.size,
-//   };
-// }
 export async function uploadToPresignedUrl(uploadMeta, file, onProgress) {
   const res = await axios.put(uploadMeta.uploadUrl, file, {
     headers: { "Content-Type": uploadMeta.mimeType || file.type },
@@ -95,35 +76,6 @@ export function splitFileToParts(file, partSize = 5 * 1024 * 1024) {
 }
 
 /* ------------------ Parallel multipart upload with retry ------------------ */
-
-// export async function uploadPartsParallel(parts, presignedUrls, onProgress, batchSize = 4) {
-//   let completed = 0;
-//   const total = parts.length;
-
-//   const tasks = parts.map((part) => {
-//     const urlObj = presignedUrls.find(
-//       (u) => Number(u.PartNumber) === Number(part.PartNumber)
-//     );
-//     if (!urlObj) throw new Error("Missing presigned URL for part " + part.PartNumber);
-
-//     return async () => {
-//       const res = await fetch(urlObj.uploadUrl, { method: "PUT", body: part.blob });
-//       if (!res.ok) throw new Error(`Part upload failed: ${res.statusText}`);
-
-//       const etag = res.headers.get("ETag") || res.headers.get("etag") || null;
-
-//       completed++;
-//       if (typeof onProgress === "function") {
-//         const pct = Math.round((completed / total) * 100);
-//         onProgress(pct);
-//       }
-
-//       return { PartNumber: part.PartNumber, ETag: etag };
-//     };
-//   });
-
-//   return uploadInBatches(tasks, batchSize);
-// }
 
 export async function uploadPartsParallel(
   parts,

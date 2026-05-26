@@ -1,16 +1,7 @@
-// src/pages/Faq.jsx
-import React from "react";
-import {
-  Box,
-  Container,
-  Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Paper,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { useState } from "react";
+import { ChevronDown, CircleHelp } from "lucide-react";
+import { PageShell, PagePanel } from "../../components/ui/tw/PageShell";
+import { cn } from "../../lib/cn";
 
 const faqData = [
   {
@@ -40,58 +31,51 @@ const faqData = [
   },
 ];
 
-const Faq = () => {
+function FaqItem({ question, answer, open, onToggle }) {
   return (
-    <Box sx={{ backgroundColor: "#f4f7fb", minHeight: "100vh", py: 6 }}>
-      <Container maxWidth="md">
-        <Paper
-          elevation={4}
-          sx={{
-            p: { xs: 3, md: 5 },
-            mb: 5,
-            textAlign: "center",
-            borderRadius: 3,
-            background: "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
-            color: "white",
-          }}
-        >
-          <HelpOutlineIcon sx={{ fontSize: 50, mb: 1 }} />
-          <Typography variant="h4" fontWeight={700}>
-            Frequently Asked Questions
-          </Typography>
-          <Typography variant="body1" sx={{ opacity: 0.9, mt: 1 }}>
-            Find answers to common questions about Grammy
-          </Typography>
-        </Paper>
+    <div className="mb-2 overflow-hidden rounded-xl bg-white shadow-md">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-2 bg-white px-4 py-3 text-left font-semibold text-slate-800"
+      >
+        {question}
+        <ChevronDown className={cn("h-5 w-5 shrink-0 transition", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="border-t border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          {answer}
+        </div>
+      )}
+    </div>
+  );
+}
 
+const Faq = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  return (
+    <PageShell narrow className="bg-slate-100">
+      <div className="mb-6 rounded-2xl bg-gradient-to-br from-brand-600 to-sky-400 p-6 text-center text-white shadow-lg sm:p-8">
+        <CircleHelp className="mx-auto mb-2 h-12 w-12" />
+        <h1 className="text-2xl font-bold sm:text-3xl">Frequently Asked Questions</h1>
+        <p className="mt-2 text-sm opacity-90 sm:text-base">
+          Find answers to common questions about Grammy
+        </p>
+      </div>
+
+      <PagePanel>
         {faqData.map((faq, index) => (
-          <Accordion
+          <FaqItem
             key={index}
-            sx={{
-              mb: 2,
-              borderRadius: 2,
-              "&:before": { display: "none" },
-              boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                fontWeight: 600,
-                backgroundColor: "#ffffff",
-                borderRadius: 2,
-              }}
-            >
-              <Typography fontWeight={600}>{faq.question}</Typography>
-            </AccordionSummary>
-
-            <AccordionDetails sx={{ backgroundColor: "#fafafa" }}>
-              <Typography color="text.secondary">{faq.answer}</Typography>
-            </AccordionDetails>
-          </Accordion>
+            question={faq.question}
+            answer={faq.answer}
+            open={openIndex === index}
+            onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+          />
         ))}
-      </Container>
-    </Box>
+      </PagePanel>
+    </PageShell>
   );
 };
 

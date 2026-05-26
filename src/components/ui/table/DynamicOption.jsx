@@ -1,57 +1,46 @@
-import React from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { openDialogAction } from "../../../features/ui/uiSlice";
+import { DropdownItem } from "../tw/Dropdown";
 
-function DynamicOption({
+export default function DynamicOption({
   selectedData,
   _label,
   _check,
-  _icon,
-  MenuItem,
+  _icon: Icon,
   _dialogInfo,
+  _navigateTo,
   handleClose,
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleClick = () => {
-    handleClose();
-    let dialogInfo = { ..._dialogInfo, check: _check };
+    handleClose?.();
+    if (_navigateTo && selectedData?._id) {
+      const path =
+        typeof _navigateTo === "function"
+          ? _navigateTo(selectedData)
+          : `${_navigateTo}/${selectedData._id}`;
+      navigate(path, { state: { row: selectedData } });
+      return;
+    }
     dispatch(
       openDialogAction({
         openDialog: true,
         selectedData,
-        dialogInfo,
+        dialogInfo: { ..._dialogInfo, check: _check },
       })
     );
   };
 
   return (
-    <MenuItem
+    <DropdownItem
       onClick={handleClick}
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1.5,
-        paddingY: 1,
-        paddingX: 2,
-        borderRadius: 1.5,
-        transition: "0.2s",
-        fontSize: "0.925rem",
-        "&:hover": {
-          backgroundColor: "primary.main",
-          color: "#fff",
-          "& svg": {
-            color: "#fff",
-          },
-        },
-      }}
+      className="gap-2 transition hover:bg-brand-600 hover:text-white [&_svg]:text-slate-500 [&_svg]:hover:text-white"
     >
-      <_icon style={{ fontSize: 20 }} />
+      {Icon && <Icon className="h-4 w-4 shrink-0" />}
       <span>{_label}</span>
-    </MenuItem>
+    </DropdownItem>
   );
 }
-
-export default DynamicOption;

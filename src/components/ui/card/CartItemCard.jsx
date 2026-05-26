@@ -1,164 +1,164 @@
-import React from "react";
-import {
-  Box,
-  Card,
-  CardMedia,
-  CardContent,
-  CardActions,
-  Typography,
-  IconButton,
-  Tooltip,
-  Chip,
-} from "@mui/material";
-import { Delete, Add, Remove } from "@mui/icons-material";
+import { Trash2, Plus, Minus, Music2, GraduationCap, Gift } from "lucide-react";
+import { IMAGE_PLACEHOLDER } from "../../../utils/image-constants";
+import { isFreeWithInstrumentItem } from "../../../utils/cart";
+import { cn } from "../../../lib/cn";
 
-const CartItemCard = ({ item, onRemove, onIncrease, onDecrease }) => {
+const CartItemCard = ({
+  item,
+  onRemove,
+  onIncrease,
+  onDecrease,
+  compact = false,
+  bundledWith,
+}) => {
   const title = item?.title;
   const price = item?.price;
   const thumbnail = item?.thumbnail?.[0]?.url;
   const isInstrument = item.productType === "instruments";
+  const isFree = isFreeWithInstrumentItem(item);
+  const TypeIcon = isInstrument ? Music2 : GraduationCap;
 
   return (
-    <Card
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        borderRadius: 2,
-        gap: 2,
-        p: 1.2,
-        mb: 1.4,
-        overflow: "hidden",
-        backdropFilter: "blur(8px)",
-        boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
-        transition: "all 0.35s ease",
-        cursor: "pointer",
-        "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: "0 16px 32px rgba(0,0,0,0.25)",
-        },
-      }}
+    <article
+      className={cn(
+        "group overflow-hidden rounded-2xl border border-slate-200/90 bg-white transition-all duration-200",
+        compact
+          ? "border-emerald-100/90 bg-emerald-50/30 p-3 shadow-none"
+          : "p-4 shadow-[0_2px_8px_rgba(15,23,42,0.06)] sm:hover:border-slate-300 sm:hover:shadow-[0_12px_28px_-12px_rgba(15,23,42,0.12)]"
+      )}
     >
-      <CardMedia
-        component="img"
-        sx={{
-          width: 75,
-          height: 75,
-          objectFit: "cover",
-          borderRadius: 2.5,
-          mr: 1.3,
-        }}
-        image={thumbnail}
-        alt={title}
-        onError={(e) => {
-          e.target.src = "https://via.placeholder.com/150?text=No+Image";
-        }}
-      />
-
-      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-        <CardContent sx={{ p: 0 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              fontWeight: 700,
-              fontSize: { xs: "0.9rem", sm: "0.95rem" },
-              color: "#2a2a2a",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              maxWidth: "180px",
-            }}
-          >
-            {title}
-          </Typography>
-
-          <Chip
-            label={item.productType === "instruments" ? "Instrument" : "Course"}
-            size="small"
-            sx={{
-              mt: 0.6,
-              height: 20,
-              fontSize: "0.65rem",
-              fontWeight: 600,
-              background: "#e8f3ff",
-              color: "#1976d2",
+      <div
+        className={cn(
+          "flex gap-4",
+          compact ? "items-center" : "flex-col sm:flex-row sm:items-stretch"
+        )}
+      >
+        <div
+          className={cn(
+            "relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-white",
+            compact ? "h-16 w-16" : "h-24 w-24 sm:h-28 sm:w-28"
+          )}
+        >
+          <img
+            src={thumbnail || IMAGE_PLACEHOLDER}
+            alt={title}
+            className={cn(
+              "product-card__img object-contain p-1.5",
+              compact ? "max-h-14 max-w-14" : "max-h-[5.5rem] max-w-[5.5rem] sm:max-h-24 sm:max-w-24"
+            )}
+            onError={(e) => {
+              e.currentTarget.src = IMAGE_PLACEHOLDER;
             }}
           />
+        </div>
 
-          <Typography
-            variant="subtitle1"
-            sx={{
-              mt: 0.8,
-              fontWeight: 700,
-              color: "#1a73e8",
-              fontSize: { xs: "0.8rem", sm: "0.95rem" },
-            }}
-          >
-            {price === 0 ? "Free with this instrument" : `₹${price}`}
-          </Typography>
+        <div className="flex min-w-0 flex-1 flex-col justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                  isInstrument
+                    ? "bg-brand-50 text-brand-700"
+                    : isFree
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-violet-50 text-violet-800"
+                )}
+              >
+                <TypeIcon className="h-3 w-3" />
+                {isInstrument ? "Instrument" : isFree ? "Free course" : "Course"}
+              </span>
+              {isFree && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                  <Gift className="h-3 w-3" />
+                  Included
+                </span>
+              )}
+            </div>
 
-          {isInstrument && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                mt: 0.5,
-                gap: 0.8,
-              }}
+            <h3
+              className={cn(
+                "mt-2 font-bold text-navy",
+                compact ? "line-clamp-1 text-sm" : "line-clamp-2 text-base sm:text-lg"
+              )}
             >
-              <IconButton
-                disabled={item.qty === 1}
-                size="small"
-                sx={{
-                  border: "1px solid #ccc",
-                  p: 0.5,
-                  ":hover": { background: "#f0f0f0" },
-                }}
-                onClick={() => onDecrease(item)}
-              >
-                <Remove fontSize="small" />
-              </IconButton>
+              {title}
+            </h3>
 
-              <Typography
-                sx={{ minWidth: 20, textAlign: "center", fontWeight: 600 }}
-              >
-                {item.qty}
-              </Typography>
+            {bundledWith && (
+              <p className="mt-1 text-xs text-emerald-800">
+                Free with <strong>{bundledWith}</strong>
+              </p>
+            )}
 
-              <IconButton
-                size="small"
-                sx={{
-                  border: "1px solid #ccc",
-                  p: 0.5,
-                  ":hover": { background: "#f0f0f0" },
-                }}
-                onClick={() => onIncrease(item)}
+            <p className="mt-1.5 text-lg font-extrabold tracking-tight">
+              {isFree ? (
+                <span className="text-emerald-700">
+                  FREE
+                  <span className="ml-2 text-xs font-medium text-muted line-through decoration-slate-400">
+                    bundled offer
+                  </span>
+                </span>
+              ) : (
+                <span className="text-brand-600">
+                  ₹{Number(price || 0).toLocaleString("en-IN")}
+                  <span className="ml-1 text-xs font-medium text-muted">/ unit</span>
+                </span>
+              )}
+            </p>
+          </div>
+
+          {!compact && (
+            <div className="mt-4 flex items-center justify-between gap-3">
+              {isFree ? (
+                <p className="text-xs font-medium text-emerald-700">
+                  Unlocked automatically with your instrument
+                </p>
+              ) : isInstrument ? (
+                <div className="inline-flex items-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50/80">
+                  <button
+                    type="button"
+                    className={cn(
+                      "p-2.5 transition",
+                      item.qty <= 1
+                        ? "cursor-not-allowed text-slate-300"
+                        : "text-slate-600 hover:bg-white"
+                    )}
+                    onClick={onDecrease}
+                    disabled={item.qty <= 1}
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="min-w-[2.5rem] border-x border-slate-200 px-3 text-center text-sm font-bold text-navy">
+                    {item.qty}
+                  </span>
+                  <button
+                    type="button"
+                    className="p-2.5 text-slate-600 transition hover:bg-white"
+                    onClick={onIncrease}
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <p className="text-xs text-muted">One license per order</p>
+              )}
+
+              <button
+                type="button"
+                className="rounded-xl border border-red-100 bg-red-50/80 p-2.5 text-danger transition hover:bg-red-100"
+                onClick={onRemove}
+                aria-label="Remove from cart"
               >
-                <Add fontSize="small" />
-              </IconButton>
-            </Box>
+                <Trash2 className="h-5 w-5" />
+              </button>
+            </div>
           )}
-        </CardContent>
-      </Box>
-
-      {price === 0 ? null : (
-        <CardActions sx={{ p: 0, pl: 1 }}>
-          <Tooltip title="Remove from Cart">
-            <IconButton
-              onClick={onRemove}
-              sx={{
-                background: "#ffe5e5",
-                color: "#d32f2f",
-                p: "3px",
-                borderRadius: 2,
-                ":hover": { background: "#ffcccc" },
-              }}
-            >
-              <Delete sx={{ fontSize: 17 }} />
-            </IconButton>
-          </Tooltip>
-        </CardActions>
-      )}
-    </Card>
+        </div>
+      </div>
+    </article>
   );
 };
 

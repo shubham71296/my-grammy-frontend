@@ -1,18 +1,9 @@
-import { Box, CircularProgress } from "@mui/material";
+import { Spinner } from "../tw/Spinner";
 
-const PageSpinner = () => {
-  return (
-    <Box
-      sx={{
-        height: "70vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <CircularProgress size={45} />
-    </Box>
-  );
-};
+const PageSpinner = () => (
+  <div className="flex min-h-[70vh] items-center justify-center">
+    <Spinner size="lg" />
+  </div>
+);
 
 export default PageSpinner;

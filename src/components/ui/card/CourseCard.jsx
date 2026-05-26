@@ -1,384 +1,191 @@
-import React from "react";
 import {
-  Card,
-  CardMedia,
-  CardContent,
-  Typography,
-  Box,
-  Chip,
-  Button,
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-} from "@mui/material";
-import {
-  VideoLibrary,
-  MoreVert,
-  Edit,
-  Delete,
-  Close,
-  CheckCircle,
-} from "@mui/icons-material";
-import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite";
+  MoreVertical,
+  Pencil,
+  Trash2,
+  Eye,
+  CirclePlay,
+  CheckCircle2,
+  GraduationCap,
+  ShoppingCart,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { truncate } from "../../../utils/common-util";
+import { IMAGE_PLACEHOLDER } from "../../../utils/image-constants";
+import { getFirstMediaUrl } from "../../../utils/media";
+import { Dropdown, DropdownItem } from "../tw/Dropdown";
+import { cn } from "../../../lib/cn";
+import { pc } from "./productCardStyles";
 
 export default function CourseCard({
-  type,
   course,
-  idx,
+  mode = "user",
   onEdit,
   onDelete,
   onAddToCart,
+  onViewDetails,
 }) {
   const navigate = useNavigate();
-  const videoCount = course.course_video?.length || 0;
+  const isGuest = mode === "guest";
+  const isAdmin = mode === "admin";
+  const isUser = mode === "user";
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const menuOpen = Boolean(anchorEl);
+  const title = course?.course_title;
+  const description = course?.course_description;
+  const price = course?.course_price;
+  const image = getFirstMediaUrl(course?.thumbnail_image);
 
-  const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
-
-  const handleEdit = () => {
-    handleMenuClose();
-    if (onEdit) onEdit(course);
+  const handleViewDetails = () => {
+    if (isGuest && onViewDetails) {
+      onViewDetails(course);
+      return;
+    }
+    if (isAdmin) {
+      navigate(`/admin/mycoursedetail/${course._id}`);
+    } else {
+      navigate(`/user/courses/${course._id}`);
+    }
   };
 
-  const handleDelete = () => {
-    handleMenuClose();
-    if (onDelete) onDelete(course);
+  const priceLabel = isGuest
+    ? `₹${Number(price || 0).toLocaleString("en-IN")}`
+    : course.isPurchased && isUser
+      ? "Owned"
+      : `₹${Number(price || 0).toLocaleString("en-IN")}`;
+
+  const purchased = !isGuest && course.isPurchased && isUser;
+
+  const goToDetail = () => {
+    if (isAdmin) handleViewDetails();
   };
 
   return (
-    <Card
-      sx={{
-        mt: 1,
-        width: {
-          xs: "100%",
-          sm: 260,
-          md: 220,
-        },
-        borderRadius: { xs: 2, sm: 3 },
-        overflow: "hidden",
-        background: "rgba(255,255,255,0.95)",
-        backdropFilter: "blur(8px)",
-        boxShadow: {
-          xs: "0 4px 12px rgba(0,0,0,0.12)",
-          sm: "0 6px 20px rgba(0,0,0,0.15)",
-        },
-        transition: "all 0.3s ease",
-        cursor: "pointer",
-        "&:hover": {
-          transform: { sm: "translateY(-4px)" },
-          boxShadow: {
-            sm: "0 16px 32px rgba(0,0,0,0.25)",
-          },
-        },
-      }}
+    <article
+      className={cn(pc.root(), isAdmin && "cursor-pointer")}
+      onClick={isAdmin ? goToDetail : undefined}
+      onKeyDown={
+        isAdmin
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                goToDetail();
+              }
+            }
+          : undefined
+      }
+      role={isAdmin ? "button" : undefined}
+      tabIndex={isAdmin ? 0 : undefined}
     >
-      <Box sx={{ position: "relative" }}>
-        <CardMedia
-          component="img"
-          height="130"
-          image={course.thumbnail_image?.[0]?.url}
-          alt={course.course_title}
-          sx={{
-            objectFit: "cover",
-            transition: "0.3s ease",
-            "&:hover": { filter: "brightness(85%)" },
+      <div className={pc.courseMedia}>
+        <img
+          src={image}
+          alt={title}
+          className={pc.courseImg}
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = IMAGE_PLACEHOLDER;
           }}
         />
-
-        <PlayCircleFilledWhiteIcon
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            fontSize: { xs: 48, sm: 42 },
-            color: "white",
-            opacity: 0.9,
-          }}
-        />
-
-        {/* <Box
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 40,
-            background: "rgba(0,0,0,0.6)",
-            color: "#fff",
-            px: 1,
-            py: "2px",
-            fontSize: "0.75rem",
-            borderRadius: "20px",
-            backdropFilter: "blur(3px)",
-          }}
+        <div className={pc.courseOverlay} />
+        <span className={pc.playBtn} aria-hidden>
+          <CirclePlay className="h-4 w-4" strokeWidth={2.5} />
+        </span>
+        <span
+          className={cn(
+            pc.priceBadge,
+            purchased && "bg-emerald-600 text-white ring-0"
+          )}
         >
-          🎬 {videoCount} Videos
-        </Box> */}
+          {priceLabel}
+        </span>
+      </div>
 
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-            height: "55px",
-            background:
-              "linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0))",
-          }}
-        />
-
-        {/* <Typography
-          variant="subtitle1"
-          sx={{
-            position: "absolute",
-            bottom: 10,
-            left: 12,
-            color: "white",
-            fontWeight: 700,
-            fontSize: { xs: "0.9rem", sm: "1rem" },
-            textShadow: "0px 2px 6px rgba(0,0,0,0.5)",
-          }}
-        >
-          {course.course_title}
-        </Typography> */}
-        <Typography
-          variant="subtitle1"
-          sx={{
-            position: "absolute",
-            bottom: 12,
-            left: 12,
-            maxWidth: "90%",
-            color: "#fff",
-            fontWeight: 700,
-            px: 1.3,
-            py: 0.6,
-            borderRadius: 1.5,
-            backdropFilter: "blur(6px)",
-            background:
-              "linear-gradient(135deg, rgba(0,0,0,0.65), rgba(0,0,0,0.25))",
-            fontSize: { xs: "0.85rem", sm: "0.95rem" },
-            textShadow: "0px 2px 6px rgba(0,0,0,0.5)",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {course.course_title}
-        </Typography>
-      </Box>
-
-      <CardContent
-        sx={{
-          p: { xs: 1.4, sm: 1.8 },
-          position: "relative",
-        }}
-      >
-        {type === "admin" ? (
-          <IconButton
-            onClick={handleMenuOpen}
-            size="small"
-            sx={{
-              position: "absolute",
-              top: 4,
-              right: 4,
-              bgcolor: "#f1f1f1",
-              boxShadow: "0px 2px 6px rgba(0,0,0,0.15)",
-              "&:hover": {
-                bgcolor: "#e0e0e0",
-              },
-            }}
+      <div className={pc.body}>
+        {isAdmin && (
+          <div
+            className="absolute right-2 top-2 z-20"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
-            <MoreVert fontSize="small" />
-          </IconButton>
-        ) : null}
-
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{
-            fontSize: { xs: "0.75rem", sm: "0.82rem" },
-            color: "text.secondary",
-            lineHeight: 1.4,
-          }}
-        >
-          {truncate(course.course_description, 35)}
-        </Typography>
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 1,
-            mt: 1,
-          }}
-        >
-          <Chip
-            label={
-              course.isPurchased && type === "user"
-                ? "FREE"
-                : `${course.course_price} ₹`
-            }
-            size="small"
-            sx={{
-              height: { xs: 24, sm: 28 },
-              fontSize: { xs: "0.65rem", sm: "0.75rem" },
-              fontWeight: 800,
-              borderRadius: 2,
-              background: course.isPurchased ? "#e6f4ea" : "#fde6e3ff",
-              color:
-                course.isPurchased && type === "user" ? "#1e7e34" : "#a51106ff",
-            }}
-          />
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1,
-            width: "100%",
-          }}
-        >
-          <Button
-            variant="outlined"
-            size="small"
-            fullWidth
-            sx={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              minHeight: 32,
-              textTransform: "none",
-              borderRadius: "6px",
-              color: "#1e88e5",
-              fontSize: { xs: "0.65rem", sm: "0.72rem" },
-              px: { xs: 1.2, sm: 1.6 },
-              py: 0.4,
-              fontWeight: 700,
-              backdropFilter: "blur(4px)",
-            }}
-            onClick={() =>
-              type === "admin"
-                ? navigate(`/admin/mycoursedetail/${course._id}`)
-                : navigate(`/user/courses/${course._id}`)
-            }
-          >
-            View Details
-          </Button>
-
-          {type !== "admin" &&
-            (course.isPurchased ? (
-              <Chip
-                label="Purchased"
-                size="small"
-                sx={{
-                  height: 26,
-                  fontSize: "0.62rem",
-                  fontWeight: 800,
-                  borderRadius: "14px",
-                  px: 0.5,
-                  color: "#1b5e20",
-                  background: "linear-gradient(135deg, #c8e6c9, #a5d6a7)",
-                  boxShadow: "0 3px 8px rgba(46,125,50,0.35)",
-                  border: "1px solid #81c784",
-                  "& .MuiChip-icon": {
-                    fontSize: "0.9rem",
-                  },
-                }}
-              />
-            ) : (
-              <Button
-                variant="contained"
-                size="small"
-                fullWidth
-                sx={{
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  minHeight: 32,
-                  fontSize: { xs: "0.65rem", sm: "0.72rem" },
-                  px: { xs: 1.2, sm: 1.6 },
-                  py: 0.4,
-                  borderRadius: "6px",
-                  textTransform: "none",
-                  background: "linear-gradient(135deg, #1e88e5, #4d81bdff)",
-                  fontWeight: 700,
-
-                  boxShadow: "0 4px 10px rgba(21,101,192,0.35)",
-                  transition: "0.25s ease",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #0d47a1, #1976d2)",
-                    boxShadow: "0 5px 16px rgba(13,71,161,0.5)",
-                  },
-                }}
-                onClick={() => onAddToCart?.()}
-              >
-                Add to cart
-              </Button>
-            ))}
-        </Box>
-
-        <Menu
-          id={`course-menu-${idx}`}
-          anchorEl={anchorEl}
-          open={menuOpen}
-          onClose={handleMenuClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
-          PaperProps={{
-            sx: { minWidth: 150, p: 0 },
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              px: 1,
-              py: 0.5,
-              borderBottom: "1px solid rgba(0,0,0,0.08)",
-              borderTopLeftRadius: "8px",
-              borderTopRightRadius: "8px",
-            }}
-          >
-            <IconButton
-              size="small"
-              onClick={handleMenuClose}
-              sx={{
-                color: "#555555ff",
-                transition: "0.25s ease",
-                "&:hover": {
-                  color: "#2f71d3ff",
-                  transform: "scale(1.15)",
-                  backgroundColor: "rgba(211,47,47,0.08)",
-                },
-              }}
+            <Dropdown
+              align="right"
+              trigger={
+                <button
+                  type="button"
+                  className="rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm hover:bg-slate-50"
+                  aria-label="Course actions"
+                >
+                  <MoreVertical className="h-3.5 w-3.5 text-slate-600" />
+                </button>
+              }
             >
-              <Close fontSize="small" />
-            </IconButton>
-          </Box>
+              {(close) => (
+                <>
+                  <DropdownItem
+                    onClick={() => {
+                      close();
+                      handleViewDetails();
+                    }}
+                  >
+                    <Eye className="h-4 w-4" />
+                    View
+                  </DropdownItem>
+                  <DropdownItem
+                    onClick={() => {
+                      close();
+                      onEdit?.(course);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </DropdownItem>
+                  <DropdownItem
+                    danger
+                    onClick={() => {
+                      close();
+                      onDelete?.(course);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </DropdownItem>
+                </>
+              )}
+            </Dropdown>
+          </div>
+        )}
 
-          <MenuItem onClick={handleEdit}>
-            <ListItemIcon>
-              <Edit fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Edit" />
-          </MenuItem>
+        <span className={pc.chip}>
+          <GraduationCap className="mr-0.5 inline h-2.5 w-2.5" />
+          Course
+        </span>
+        <h3 className={pc.title}>{title}</h3>
+        <p className={pc.desc}>{truncate(description, 55)}</p>
 
-          <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
-            <ListItemIcon>
-              <Delete fontSize="small" sx={{ color: "error.main" }} />
-            </ListItemIcon>
-            <ListItemText primary="Delete" />
-          </MenuItem>
-        </Menu>
-      </CardContent>
-    </Card>
+        {!isAdmin && (
+          <div className={pc.actions}>
+            <button type="button" className={pc.btnOutline} onClick={handleViewDetails}>
+              <Eye className="h-3 w-3 shrink-0" />
+              View
+            </button>
+            {purchased ? (
+              <span className={pc.btnOwned}>
+                <CheckCircle2 className="h-3 w-3" />
+                Owned
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={pc.btnPrimary}
+                onClick={() => onAddToCart?.(course, "course")}
+              >
+                <ShoppingCart className="h-3 w-3 shrink-0" />
+                Cart
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </article>
   );
 }

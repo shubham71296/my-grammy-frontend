@@ -1,25 +1,17 @@
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import { Box, Typography, Paper, Stack } from "@mui/material";
+import { MapPin } from "lucide-react";
+import { cn } from "../../lib/cn";
 
 const LocationMap = ({ city }) => {
-  const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(
-    city
-  )}&output=embed`;
-
-  const openInMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    city
-  )}`;
+  const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(city)}&output=embed`;
+  const openInMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(city)}`;
 
   return (
-    <Box sx={{ mt: 4, p:1 }}>
-      {/* MAP */}
-      <Paper
-        elevation={3}
-        sx={{
-          borderRadius: 3,
-          overflow: "hidden",
-          height: { xs: 260, sm: 340, md: 420 },
-        }}
+    <div className="mt-4 p-1">
+      <div
+        className={cn(
+          "glass-panel overflow-hidden rounded-2xl shadow-md",
+          "h-[260px] sm:h-[340px] md:h-[420px]"
+        )}
       >
         <iframe
           title="Maestro Music Classes Location"
@@ -30,68 +22,32 @@ const LocationMap = ({ city }) => {
           loading="lazy"
           allowFullScreen
         />
-      </Paper>
+      </div>
 
-      {/* ADDRESS */}
-      <Stack
-        direction="row"
-        spacing={1}
-        alignItems="flex-start"
-        justifyContent="center"
-        mt={2}
-        px={2}
+      <button
+        type="button"
         onClick={() => window.open(openInMaps, "_blank")}
-        sx={{
-          cursor: "pointer",
-          borderRadius: 2,
-          p: 2,
-          transition: "all 0.3s ease",
-          backgroundColor: "transparent",
-
-          "&:hover": {
-            backgroundColor: "rgba(25,118,210,0.06)",
-            transform: "translateY(-3px)",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
-          },
-
-          "&:hover .location-icon": {
-            transform: "scale(1.15)",
-          },
-
-          "&:hover .location-title": {
-            textDecoration: "underline",
-          },
-        }}
+        className={cn(
+          "group mx-auto mt-2 flex w-full max-w-2xl cursor-pointer items-start gap-2 rounded-xl p-4",
+          "text-left transition hover:-translate-y-0.5 hover:bg-brand-600/5 hover:shadow-lg"
+        )}
       >
-        <LocationOnIcon 
-          color="error" 
-          sx={{
-            mt: "2px",
-            transition: "transform 0.3s ease",
-          }}
-        />
-
-        <Box textAlign="left">
-          <Typography fontWeight={700} sx={{ transition: "all 0.3s ease" }}>
+        <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-red-500 transition group-hover:scale-110" />
+        <div>
+          <p className="font-bold text-slate-800 group-hover:underline">
             Maestro Music Classes – Flute, Guitar, Piano & Singing Academy
-          </Typography>
-
-          <Typography variant="body2" color="text.secondary">
+          </p>
+          <p className="text-sm text-slate-600">
             H16, Keshar Bagh Rd, near Charming Kidz School, Nalanda Parisar,
             Indore, Madhya Pradesh 452009, India
-          </Typography>
-
-          <Typography
-            variant="caption"
-            sx={{ color: "primary.main", fontWeight: 600 }}
-          >
+          </p>
+          <p className="mt-1 text-xs font-semibold text-brand-600">
             Open Mon–Sat • 10:00 AM – 8:00 PM (Tap to open map)
-          </Typography>
-        </Box>
-      </Stack>
-    </Box>
+          </p>
+        </div>
+      </button>
+    </div>
   );
 };
 
 export default LocationMap;
-

@@ -1,24 +1,21 @@
-// src/layouts/MainLayout.jsx
-import React from "react";
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
-
-import { Box } from "@mui/material";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { useSelector } from "react-redux";
+import AppDialog from "../components/ui/dialog/AppDialog";
+import PageSpinner from "../components/ui/loader/PageSpinner";
 
-const UserLayout = () => {
-  return (
-    <Box display="flex" flexDirection="column" minHeight="100vh">
-      <Navbar />
-
-      <Box component="main" flexGrow={1}>
+const UserLayout = () => (
+  <div className="flex min-h-screen flex-col">
+    <Navbar />
+    <main className="page-gradient flex-1">
+      <Suspense fallback={<PageSpinner />}>
         <Outlet />
-      </Box>
-
-      <Footer />
-    </Box>
-  );
-};
+      </Suspense>
+    </main>
+    <Footer />
+    <AppDialog />
+  </div>
+);
 
 export default UserLayout;
