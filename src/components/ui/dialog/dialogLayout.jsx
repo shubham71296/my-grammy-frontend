@@ -40,6 +40,7 @@ export function DialogHeaderBar({
   title,
   subtitle,
   onClose,
+  wrapTitle = false,
 }) {
   const theme = VARIANT_THEME[variant] ?? VARIANT_THEME.view;
 
@@ -48,7 +49,7 @@ export function DialogHeaderBar({
       onClose={onClose}
       className={cn("bg-gradient-to-r", theme.header)}
     >
-      <div className="flex items-center gap-3.5 pr-2">
+      <div className={cn("flex gap-3.5 pr-2", wrapTitle ? "items-start" : "items-center")}>
         <div
           className={cn(
             "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white",
@@ -58,7 +59,14 @@ export function DialogHeaderBar({
           <Icon className="h-5 w-5" strokeWidth={2.25} aria-hidden />
         </div>
         <div className="min-w-0">
-          <h2 className="truncate text-base font-extrabold tracking-tight text-navy sm:text-lg">
+          <h2
+            className={cn(
+              "text-base font-extrabold tracking-tight text-navy sm:text-lg",
+              wrapTitle
+                ? "whitespace-normal break-words leading-snug"
+                : "truncate"
+            )}
+          >
             {title}
           </h2>
           {subtitle ? (
@@ -202,18 +210,20 @@ export function DialogNotice({ icon: Icon, title, children, variant = "brand" })
 }
 
 export function UploadProgressBar({ label, percent }) {
+  const safePercent = Math.min(100, Math.max(0, Number(percent) || 0));
+
   return (
-    <div className="mt-2 rounded-xl bg-slate-50/80 px-3 py-2 ring-1 ring-slate-100/60">
-      <div className="mb-1.5 flex justify-between gap-2 text-xs font-medium text-slate-600">
-        <span className="truncate">{label}</span>
+    <div className="mt-2 min-w-0 rounded-xl bg-slate-50/80 px-3 py-2.5 ring-1 ring-slate-100/60">
+      <div className="mb-2 flex min-w-0 items-start justify-between gap-2 text-xs font-medium text-slate-600">
+        <span className="min-w-0 truncate leading-snug">{label}</span>
         <span className="shrink-0 font-bold text-brand-700">
-          {percent ? `${percent}%` : "0%"}
+          {safePercent}%
         </span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200/80">
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200/80 sm:h-2">
         <div
           className="h-full rounded-full bg-gradient-to-r from-brand-500 to-indigo-500 transition-all duration-300"
-          style={{ width: `${percent || 0}%` }}
+          style={{ width: `${safePercent}%` }}
         />
       </div>
     </div>

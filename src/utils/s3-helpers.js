@@ -1,4 +1,5 @@
 import axios from "axios";
+import api from "../api/axios";
 
 /**
  * Presign multiple small uploads (PUT). Expects backend /api/upload/presign.
@@ -10,7 +11,7 @@ export async function presignSmallUploads(files = [], folder) {
   const payload = {
     files: files.map((f) => ({ name: f.name, type: f.type, folder })),
   };
-  const res = await axios.post("/api/upload/presign", payload);
+  const res = await api.post("/upload/presign", payload);
   return res.data.uploads || [];
 }
 
@@ -39,7 +40,7 @@ export async function uploadToPresignedUrl(uploadMeta, file, onProgress) {
 /* ------------------ Multipart helpers for large files (videos) ------------------ */
 
 export async function startMultipart(file, folder) {
-  const res = await axios.post("/api/upload/multipart/init", {
+  const res = await api.post("/upload/multipart/init", {
     fileName: file.name,
     fileType: file.type,
     folder,
@@ -48,7 +49,7 @@ export async function startMultipart(file, folder) {
 }
 
 export async function presignParts(key, uploadId, parts) {
-  const res = await axios.post("/api/upload/multipart/presign", {
+  const res = await api.post("/upload/multipart/presign", {
     key,
     uploadId,
     parts,
@@ -57,7 +58,7 @@ export async function presignParts(key, uploadId, parts) {
 }
 
 export async function completeMultipart(key, uploadId, parts) {
-  const res = await axios.post("/api/upload/multipart/complete", {
+  const res = await api.post("/upload/multipart/complete", {
     key,
     uploadId,
     parts,

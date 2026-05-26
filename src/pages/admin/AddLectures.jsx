@@ -47,13 +47,13 @@ export default function AddLectures() {
   const titleIndex = inputs.findIndex((f) => f._key === "lecture_title");
   const videoIndex = inputs.findIndex((f) => f._key === "lecture_video");
 
-  const uploading = Array.isArray(videoField?._value)
-    ? videoField._value.filter((f) => {
+  const selectedVideos = Array.isArray(videoField?._value) ? videoField._value : [];
+  const uploading = selectedVideos.filter((f) => {
         const key = f.name || f.originalName;
         const pct = progressMap[key];
         return pct > 0 && pct < 100;
-      })
-    : [];
+      });
+  const uploadModalFiles = loading ? selectedVideos : uploading;
 
   const handleChange = async (e, p1, i1, updatedFiles = null) => {
     const tempInputs = [...inputs];
@@ -162,16 +162,38 @@ export default function AddLectures() {
 
   return (
     <PageShell className="pb-12">
-      <Modal open={loading} lockClose maxWidth="max-w-sm">
-        <ModalBody className="flex flex-col items-center gap-4 bg-gradient-to-b from-violet-50/50 to-white py-10">
+      <Modal open={loading} lockClose maxWidth="max-w-md">
+        <ModalBody className="bg-gradient-to-b from-violet-50/60 to-white px-4 py-6 sm:px-6 sm:py-8">
+          <div className="mx-auto flex max-w-sm flex-col items-center gap-4 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/30">
             <RefreshCw className="h-7 w-7 animate-spin" />
           </span>
-          <div className="text-center">
+          <div>
             <p className="text-base font-extrabold text-navy">Uploading lesson</p>
             <p className="mt-1 text-sm text-slate-500">
               Please keep this tab open until the video finishes uploading.
             </p>
+          </div>
+
+            <div className="w-full rounded-2xl border border-violet-100 bg-white/90 p-3 text-left shadow-sm ring-1 ring-violet-100/60">
+              <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-violet-700">
+                <RefreshCw className="h-3 w-3 animate-spin" aria-hidden />
+                Upload progress
+              </p>
+              {uploadModalFiles.length > 0 ? (
+                uploadModalFiles.map((f, idx) => (
+                  <UploadProgressBar
+                    key={`modal-${f.name || f.originalName}-${idx}`}
+                    label={f.name || f.originalName}
+                    percent={progressMap[f.name || f.originalName] || 0}
+                  />
+                ))
+              ) : (
+                <p className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-500 ring-1 ring-slate-100">
+                  Preparing upload…
+                </p>
+              )}
+            </div>
           </div>
         </ModalBody>
       </Modal>

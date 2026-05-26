@@ -69,6 +69,18 @@ const CourseDetail = ({ mode = "user" }) => {
       openGuestLoginDialog();
       return;
     }
+    const playlist = lectures
+      .filter((item) => item.lecture_video?.[0]?.key)
+      .map((item) => ({
+        lectureId: item._id,
+        videoKey: item.lecture_video?.[0]?.key,
+        title: item.lecture_title,
+      }));
+    const currentIndex = Math.max(
+      0,
+      playlist.findIndex((item) => item.lectureId === lec._id)
+    );
+
     dispatch(
       openDialogAction({
         openDialog: true,
@@ -76,6 +88,8 @@ const CourseDetail = ({ mode = "user" }) => {
           lectureId: lec._id,
           videoKey: lec.lecture_video?.[0]?.key,
           title: lec.lecture_title,
+          playlist,
+          currentIndex,
         },
         dialogInfo: { check: "view_video" },
       })
